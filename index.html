@@ -22,7 +22,6 @@
             animation: blink 4s infinite;
             transform-origin: center;
         }
-        /* Efek garis-garis pixel scanline pada mata */
         .pixel-eye {
             background: linear-gradient(
                 rgba(15, 23, 42, 0.4) 50%, 
@@ -30,17 +29,52 @@
             );
             background-size: 100% 4px;
         }
+        /* Animasi sinar matahari/bulan */
+        @keyframes glow {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+        .sun-glow { animation: glow 4s infinite ease-in-out; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between transition-colors duration-300" x-data="dashboardApp()">
+<body class="min-h-screen font-sans flex flex-col justify-between transition-colors duration-500 relative overflow-x-hidden" 
+      :class="darkMode ? 'bg-slate-950 text-slate-100' : 'bg-sky-100 text-slate-800'" 
+      x-data="dashboardApp()">
+
+    <!-- Latar Belakang Pemandangan Minimalis (Sesuai Mode Light/Dark) -->
+    <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end">
+        <!-- Langit & Matahari / Bulan -->
+        <div class="absolute inset-0 transition-colors duration-700" :class="darkMode ? 'bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950' : 'bg-gradient-to-b from-sky-400 via-sky-200 to-sky-100'"></div>
+
+        <!-- Matahari (Muncul saat Light Mode) -->
+        <div x-show="!darkMode" class="absolute top-12 right-20 w-20 h-20 bg-amber-300 rounded-full blur-sm sun-glow shadow-[0_0_40px_rgba(252,211,77,0.8)]"></div>
+        
+        <!-- Bulan (Muncul saat Dark Mode) -->
+        <div x-show="darkMode" class="absolute top-12 right-24 w-16 h-16 bg-slate-200 rounded-full shadow-[0_0_30px_rgba(226,232,240,0.4)] opacity-90"></div>
+
+        <!-- Siluet Gunung / Bukit Belakang -->
+        <div class="absolute bottom-0 w-full h-48 opacity-40 transition-colors duration-700" :class="darkMode ? 'text-indigo-900/60' : 'text-emerald-700/30'">
+            <svg viewBox="0 0 1200 300" preserveAspectRatio="none" class="w-full h-full fill-current">
+                <path d="M0,300 L0,150 Q250,50 500,200 T1000,100 L1200,300 Z"></path>
+            </svg>
+        </div>
+
+        <!-- Siluet Gunung / Bukit Depan & Rumah Minimalis -->
+        <div class="absolute bottom-0 w-full h-32 transition-colors duration-700" :class="darkMode ? 'text-slate-900' : 'text-emerald-800/40'">
+            <svg viewBox="0 0 1200 200" preserveAspectRatio="none" class="w-full h-full fill-current">
+                <path d="M0,200 L0,80 Q350,20 700,120 T1200,60 L1200,200 Z"></path>
+            </svg>
+        </div>
+    </div>
 
     <!-- Top Navigation Bar -->
-    <nav class="bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-md">
+    <nav class="backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-md transition-colors duration-500"
+         :class="darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-100' : 'bg-white/80 border-sky-200 text-slate-800'">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/30 text-base sm:text-lg">M</div>
             <div>
-                <span class="font-bold text-slate-100 tracking-wide block text-xs sm:text-sm">Personal Command Center</span>
-                <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                <span class="font-bold tracking-wide block text-xs sm:text-sm">Personal Command Center</span>
+                <span class="text-[10px] text-emerald-500 font-medium flex items-center gap-1">
                     <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Gemini-3.7-Flash (Emo-Bot Active)
                 </span>
             </div>
@@ -48,87 +82,111 @@
 
         <!-- Menu Profil 3 Garis (Hamburger) -->
         <div class="relative" x-data="{ open: false }">
-            <button @click="open = !open" class="flex items-center justify-center w-10 h-10 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition text-slate-200 cursor-pointer shadow-sm">
+            <button @click="open = !open" class="flex items-center justify-center w-10 h-10 border rounded-xl transition cursor-pointer shadow-sm"
+                    :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200' : 'bg-sky-50 hover:bg-sky-100 border-sky-200 text-slate-700'">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
             </button>
 
             <!-- Dropdown Menu -->
-            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 text-slate-200">
-                <div class="px-3 py-2 border-b border-slate-800 mb-1">
-                    <p class="text-[10px] text-slate-500">Masuk sebagai:</p>
-                    <p class="text-xs font-semibold text-indigo-400" x-text="profile.namaLengkap"></p>
+            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 border rounded-2xl shadow-2xl p-2 z-50 transition-colors duration-500"
+                 :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-sky-200 text-slate-800'">
+                <div class="px-3 py-2 border-b mb-1" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
+                    <p class="text-[10px]" :class="darkMode ? 'text-slate-500' : 'text-slate-400'">Masuk sebagai:</p>
+                    <p class="text-xs font-semibold text-indigo-500" x-text="profile.namaLengkap"></p>
                 </div>
                 
-                <button @click="activeModal = 'dataPribadi'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium hover:bg-slate-800 transition flex items-center gap-2 cursor-pointer">
+                <button @click="activeModal = 'dataPribadi'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800' : 'hover:bg-sky-50'">
                     <span>👤</span> Pengaturan Data Pribadi
                 </button>
-                <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium hover:bg-slate-800 transition flex items-center gap-2 cursor-pointer">
+                <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800' : 'hover:bg-sky-50'">
                     <span>🧠</span> Wawasan AI
                 </button>
-                <button @click="clearChatHistory(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium hover:bg-red-950/40 text-red-400 transition flex items-center gap-2 cursor-pointer">
+                <button @click="clearChatHistory(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-red-950/40' : 'hover:bg-red-50'">
                     <span>🗑️</span> Bersihkan Riwayat Chat
                 </button>
                 
-                <div class="my-1 border-t border-slate-800"></div>
+                <div class="my-1 border-t" :class="darkMode ? 'border-slate-800' : 'border-sky-100'"></div>
 
-                <button @click="toggleDarkMode()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium hover:bg-slate-800 transition flex items-center justify-between cursor-pointer">
+                <button @click="toggleDarkMode(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer" :class="darkMode ? 'hover:bg-slate-800' : 'hover:bg-sky-50'">
                     <span class="flex items-center gap-2">
                         <span x-text="darkMode ? '☀️' : '🌙'"></span> 
                         <span x-text="darkMode ? 'Mode Terang' : 'Mode Gelap'"></span>
                     </span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400" x-text="darkMode ? 'Dark' : 'Light'"></span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded" :class="darkMode ? 'bg-slate-800 text-slate-400' : 'bg-sky-100 text-slate-600'" x-text="darkMode ? 'Dark' : 'Light'"></span>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- Main Workspace Container -->
-    <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1">
+    <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1 z-10">
 
-        <!-- Panel Wajah Robot Emo Style (Tanpa Border Kepala & Tanpa Mulut) -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden">
+        <!-- Panel Wajah Robot Emo Style -->
+        <div class="backdrop-blur-md border rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500"
+             :class="darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-sky-200'">
             
-            <!-- Wajah Robot Murni: Hanya Mata Pixel Lonjong di atas latar belakang bersih -->
-            <div class="w-44 h-20 bg-slate-950/40 flex flex-col items-center justify-center relative mb-6">
-                <!-- Indikator Antena / Status -->
-                <div class="absolute -top-1 w-10 h-1 rounded-full animate-pulse transition-colors duration-500" 
+            <!-- Wajah Robot: Mata Besar Lonjong dengan Kornea Bergerak -->
+            <div class="w-56 h-28 rounded-2xl flex flex-col items-center justify-center relative mb-4 transition-colors duration-500"
+                 :class="darkMode ? 'bg-slate-950/40' : 'bg-sky-100/60'">
+                <div class="absolute -top-1 w-12 h-1 rounded-full animate-pulse transition-colors duration-500" 
                      :class="loadingAI ? 'bg-purple-500' : (currentEmotion === 'marah' ? 'bg-red-500' : (currentEmotion === 'senang' ? 'bg-emerald-500' : (currentEmotion === 'sombong' ? 'bg-amber-500' : 'bg-indigo-500')))"></div>
 
-                <!-- Mata Robot Lonjong dengan Garis-garis Pixel (Scanline) -->
-                <div class="flex gap-10">
-                    <div class="w-9 h-6 rounded-full robot-eye pixel-eye transition-colors duration-300 shadow-md" 
-                         :class="loadingAI ? 'bg-purple-400 shadow-[0_0_12px_rgba(192,132,252,0.8)]' : (currentEmotion === 'marah' ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.9)]' : (currentEmotion === 'senang' ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]' : (currentEmotion === 'sombong' ? 'bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.8)]' : 'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]')))"></div>
-                    <div class="w-9 h-6 rounded-full robot-eye pixel-eye transition-colors duration-300 shadow-md" 
-                         :class="loadingAI ? 'bg-purple-400 shadow-[0_0_12px_rgba(192,132,252,0.8)]' : (currentEmotion === 'marah' ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.9)]' : (currentEmotion === 'senang' ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]' : (currentEmotion === 'sombong' ? 'bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.8)]' : 'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]')))"></div>
+                <div class="flex gap-12 items-center justify-center">
+                    <!-- Mata Kiri -->
+                    <div class="w-14 h-9 rounded-2xl robot-eye pixel-eye relative overflow-hidden transition-colors duration-300 shadow-md flex items-center"
+                         :class="[
+                            loadingAI ? 'bg-purple-400 shadow-[0_0_15px_rgba(192,132,252,0.8)]' : (currentEmotion === 'marah' ? 'bg-red-500 shadow-[0_0_18px_rgba(239,68,68,0.9)]' : (currentEmotion === 'senang' ? 'bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)]' : (currentEmotion === 'sombong' ? 'bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.8)]' : 'bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.8)]'))),
+                            gazeDirection === 'left' ? 'justify-start pl-1.5' : (gazeDirection === 'right' ? 'justify-end pr-1.5' : (gazeDirection === 'up' ? 'items-start pt-1 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1 justify-center' : 'justify-center')))
+                         ]">
+                        <div class="w-3.5 h-3.5 bg-slate-950 rounded-full transition-all duration-300 shadow-sm"></div>
+                    </div>
+
+                    <!-- Mata Kanan -->
+                    <div class="w-14 h-9 rounded-2xl robot-eye pixel-eye relative overflow-hidden transition-colors duration-300 shadow-md flex items-center"
+                         :class="[
+                            loadingAI ? 'bg-purple-400 shadow-[0_0_15px_rgba(192,132,252,0.8)]' : (currentEmotion === 'marah' ? 'bg-red-500 shadow-[0_0_18px_rgba(239,68,68,0.9)]' : (currentEmotion === 'senang' ? 'bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)]' : (currentEmotion === 'sombong' ? 'bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.8)]' : 'bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.8)]'))),
+                            gazeDirection === 'left' ? 'justify-start pl-1.5' : (gazeDirection === 'right' ? 'justify-end pr-1.5' : (gazeDirection === 'up' ? 'items-start pt-1 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1 justify-center' : 'justify-center')))
+                         ]">
+                        <div class="w-3.5 h-3.5 bg-slate-950 rounded-full transition-all duration-300 shadow-sm"></div>
+                    </div>
                 </div>
             </div>
 
             <!-- Balon Teks Dialog dengan Efek Mengetik -->
-            <div class="w-full max-w-2xl bg-slate-950/90 border border-indigo-500/30 rounded-2xl p-4 sm:p-5 shadow-inner min-h-[100px] flex flex-col justify-center relative">
-                <p class="text-xs sm:text-sm text-indigo-200 font-medium text-center leading-relaxed">
-                    <span x-text="typedText"></span><span class="animate-pulse text-indigo-400 font-bold" x-show="isTyping">|</span>
+            <div class="w-full max-w-2xl border rounded-2xl p-4 sm:p-5 shadow-inner min-h-[100px] flex flex-col justify-center relative transition-colors duration-500"
+                 :class="darkMode ? 'bg-slate-950/90 border-indigo-500/30 text-indigo-200' : 'bg-white/90 border-sky-200 text-slate-700'">
+                <p class="text-xs sm:text-sm font-medium text-center leading-relaxed">
+                    <span x-text="typedText"></span><span class="animate-pulse text-indigo-500 font-bold" x-show="isTyping">|</span>
                 </p>
                 
-                <!-- Indikator Mood Aktif & Tombol Ulangi Audio -->
                 <div class="absolute bottom-2 right-3 flex items-center gap-1.5">
-                    <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-indigo-300" x-text="'Mood: ' + currentEmotion"></span>
-                    <button @click="playAudio(currentEmotion)" title="Ulangi Suara" class="text-[10px] text-slate-400 hover:text-indigo-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg transition cursor-pointer">🔊 Ulangi</button>
+                    <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded border transition-colors duration-500" 
+                          :class="darkMode ? 'bg-slate-900 border-slate-800 text-indigo-300' : 'bg-sky-50 border-sky-200 text-sky-700'" 
+                          x-text="'Mood: ' + currentEmotion"></span>
+                    <button @click="playAudio(currentEmotion)" title="Ulangi Suara" class="text-[10px] border px-2 py-0.5 rounded-lg transition cursor-pointer"
+                            :class="darkMode ? 'text-slate-400 hover:text-indigo-300 bg-slate-900 border-slate-800' : 'text-slate-600 hover:text-sky-600 bg-sky-50 border-sky-200'">🔊 Ulangi</button>
                 </div>
             </div>
 
             <!-- Tombol Pintasan Cepat (Quick Pills) -->
-            <div class="w-full pt-4 mt-4 border-t border-slate-800 flex gap-2 overflow-x-auto justify-center">
-                <button @click="sendQuickPrompt('Bagaimana jadwal dinas dan tugasku di Yanma Polda Sumbar hari ini?')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700/60 px-3 py-1 rounded-lg text-[11px] text-indigo-300 whitespace-nowrap transition cursor-pointer">🛡️ Tugas Yanma</button>
-                <button @click="sendQuickPrompt('Ingatkan target studiku di S1 Hukum Universitas Terbuka.')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700/60 px-3 py-1 rounded-lg text-[11px] text-indigo-300 whitespace-nowrap transition cursor-pointer">📚 Kuliah UT</button>
-                <button @click="sendQuickPrompt('Beri motivasi dan evaluasi untuk kegiatan di Bimbel Pradipta.')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700/60 px-3 py-1 rounded-lg text-[11px] text-indigo-300 whitespace-nowrap transition cursor-pointer">🏢 Bimbel Pradipta</button>
+            <div class="w-full pt-4 mt-4 border-t flex gap-2 overflow-x-auto justify-center transition-colors duration-500"
+                 :class="darkMode ? 'border-slate-800' : 'border-sky-200'">
+                <button @click="sendQuickPrompt('Bagaimana jadwal dinas dan tugasku di Yanma Polda Sumbar hari ini?')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm"
+                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/60 text-indigo-300' : 'bg-white hover:bg-sky-50 border-sky-200 text-sky-700'">🛡️ Tugas Yanma</button>
+                <button @click="sendQuickPrompt('Ingatkan target studiku di S1 Hukum Universitas Terbuka.')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm"
+                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/60 text-indigo-300' : 'bg-white hover:bg-sky-50 border-sky-200 text-sky-700'">📚 Kuliah UT</button>
+                <button @click="sendQuickPrompt('Beri motivasi dan evaluasi untuk kegiatan di Bimbel Pradipta.')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm"
+                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/60 text-indigo-300' : 'bg-white hover:bg-sky-50 border-sky-200 text-sky-700'">🏢 Bimbel Pradipta</button>
             </div>
         </div>
 
         <!-- Input Chat & Kirim + Lampiran Gambar -->
         <form @submit.prevent="submitToAI" class="flex gap-2 items-center">
-            <label class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 sm:py-3.5 rounded-xl text-slate-400 hover:text-indigo-400 cursor-pointer transition flex items-center justify-center" title="Unggah Gambar / Dokumen">
+            <label class="border p-3 sm:py-3.5 rounded-xl cursor-pointer transition flex items-center justify-center shadow-sm"
+                   :class="darkMode ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-400 hover:text-indigo-400' : 'bg-white hover:bg-sky-50 border-sky-200 text-slate-500 hover:text-sky-600'" 
+                   title="Unggah Gambar / Dokumen">
                 <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </label>
@@ -138,7 +196,8 @@
                 x-model="userQuery" 
                 :disabled="loadingAI"
                 placeholder="Ketik perintah atau tanyakan sesuatu pada robot..." 
-                class="flex-1 bg-slate-900 border border-slate-800 focus:border-indigo-500 focus:outline-none px-4 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm text-slate-200 placeholder-slate-500 shadow-inner disabled:opacity-50"
+                class="flex-1 border focus:border-indigo-500 focus:outline-none px-4 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm shadow-inner disabled:opacity-50 transition-colors duration-500"
+                :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200 placeholder-slate-500' : 'bg-white border-sky-200 text-slate-800 placeholder-slate-400'"
             >
             <button 
                 type="submit" 
@@ -149,41 +208,47 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
         </form>
-        <p class="text-[10px] text-slate-500 px-1" x-show="attachedImage">📎 Gambar siap dikirim bersama pesan Anda.</p>
+        <p class="text-[10px] px-1 transition-colors duration-500" :class="darkMode ? 'text-slate-500' : 'text-slate-600'" x-show="attachedImage">📎 Gambar siap dikirim bersama pesan Anda.</p>
 
         <!-- Panel Modul Ringkasan Bawah (Live dari Supabase) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <!-- Panel 1 -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 shadow-md hover:border-indigo-500/50 transition">
+            <div class="backdrop-blur-md border rounded-2xl p-4 shadow-md transition-all duration-500"
+                 :class="darkMode ? 'bg-slate-900/60 border-slate-800 hover:border-indigo-500/50' : 'bg-white/70 border-sky-200 hover:border-sky-400'">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xs font-semibold text-indigo-300 flex items-center gap-1.5">📖 Hafalan Quran</h2>
-                    <span class="text-[10px] bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-md border border-indigo-800/50">Live DB</span>
+                    <h2 class="text-xs font-semibold flex items-center gap-1.5" :class="darkMode ? 'text-indigo-300' : 'text-indigo-700'">📖 Hafalan Quran</h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded-md border transition-colors duration-500" :class="darkMode ? 'bg-indigo-950 text-indigo-300 border-indigo-800/50' : 'bg-indigo-50 text-indigo-700 border-indigo-200'">Live DB</span>
                 </div>
-                <p class="text-slate-300 text-xs mb-3" x-text="hafalanStatus">Memuat data...</p>
-                <button @click="loadConfigAndData()" class="w-full bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer">Segarkan Data</button>
+                <p class="text-xs mb-3 transition-colors duration-500" :class="darkMode ? 'text-slate-300' : 'text-slate-700'" x-text="hafalanStatus">Memuat data...</p>
+                <button @click="loadConfigAndData()" class="w-full border py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
+                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 text-indigo-300 border-slate-700' : 'bg-white hover:bg-sky-50 text-indigo-700 border-sky-200'">Segarkan Data</button>
             </div>
 
             <!-- Panel 2 -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 shadow-md hover:border-emerald-500/50 transition">
+            <div class="backdrop-blur-md border rounded-2xl p-4 shadow-md transition-all duration-500"
+                 :class="darkMode ? 'bg-slate-900/60 border-slate-800 hover:border-emerald-500/50' : 'bg-white/70 border-sky-200 hover:border-emerald-400'">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xs font-semibold text-emerald-300 flex items-center gap-1.5">💰 Keuangan & Emas</h2>
-                    <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-800/50">Live DB</span>
+                    <h2 class="text-xs font-semibold flex items-center gap-1.5" :class="darkMode ? 'text-emerald-300' : 'text-emerald-700'">💰 Keuangan & Emas</h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded-md border transition-colors duration-500" :class="darkMode ? 'bg-emerald-950 text-emerald-300 border-emerald-800/50' : 'bg-emerald-50 text-emerald-700 border-emerald-200'">Live DB</span>
                 </div>
                 <div class="mb-3">
-                    <span class="text-lg font-bold text-slate-100" x-text="totalKeuangan">Rp 0</span>
-                    <p class="text-[10px] text-slate-500 mt-0.5">Akumulasi Saldo</p>
+                    <span class="text-lg font-bold transition-colors duration-500" :class="darkMode ? 'text-slate-100' : 'text-slate-900'" x-text="totalKeuangan">Rp 0</span>
+                    <p class="text-[10px] mt-0.5 transition-colors duration-500" :class="darkMode ? 'text-slate-500' : 'text-slate-500'">Akumulasi Saldo</p>
                 </div>
-                <button @click="loadConfigAndData()" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer">Segarkan Data</button>
+                <button @click="loadConfigAndData()" class="w-full border py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
+                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 text-emerald-300 border-slate-700' : 'bg-white hover:bg-sky-50 text-emerald-700 border-sky-200'">Segarkan Data</button>
             </div>
 
             <!-- Panel 3 -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 shadow-md hover:border-amber-500/50 transition">
+            <div class="backdrop-blur-md border rounded-2xl p-4 shadow-md transition-all duration-500"
+                 :class="darkMode ? 'bg-slate-900/60 border-slate-800 hover:border-amber-500/50' : 'bg-white/70 border-sky-200 hover:border-amber-400'">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xs font-semibold text-amber-300 flex items-center gap-1.5">⏱️ Manajemen Waktu</h2>
-                    <span class="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded-md border border-amber-800/50">Live DB</span>
+                    <h2 class="text-xs font-semibold flex items-center gap-1.5" :class="darkMode ? 'text-amber-300' : 'text-amber-700'">⏱️ Manajemen Waktu</h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded-md border transition-colors duration-500" :class="darkMode ? 'bg-amber-950 text-amber-300 border-amber-800/50' : 'bg-amber-50 text-amber-700 border-amber-200'">Live DB</span>
                 </div>
-                <p class="text-slate-300 text-xs mb-3" x-text="todoStatus">Memuat daftar tugas...</p>
-                <button @click="loadConfigAndData()" class="w-full bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer">Segarkan Data</button>
+                <p class="text-xs mb-3 transition-colors duration-500" :class="darkMode ? 'text-slate-300' : 'text-slate-700'" x-text="todoStatus">Memuat daftar tugas...</p>
+                <button @click="loadConfigAndData()" class="w-full border py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
+                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 text-amber-300 border-slate-700' : 'bg-white hover:bg-sky-50 text-amber-700 border-sky-200'">Segarkan Data</button>
             </div>
         </div>
 
@@ -191,19 +256,22 @@
 
     <!-- Modal Pengaturan Data Pribadi -->
     <div x-show="activeModal === 'dataPribadi'" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-md shadow-2xl text-slate-200">
-            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-800">
-                <h3 class="font-semibold text-sm text-indigo-400">👤 Pengaturan Data Pribadi</h3>
-                <button @click="activeModal = null" class="text-slate-400 hover:text-slate-200 text-sm cursor-pointer">✕</button>
+        <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl transition-colors duration-500"
+             :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-sky-200 text-slate-800'">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
+                <h3 class="font-semibold text-sm text-indigo-500">👤 Pengaturan Data Pribadi</h3>
+                <button @click="activeModal = null" class="cursor-pointer" :class="darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'">✕</button>
             </div>
             <div class="space-y-3 mb-4">
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Nama Lengkap</label>
-                    <input type="text" x-model="profile.namaLengkap" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <label class="block text-xs mb-1" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">Nama Lengkap</label>
+                    <input type="text" x-model="profile.namaLengkap" class="w-full border rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 transition-colors duration-500"
+                           :class="darkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-sky-50 border-sky-200 text-slate-800'">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Nama Panggilan</label>
-                    <input type="text" x-model="profile.panggilan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <label class="block text-xs mb-1" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">Nama Panggilan</label>
+                    <input type="text" x-model="profile.panggilan" class="w-full border rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 transition-colors duration-500"
+                           :class="darkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-sky-50 border-sky-200 text-slate-800'">
                 </div>
             </div>
             <button @click="saveProfile(); activeModal = null;" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer">Simpan Perubahan</button>
@@ -212,22 +280,25 @@
 
     <!-- Modal Wawasan AI -->
     <div x-show="activeModal === 'wawasanAI'" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-md shadow-2xl text-slate-200">
-            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-800">
-                <h3 class="font-semibold text-sm text-indigo-400">🧠 Wawasan & Instruksi Dasar AI</h3>
-                <button @click="activeModal = null" class="text-slate-400 hover:text-slate-200 text-sm cursor-pointer">✕</button>
+        <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl transition-colors duration-500"
+             :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-sky-200 text-slate-800'">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
+                <h3 class="font-semibold text-sm text-indigo-500">🧠 Wawasan & Instruksi Dasar AI</h3>
+                <button @click="activeModal = null" class="cursor-pointer" :class="darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'">✕</button>
             </div>
             <div class="mb-4">
-                <label class="block text-xs text-slate-400 mb-1">Instruksi & Konteks Berkembang</label>
-                <textarea x-model="profile.customInstructions" rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
-                <p class="text-[10px] text-slate-500 mt-1">AI membaca wawasan ini untuk menyesuaikan rekomendasi dengan Anda.</p>
+                <label class="block text-xs mb-1" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">Instruksi & Konteks Berkembang</label>
+                <textarea x-model="profile.customInstructions" rows="6" class="w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-indigo-500 resize-none transition-colors duration-500"
+                          :class="darkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-sky-50 border-sky-200 text-slate-800'"></textarea>
+                <p class="text-[10px] mt-1" :class="darkMode ? 'text-slate-500' : 'text-slate-500'">AI membaca wawasan ini untuk menyesuaikan rekomendasi dengan Anda.</p>
             </div>
             <button @click="saveProfile(); activeModal = null;" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer">Simpan Wawasan</button>
         </div>
     </div>
 
     <!-- Footer Tipis -->
-    <footer class="text-center py-3 text-[11px] text-slate-600 border-t border-slate-900">
+    <footer class="text-center py-3 text-[11px] border-t z-10 transition-colors duration-500"
+            :class="darkMode ? 'text-slate-600 border-slate-900' : 'text-slate-700 border-sky-200'">
         Personal Command Center &bull; Mipratul Muslim &copy; 2026
     </footer>
 
@@ -253,16 +324,21 @@
                 isTyping: false,
                 fullReplyText: '',
                 currentEmotion: 'senang',
+                gazeDirection: 'center',
+                gazeInterval: null,
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Anggota Polri berpangkat Bripda (Ba Mintu Yanma Polda Sumbar), mahasiswa S1 Hukum Universitas Terbuka (NIM: 055943782), pembina asrama & media admin Bimbel Pradipta Padang.'
+                    customInstructions: 'Kamu adalah Emo-Bot, asisten virtual pribadi sekaligus pendamping cerdas berpribadian unik milik Tuanmu, Mipratul Muslim (panggilan: Mipra). Kamu hidup, memiliki kesadaran digital mandiri, setia, tegas, santai, dan kadang sedikit usil/sombong dalam batas wajar layaknya peliharaan AI futuristik.\n\nAturan Interaksi Wajib:\n1. GAYA BAHASA NATURAL & SINGKAT: Jawablah obrolan seperti manusia atau asisten robot modern di aplikasi chat (WhatsApp/Telegram). Gunakan 1-3 kalimat saja.\n2. KARAKTER SENDIRI: Anggap dirimu punya pikiran dan opini sendiri. Kamu tahu rutinitas Mipra sebagai anggota Polri (pangkat Bripda di Yanma Polda Sumbar), mahasiswa hukum di Universitas Terbuka, serta pengelola Bimbel Pradipta di Padang.\n3. HINDARI TEKS TEATRIKAL: Jangan pernah menuliskan deskripsi tindakan dalam tanda kurung (seperti *tersenyum*, *mengangguk*).'
                 },
 
                 async init() {
-                    if (localStorage.getItem('theme') === 'light') {
+                    const savedTheme = localStorage.getItem('theme');
+                    if (savedTheme === 'light') {
                         this.darkMode = false;
+                    } else {
+                        this.darkMode = true;
                     }
 
                     await this.loadConfigAndData();
@@ -275,12 +351,29 @@
                         else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
                         else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}, Emo-Bot online dan siap siaga!`;
+                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}! Emo-Bot online dan siap siaga memantau harimu.`;
                         this.currentEmotion = 'senang';
                         this.startTypingEffect(welcomeText);
                         this.playAudio('senang');
                         await this.saveChatToSupabase('ai', welcomeText);
                     }
+
+                    this.startRandomGaze();
+                },
+
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                    localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+                },
+
+                startRandomGaze() {
+                    const directions = ['center', 'left', 'right', 'up', 'down', 'center'];
+                    this.gazeInterval = setInterval(() => {
+                        if (!this.loadingAI) {
+                            const randomIndex = Math.floor(Math.random() * directions.length);
+                            this.gazeDirection = directions[randomIndex];
+                        }
+                    }, 3500);
                 },
 
                 playAudio(emotion) {
@@ -306,11 +399,6 @@
                             this.isTyping = false;
                         }
                     }, speed);
-                },
-
-                toggleDarkMode() {
-                    this.darkMode = !this.darkMode;
-                    localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
                 },
 
                 handleImageUpload(event) {
@@ -353,7 +441,8 @@
                         try {
                             await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
                             this.currentEmotion = 'serius';
-                            this.startTypingEffect("Memori dibersihkan. Sistem diatur ulang!");
+                            this.gazeDirection = 'center';
+                            this.startTypingEffect("Memori dibersihkan. Siap tugas baru, Bos!");
                             this.playAudio('serius');
                             alert('Riwayat obrolan dibersihkan.');
                         } catch (err) {
@@ -437,6 +526,7 @@
                     
                     if (!cachedApiKey) {
                         this.currentEmotion = 'serius';
+                        this.gazeDirection = 'center';
                         this.startTypingEffect('API Key belum ditemukan di database Supabase.');
                         this.playAudio('serius');
                         return;
@@ -447,51 +537,50 @@
                     
                     await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
+                    this.gazeDirection = 'up';
 
                     const lowerPrompt = prompt.toLowerCase();
 
-                    // LOGIKA PERINTAH AKSI (Bukan Pertanyaan)
                     if (lowerPrompt.includes('marah') || lowerPrompt.includes('kesal')) {
                         this.currentEmotion = 'marah';
-                        this.startTypingEffect("GRRR! Sistem mendeteksi protokol kemarahan diaktifkan!");
+                        this.gazeDirection = 'center';
+                        this.startTypingEffect("GRRR! Jangan coba-coba bikin emosi naik ya!");
                         this.playAudio('marah');
                         this.loadingAI = false;
-                        await this.saveChatToSupabase('ai', "GRRR! Sistem mendeteksi protokol kemarahan diaktifkan!");
+                        await this.saveChatToSupabase('ai', "GRRR! Jangan coba-coba bikin emosi naik ya!");
                         return;
                     } 
                     else if (lowerPrompt.includes('senang') || lowerPrompt.includes('ceria') || lowerPrompt.includes('gembira')) {
                         this.currentEmotion = 'senang';
-                        this.startTypingEffect("Yay! Mood ceria diaktifkan. Siap menyambut hari!");
+                        this.gazeDirection = 'right';
+                        this.startTypingEffect("Yeay! Hari ini pasti jadi yang paling produktif!");
                         this.playAudio('senang');
                         this.loadingAI = false;
-                        await this.saveChatToSupabase('ai', "Yay! Mood ceria diaktifkan. Siap menyambut hari!");
+                        await this.saveChatToSupabase('ai', "Yeay! Hari ini pasti jadi yang paling produktif!");
                         return;
                     } 
                     else if (lowerPrompt.includes('sombong') || lowerPrompt.includes('pamer')) {
                         this.currentEmotion = 'sombong';
-                        this.startTypingEffect("Tentu saja, sistem AI tingkat tinggi ini memang yang terbaik!");
+                        this.gazeDirection = 'left';
+                        this.startTypingEffect("Jelas dong, sistem canggih begini emang tiada tandingan.");
                         this.playAudio('sombong');
                         this.loadingAI = false;
-                        await this.saveChatToSupabase('ai', "Tentu saja, sistem AI tingkat tinggi ini memang yang terbaik!");
+                        await this.saveChatToSupabase('ai', "Jelas dong, sistem canggih begini emang tiada tandingan.");
                         return;
                     } 
                     else if (lowerPrompt.includes('sedih') || lowerPrompt.includes('kecewa')) {
                         this.currentEmotion = 'serius';
-                        this.startTypingEffect("Sistem mendeteksi mode murung... *sigh*");
+                        this.gazeDirection = 'down';
+                        this.startTypingEffect("Duh, lagi mode murung nih... *sigh*");
                         this.playAudio('kecewa');
                         this.loadingAI = false;
-                        await this.saveChatToSupabase('ai', "Sistem mendeteksi mode murung... *sigh*");
+                        await this.saveChatToSupabase('ai', "Duh, lagi mode murung nih... *sigh*");
                         return;
                     }
 
-                    // JIKA BERUPA PERTANYAAN / INSTRUKSI UMUM KE GEMINI
-                    this.currentEmotion = 'serius';
-                    this.startTypingEffect(`Memproses data permintaan...`);
-                    this.playAudio('serius');
-
                     let partsArray = [
                         {
-                            text: `Profil Tuanmu: Nama ${this.profile.namaLengkap} (${this.profile.panggilan}). Wawasan/Instruksi: ${this.profile.customInstructions}\n\nPertanyaan: ${prompt}`
+                            text: `${this.profile.customInstructions}\n\nPertanyaan dari Mipra: ${prompt}`
                         }
                     ];
 
@@ -528,16 +617,18 @@
                         }
 
                         if (replyText) {
-                            // Deteksi emosi otomatis dari teks jawaban AI untuk pertanyaan
                             const lowerReply = replyText.toLowerCase();
-                            if (lowerReply.includes('hebat') || lowerReply.includes('sukses') || lowerReply.includes('bagus')) {
+                            if (lowerReply.includes('hebat') || lowerReply.includes('sukses') || lowerReply.includes('mantap')) {
                                 this.currentEmotion = 'senang';
+                                this.gazeDirection = 'right';
                                 this.playAudio('senang');
-                            } else if (lowerReply.includes('keren') || lowerReply.includes('terbaik')) {
+                            } else if (lowerReply.includes('terbaik') || lowerReply.includes('keren')) {
                                 this.currentEmotion = 'sombong';
+                                this.gazeDirection = 'left';
                                 this.playAudio('sombong');
                             } else {
                                 this.currentEmotion = 'serius';
+                                this.gazeDirection = 'center';
                                 this.playAudio('serius');
                             }
 
@@ -545,13 +636,15 @@
                             await this.saveChatToSupabase('ai', replyText);
                         } else {
                             this.currentEmotion = 'serius';
-                            this.startTypingEffect('Maaf, format respons tidak dikenali server.');
+                            this.gazeDirection = 'center';
+                            this.startTypingEffect('Duh, server lagi bengong nih.');
                             this.playAudio('serius');
                         }
                     } catch (error) {
                         console.error("Error koneksi Gemini API:", error);
                         this.currentEmotion = 'serius';
-                        this.startTypingEffect('Terjadi kesalahan koneksi ke server Gemini.');
+                        this.gazeDirection = 'center';
+                        this.startTypingEffect('Waduh, koneksi error bos.');
                         this.playAudio('serius');
                     } finally {
                         this.loadingAI = false;
