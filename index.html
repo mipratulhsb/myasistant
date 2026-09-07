@@ -40,7 +40,7 @@
             <div>
                 <span class="font-bold text-slate-100 tracking-wide block text-xs sm:text-sm">Personal Command Center</span>
                 <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Gemini-3.7-Flash (Emo-Bot Voice)
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Gemini-3.7-Flash (Emo-Bot AI)
                 </span>
             </div>
         </div>
@@ -86,34 +86,39 @@
     <!-- Main Workspace Container -->
     <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1">
 
-        <!-- Panel Wajah Robot Emo Style (Ekspresi Dinamis) -->
+        <!-- Panel Wajah Robot Emo Style (Ekspresi Berubah Sesuai Mood) -->
         <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden">
             
-            <!-- 1. Wajah Robot di Atas dengan Warna Mata Berubah Sesuai Suasana -->
-            <div class="w-44 h-24 bg-slate-950 border-2 border-indigo-500/40 rounded-3xl shadow-[0_0_30px_rgba(99,102,241,0.15)] flex flex-col items-center justify-center gap-2.5 relative mb-6">
+            <!-- Wajah Robot di Atas -->
+            <div class="w-44 h-24 bg-slate-950 border-2 rounded-3xl shadow-xl flex flex-col items-center justify-center gap-2.5 relative mb-6 transition-colors duration-500"
+                 :class="currentEmotion === 'senang' ? 'border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.2)]' : (currentEmotion === 'sombong' ? 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]' : 'border-indigo-500/40 shadow-[0_0_30px_rgba(99,102,241,0.15)]')">
+                
                 <!-- Antena / Indikator Status -->
-                <div class="absolute -top-2 w-10 h-1.5 rounded-full animate-pulse" :class="loadingAI ? 'bg-purple-500' : 'bg-indigo-500'"></div>
+                <div class="absolute -top-2 w-10 h-1.5 rounded-full animate-pulse" 
+                     :class="loadingAI ? 'bg-purple-500' : (currentEmotion === 'senang' ? 'bg-emerald-500' : (currentEmotion === 'sombong' ? 'bg-amber-500' : 'bg-indigo-500'))"></div>
 
-                <!-- Mata Robot (Berubah Warna: Cyan saat siaga, Ungu/Pink saat mikir) -->
+                <!-- Mata Robot (Warna Berubah Sesuai Emosi) -->
                 <div class="flex gap-8">
-                    <div class="w-7 h-7 rounded-full robot-eye transition-colors duration-300" :class="loadingAI ? 'bg-purple-400 shadow-[0_0_12px_rgba(192,132,252,0.8)]' : 'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]'"></div>
-                    <div class="w-7 h-7 rounded-full robot-eye transition-colors duration-300" :class="loadingAI ? 'bg-purple-400 shadow-[0_0_12px_rgba(192,132,252,0.8)]' : 'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]'"></div>
+                    <div class="w-7 h-7 rounded-full robot-eye transition-colors duration-300" 
+                         :class="loadingAI ? 'bg-purple-400 shadow-[0_0_12px_rgba(192,132,252,0.8)]' : (currentEmotion === 'senang' ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]' : (currentEmotion === 'sombong' ? 'bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.8)]' : 'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]'))"></div>
+                    <div class="w-7 h-7 rounded-full robot-eye transition-colors duration-300" 
+                         :class="loadingAI ? 'bg-purple-400 shadow-[0_0_12px_rgba(192,132,252,0.8)]' : (currentEmotion === 'senang' ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]' : (currentEmotion === 'sombong' ? 'bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.8)]' : 'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]'))"></div>
                 </div>
 
                 <!-- Mulut Robot (Bergerak saat bicara/loading) -->
                 <div :class="loadingAI ? 'robot-mouth-speaking bg-purple-400' : 'bg-indigo-500/60 w-8 h-2 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.5)] transition-all'"></div>
             </div>
 
-            <!-- 2. Balon Teks Dialog dengan Efek Mengetik -->
+            <!-- Balon Teks Dialog dengan Efek Mengetik -->
             <div class="w-full max-w-2xl bg-slate-950/90 border border-indigo-500/30 rounded-2xl p-4 sm:p-5 shadow-inner min-h-[100px] flex flex-col justify-center relative">
                 <p class="text-xs sm:text-sm text-indigo-200 font-medium text-center leading-relaxed">
                     <span x-text="typedText"></span><span class="animate-pulse text-indigo-400 font-bold" x-show="isTyping">|</span>
                 </p>
-                <!-- Tombol Audio Suara Robot -->
-                <div class="absolute bottom-2 right-3 flex items-center gap-1">
-                    <button @click="speakCurrentText()" class="text-[10px] text-slate-400 hover:text-indigo-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg transition cursor-pointer flex items-center gap-1">
-                        <span>🔊</span> Ulangi Suara
-                    </button>
+                
+                <!-- Indikator Mood Aktif & Tombol Uji Audio -->
+                <div class="absolute bottom-2 right-3 flex items-center gap-1.5">
+                    <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-indigo-300" x-text="'Mood: ' + currentEmotion"></span>
+                    <button @click="playAudio(currentEmotion)" title="Ulangi Suara" class="text-[10px] text-slate-400 hover:text-indigo-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg transition cursor-pointer">🔊 Ulangi</button>
                 </div>
             </div>
 
@@ -251,6 +256,7 @@
                 typedText: '',
                 isTyping: false,
                 fullReplyText: '',
+                currentEmotion: 'senang',
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
@@ -273,14 +279,34 @@
                         else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
                         else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}, Emo-Bot aktif. Siap menerima arahan dan koordinasi hari ini!`;
-                        this.fullReplyText = welcomeText;
-                        this.startTypingEffect(welcomeText, true);
+                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}, Emo-Bot online dan siap siaga memantau tugas hari ini!`;
+                        this.currentEmotion = 'senang';
+                        this.startTypingEffect(welcomeText);
+                        this.playAudio('senang');
                         await this.saveChatToSupabase('ai', welcomeText);
                     }
                 },
 
-                startTypingEffect(text, speak = false) {
+                playAudio(emotion) {
+                    const audio = new Audio(`assets/audio/${emotion}.mp3`);
+                    audio.play().catch(err => {
+                        console.log("Audio otomatis dicegah browser atau file belum ada di GitHub:", err);
+                    });
+                },
+
+                detectEmotionAndPlay(text) {
+                    const lower = text.toLowerCase();
+                    if (lower.includes('hebat') || lower.includes('sukses') || lower.includes('bagus') || lower.includes('siap') || lower.includes('selamat')) {
+                        this.currentEmotion = 'senang';
+                    } else if (lower.includes('keren') || lower.includes('terbaik') || lower.includes('pasti') || lower.includes('mudah')) {
+                        this.currentEmotion = 'sombong';
+                    } else {
+                        this.currentEmotion = 'serius';
+                    }
+                    this.playAudio(this.currentEmotion);
+                },
+
+                startTypingEffect(text) {
                     this.fullReplyText = text;
                     let i = 0;
                     this.typedText = '';
@@ -294,22 +320,8 @@
                         } else {
                             clearInterval(typingInterval);
                             this.isTyping = false;
-                            if (speak) {
-                                this.speakCurrentText();
-                            }
                         }
                     }, speed);
-                },
-
-                speakCurrentText() {
-                    if ('speechSynthesis' in window) {
-                        window.speechSynthesis.cancel(); // Hentikan suara sebelumnya
-                        const utterance = new SpeechSynthesisUtterance(this.fullReplyText);
-                        utterance.lang = 'id-ID';
-                        utterance.pitch = 1.4; // Nada lebih tinggi agar bernuansa robot/emo
-                        utterance.rate = 1.1;  // Kecepatan sedikit lebih cepat khas robot
-                        window.speechSynthesis.speak(utterance);
-                    }
                 },
 
                 toggleDarkMode() {
@@ -337,7 +349,8 @@
                     try {
                         const { data, error } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: false }).limit(1);
                         if (data && data.length > 0) {
-                            this.startTypingEffect(data[0].text_content, false);
+                            this.startTypingEffect(data[0].text_content);
+                            this.detectEmotionAndPlay(data[0].text_content);
                         }
                     } catch (err) {
                         console.error("Gagal memuat pesan terakhir:", err);
@@ -356,7 +369,9 @@
                     if (confirm('Hapus seluruh riwayat percakapan robot?')) {
                         try {
                             await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-                            this.startTypingEffect("Memori dibersihkan. Siap menerima perintah baru!", true);
+                            this.currentEmotion = 'serius';
+                            this.startTypingEffect("Memori dibersihkan. Sistem diatur ulang!");
+                            this.playAudio('serius');
                             alert('Riwayat obrolan dibersihkan.');
                         } catch (err) {
                             console.error("Gagal menghapus chat:", err);
@@ -438,7 +453,9 @@
                     if ((!this.userQuery.trim() && !this.attachedImage) || this.loadingAI) return;
                     
                     if (!cachedApiKey) {
-                        this.startTypingEffect('API Key belum ditemukan di database Supabase.', true);
+                        this.currentEmotion = 'serius';
+                        this.startTypingEffect('API Key belum ditemukan di database Supabase.');
+                        this.playAudio('serius');
                         return;
                     }
 
@@ -446,7 +463,9 @@
                     this.userQuery = '';
                     
                     await this.saveChatToSupabase('user', prompt);
-                    this.startTypingEffect(`Menerima instruksi. Sedang memproses data...`, false);
+                    this.currentEmotion = 'serius';
+                    this.startTypingEffect(`Menerima instruksi. Sedang memproses...`);
+                    this.playAudio('serius');
                     this.loadingAI = true;
 
                     let partsArray = [
@@ -488,14 +507,19 @@
                         }
 
                         if (replyText) {
-                            this.startTypingEffect(replyText, true);
+                            this.startTypingEffect(replyText);
+                            this.detectEmotionAndPlay(replyText);
                             await this.saveChatToSupabase('ai', replyText);
                         } else {
-                            this.startTypingEffect('Maaf, format respons tidak dikenali server.', true);
+                            this.currentEmotion = 'serius';
+                            this.startTypingEffect('Maaf, format respons tidak dikenali server.');
+                            this.playAudio('serius');
                         }
                     } catch (error) {
                         console.error("Error koneksi Gemini API:", error);
-                        this.startTypingEffect('Terjadi kesalahan koneksi ke server Gemini.', true);
+                        this.currentEmotion = 'serius';
+                        this.startTypingEffect('Terjadi kesalahan koneksi ke server Gemini.');
+                        this.playAudio('serius');
                     } finally {
                         this.loadingAI = false;
                     }
