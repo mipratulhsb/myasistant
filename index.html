@@ -13,6 +13,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Fonts untuk Font Digital LED -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         @keyframes blink {
             0%, 90%, 100% { transform: scaleY(1); }
@@ -43,6 +45,14 @@
             50% { transform: scale(1.08); opacity: 1; }
         }
         .sun-glow { animation: glow 4s infinite ease-in-out; }
+        
+        /* Gaya Font Digital LED Biru */
+        .digital-led-font {
+            font-family: 'Share TechMono', monospace, sans-serif;
+            letter-spacing: 0.05em;
+            color: #38bdf8;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.7), 0 0 20px rgba(56, 189, 248, 0.5);
+        }
     </style>
 </head>
 <body class="min-h-screen font-sans flex flex-col justify-between transition-colors duration-500 relative overflow-x-hidden" 
@@ -169,7 +179,7 @@
                     <template x-if="!loadingAI">
                         <div class="flex gap-10 items-center justify-center">
                             
-                            <!-- 1. MOOD: PUSING (Saat Dicolok -> Menggunakan Emot 🌀 Full Berputar) -->
+                            <!-- 1. MOOD: PUSING (Saat Dicolok -> Emot 🌀 Berputar) -->
                             <template x-if="currentEmotion === 'pusing'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">
@@ -181,7 +191,7 @@
                                 </div>
                             </template>
 
-                            <!-- 2. MOOD: SENANG / PUAS / ROMANTIS (Bentuk Emot Love Pink Menyala) -->
+                            <!-- 2. MOOD: SENANG / PUAS / ROMANTIS -->
                             <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(236,72,153,0.9)] robot-eye-base transform rotate-45 relative">
@@ -195,14 +205,14 @@
                                 </div>
                             </template>
 
-                            <!-- 3. MOOD: KAGUM / ANTUSIAS (Bentuk Bintang Emas) -->
+                            <!-- 3. MOOD: KAGUM / ANTUSIAS -->
                             <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
                                 <div class="flex gap-10 items-center justify-center text-amber-300 text-5xl robot-eye-base drop-shadow-[0_0_20px_rgba(252,211,77,0.9)] font-bold">
                                     <span>★</span><span>★</span>
                                 </div>
                             </template>
 
-                            <!-- 4. MOOD: MARAH (Garis Merah Tajam Miring) -->
+                            <!-- 4. MOOD: MARAH -->
                             <template x-if="currentEmotion === 'marah'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-6 bg-red-500 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.9)] transform -rotate-12 robot-eye-base"></div>
@@ -210,7 +220,7 @@
                                 </div>
                             </template>
 
-                            <!-- 5. MOOD: SEDIH / KECEWA (Tetes Air Mata Biru) -->
+                            <!-- 5. MOOD: SEDIH / KECEWA -->
                             <template x-if="currentEmotion === 'sedih' || currentEmotion === 'kecewa'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-14 h-8 bg-blue-400 rounded-b-full shadow-[0_0_20px_rgba(96,165,250,0.8)] robot-eye-base relative">
@@ -222,7 +232,7 @@
                                 </div>
                             </template>
 
-                            <!-- 6. MOOD: BOSAN / LELAH (Garis Datar) -->
+                            <!-- 6. MOOD: BOSAN / LELAH -->
                             <template x-if="currentEmotion === 'bosan' || currentEmotion === 'lelah'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-2.5 bg-slate-400 rounded-full shadow-[0_0_15px_rgba(148,163,184,0.6)] robot-eye-base"></div>
@@ -230,7 +240,7 @@
                                 </div>
                             </template>
 
-                            <!-- 7. DEFAULT NORMAL: MATA KUBUS BIRU CYAN (Mengikuti kursor/sentuhan) -->
+                            <!-- 7. DEFAULT NORMAL -->
                             <template x-if="!['pusing', 'senang', 'puas', 'romantis', 'kagum', 'antusias', 'marah', 'sedih', 'kecewa', 'bosan', 'lelah'].includes(currentEmotion)">
                                 <div class="flex gap-10 items-center justify-center">
                                     <!-- Mata Kiri Kubus Cyan -->
@@ -253,11 +263,11 @@
                 </div>
             </div>
 
-            <!-- Balon Teks Dialog Transparan Kaca -->
-            <div class="w-full max-w-2xl border rounded-2xl p-4 sm:p-5 shadow-inner min-h-[100px] flex flex-col justify-center relative backdrop-blur-md transition-colors duration-500"
-                 :class="darkMode ? 'bg-slate-950/50 border-indigo-500/30 text-indigo-200' : 'bg-white/50 border-white/60 text-slate-800'">
-                <p class="text-xs sm:text-sm font-medium text-center leading-relaxed">
-                    <span x-text="typedText"></span><span class="animate-pulse text-indigo-500 font-bold" x-show="isTyping">|</span>
+            <!-- Balon Teks Dialog Transparan Kaca dengan Font Digital LED Biru Lebih Besar -->
+            <div class="w-full max-w-2xl border rounded-2xl p-4 sm:p-6 shadow-inner min-h-[110px] flex flex-col justify-center relative backdrop-blur-md transition-colors duration-500"
+                 :class="darkMode ? 'bg-slate-950/60 border-indigo-500/30' : 'bg-white/60 border-white/60'">
+                <p class="text-sm sm:text-base font-bold text-center leading-relaxed digital-led-font">
+                    <span x-text="typedText"></span><span class="animate-pulse text-sky-400 font-bold" x-show="isTyping">|</span>
                 </p>
                 
                 <div class="absolute bottom-2 right-3">
@@ -496,7 +506,8 @@
                         else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
                         else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                        const welcomeText = `${timeGreeting}, Tuan ${this.profile.panggilan}! Emo-Bot kubus cyan aktif dan siap siaga!`;
+                        // Sesuaikan sapaan dengan format: Selamat pagi/siang/sore/malam [panggilan] mau ngapain kita hari ini?
+                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}, mau ngapain kita hari ini?`;
                         this.setEmotionWithTimeout('senang');
                         this.startTypingEffect(welcomeText);
                         await this.saveChatToSupabase('ai', welcomeText);
