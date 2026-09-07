@@ -7,25 +7,23 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
+        tailwind.config = { darkMode: 'class' }
     </script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-950 dark:bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between transition-colors duration-300" x-data="dashboardApp()">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between transition-colors duration-300" x-data="dashboardApp()">
 
     <!-- Top Navigation Bar -->
-    <nav class="bg-slate-900/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-800 dark:border-slate-800 px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-md">
+    <nav class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-md">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/30 text-base sm:text-lg">M</div>
             <div>
                 <span class="font-bold text-slate-100 tracking-wide block text-xs sm:text-sm">Personal Command Center</span>
                 <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Gemini-3.7-Flash
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Gemini-3.7-Flash (Smart Logics)
                 </span>
             </div>
         </div>
@@ -51,10 +49,12 @@
                 <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium hover:bg-slate-800 transition flex items-center gap-2 cursor-pointer">
                     <span>🧠</span> Wawasan AI
                 </button>
+                <button @click="clearChatHistory(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium hover:bg-red-950/40 text-red-400 transition flex items-center gap-2 cursor-pointer">
+                    <span>🗑️</span> Bersihkan Riwayat Chat
+                </button>
                 
                 <div class="my-1 border-t border-slate-800"></div>
 
-                <!-- Tombol Mode Gelap / Terang -->
                 <button @click="toggleDarkMode()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium hover:bg-slate-800 transition flex items-center justify-between cursor-pointer">
                     <span class="flex items-center gap-2">
                         <span x-text="darkMode ? '☀️' : '🌙'"></span> 
@@ -66,17 +66,17 @@
         </div>
     </nav>
 
-    <!-- Main Workspace Container (Full Width / Responsive) -->
+    <!-- Main Workspace Container -->
     <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1">
 
         <!-- Area Chat Interaktif (Chat Bubbles) -->
-        <div class="bg-slate-900/60 dark:bg-slate-900/60 border border-slate-800 dark:border-slate-800 rounded-2xl p-3 sm:p-4 shadow-xl flex flex-col h-[40vh] sm:h-[420px]">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-xl flex flex-col h-[40vh] sm:h-[420px]">
             <div class="flex items-center justify-between pb-2 sm:pb-3 border-b border-slate-800 mb-3">
                 <div class="flex items-center gap-2">
                     <div class="w-6 h-6 sm:w-7 sm:h-7 bg-indigo-600/20 text-indigo-400 rounded-lg flex items-center justify-center text-xs">✨</div>
-                    <span class="text-xs font-semibold text-slate-300">Asisten Komando AI</span>
+                    <span class="text-xs font-semibold text-slate-300">Asisten Komando AI (Multimodal & Persistent)</span>
                 </div>
-                <span class="text-[10px] text-slate-500">Konteks Profil Aktif</span>
+                <span class="text-[10px] text-slate-500">Database Supabase Tersinkronisasi</span>
             </div>
 
             <!-- Pesan Gelembung (Scrollable) -->
@@ -93,7 +93,7 @@
                         <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></span>
                         <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
                         <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                        <span>Gemini merespons...</span>
+                        <span>Gemini menganalisis...</span>
                     </div>
                 </div>
             </div>
@@ -106,8 +106,14 @@
             </div>
         </div>
 
-        <!-- Input Chat & Kirim -->
-        <form @submit.prevent="submitToAI" class="flex gap-2">
+        <!-- Input Chat & Kirim + Lampiran Gambar -->
+        <form @submit.prevent="submitToAI" class="flex gap-2 items-center">
+            <!-- Tombol Unggah Gambar -->
+            <label class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 sm:py-3.5 rounded-xl text-slate-400 hover:text-indigo-400 cursor-pointer transition flex items-center justify-center" title="Unggah Gambar / Dokumen">
+                <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </label>
+
             <input 
                 type="text" 
                 x-model="userQuery" 
@@ -124,40 +130,41 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
         </form>
+        <p class="text-[10px] text-slate-500 px-1" x-show="attachedImage">📎 Gambar siap dikirim bersama pesan Anda.</p>
 
-        <!-- Panel Modul Ringkasan Bawah -->
+        <!-- Panel Modul Ringkasan Bawah (Live dari Supabase) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <!-- Panel 1 -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 shadow-md hover:border-indigo-500/50 transition">
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-xs font-semibold text-indigo-300 flex items-center gap-1.5">📖 Hafalan Quran</h2>
-                    <span class="text-[10px] bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-md border border-indigo-800/50">Harian</span>
+                    <span class="text-[10px] bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-md border border-indigo-800/50">Live DB</span>
                 </div>
                 <p class="text-slate-300 text-xs mb-3" x-text="hafalanStatus">Memuat data...</p>
-                <button @click="alert('Modul manajemen hafalan segera terhubung!')" class="w-full bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer">Kelola Hafalan</button>
+                <button @click="loadConfigAndData()" class="w-full bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer">Segarkan Data</button>
             </div>
 
             <!-- Panel 2 -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 shadow-md hover:border-emerald-500/50 transition">
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-xs font-semibold text-emerald-300 flex items-center gap-1.5">💰 Keuangan & Emas</h2>
-                    <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-800/50">Tabungan</span>
+                    <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-800/50">Live DB</span>
                 </div>
                 <div class="mb-3">
                     <span class="text-lg font-bold text-slate-100" x-text="totalKeuangan">Rp 0</span>
-                    <p class="text-[10px] text-slate-500 mt-0.5">Saldo / Mutasi Aktif</p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Akumulasi Saldo</p>
                 </div>
-                <button @click="alert('Modul pencatatan keuangan segera terhubung!')" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer">Catat Transaksi</button>
+                <button @click="loadConfigAndData()" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer">Segarkan Data</button>
             </div>
 
             <!-- Panel 3 -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 shadow-md hover:border-amber-500/50 transition">
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-xs font-semibold text-amber-300 flex items-center gap-1.5">⏱️ Manajemen Waktu</h2>
-                    <span class="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded-md border border-amber-800/50">To-Do</span>
+                    <span class="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded-md border border-amber-800/50">Live DB</span>
                 </div>
                 <p class="text-slate-300 text-xs mb-3" x-text="todoStatus">Memuat daftar tugas...</p>
-                <button @click="alert('Modul manajemen tugas segera terhubung!')" class="w-full bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer">Tambah Tugas</button>
+                <button @click="loadConfigAndData()" class="w-full bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer">Segarkan Data</button>
             </div>
         </div>
 
@@ -217,11 +224,12 @@
             Alpine.data('dashboardApp', () => ({
                 userQuery: '',
                 loadingAI: false,
-                hafalanStatus: 'Memuat data hafalan...',
+                hafalanStatus: 'Memuat data...',
                 totalKeuangan: 'Rp 0',
-                todoStatus: 'Memuat daftar tugas...',
+                todoStatus: 'Memuat tugas...',
                 activeModal: null,
-                darkMode: localStorage.getItem('theme') === 'dark' || true, // Default gelap
+                darkMode: true,
+                attachedImage: null,
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
@@ -232,23 +240,24 @@
                 chatHistory: [],
                 
                 async init() {
-                    // Periksa preferensi mode tersimpan
                     if (localStorage.getItem('theme') === 'light') {
                         this.darkMode = false;
                     }
 
-                    const hour = new Date().getHours();
-                    let timeGreeting = 'Selamat Pagi';
-                    if (hour >= 11 && hour < 15) timeGreeting = 'Selamat Siang';
-                    else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
-                    else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
-
-                    this.chatHistory.push({
-                        sender: 'ai',
-                        text: `${timeGreeting} ${this.profile.panggilan}, Command Center aktif. Ada arahan atau hal yang ingin dikoordinasikan hari ini?`
-                    });
-                    
                     await this.loadConfigAndData();
+                    await this.loadChatHistoryFromSupabase();
+
+                    if (this.chatHistory.length === 0) {
+                        const hour = new Date().getHours();
+                        let timeGreeting = 'Selamat Pagi';
+                        if (hour >= 11 && hour < 15) timeGreeting = 'Selamat Siang';
+                        else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
+                        else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
+
+                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}, Command Center aktif. Ada arahan atau hal yang ingin dikoordinasikan hari ini?`;
+                        this.chatHistory.push({ sender: 'ai', text: welcomeText });
+                        await this.saveChatToSupabase('ai', welcomeText);
+                    }
                 },
 
                 toggleDarkMode() {
@@ -263,6 +272,55 @@
                     });
                 },
 
+                handleImageUpload(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        // Mengambil base64 data tanpa prefix data:*/*;base64,
+                        const base64String = e.target.result.split(',')[1];
+                        this.attachedImage = {
+                            inlineData: {
+                                data: base64String,
+                                mimeType: file.type
+                            }
+                        };
+                    };
+                    reader.readAsDataURL(file);
+                },
+
+                async loadChatHistoryFromSupabase() {
+                    try {
+                        const { data, error } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: true }).limit(50);
+                        if (data && data.length > 0) {
+                            this.chatHistory = data.map(item => ({ sender: item.sender, text: item.text_content }));
+                        }
+                    } catch (err) {
+                        console.error("Gagal memuat riwayat chat:", err);
+                    }
+                    this.scrollToBottom();
+                },
+
+                async saveChatToSupabase(sender, text) {
+                    try {
+                        await _supabase.from('chat_history').insert([{ sender: sender, text_content: text }]);
+                    } catch (err) {
+                        console.error("Gagal menyimpan chat:", err);
+                    }
+                },
+
+                async clearChatHistory() {
+                    if (confirm('Hapus seluruh riwayat percakapan?')) {
+                        try {
+                            await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                            this.chatHistory = [];
+                            alert('Riwayat obrolan dibersihkan.');
+                        } catch (err) {
+                            console.error("Gagal menghapus chat:", err);
+                        }
+                    }
+                },
+
                 async loadConfigAndData() {
                     try {
                         const { data: configData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'gemini_api_key').single();
@@ -273,13 +331,13 @@
                         const { data: profileData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'user_profile_wawasan').single();
                         if (profileData && profileData.key_value) {
                             try {
-                                const parsed = JSON.parse(profileData.key_value);
-                                this.profile = parsed;
+                                this.profile = JSON.parse(profileData.key_value);
                             } catch (e) {
                                 console.error("Gagal parsing profil:", e);
                             }
                         }
 
+                        // Live DB: Hafalan Quran
                         const { data: hafalan } = await _supabase.from('hafalan_quran').select('*').limit(1);
                         if (hafalan && hafalan.length > 0) {
                             this.hafalanStatus = `Target: Surah ${hafalan[0].surah} Ayat ${hafalan[0].ayat}`;
@@ -287,6 +345,14 @@
                             this.hafalanStatus = 'Belum ada target tersimpan.';
                         }
 
+                        // Live DB: Keuangan
+                        const { data: keuangan } = await _supabase.from('keuangan').select('*');
+                        if (keuangan && keuangan.length > 0) {
+                            let total = keuangan.reduce((acc, curr) => acc + (Number(curr.jumlah) || 0), 0);
+                            this.totalKeuangan = 'Rp ' + total.toLocaleString('id-ID');
+                        }
+
+                        // Live DB: Todos
                         const { data: todos } = await _supabase.from('todos').select('*').eq('selesai', false).limit(1);
                         if (todos && todos.length > 0) {
                             this.todoStatus = `Tugas aktif: ${todos[0].tugas}`;
@@ -329,7 +395,7 @@
                 },
 
                 async submitToAI() {
-                    if (!this.userQuery.trim() || this.loadingAI) return;
+                    if ((!this.userQuery.trim() && !this.attachedImage) || this.loadingAI) return;
                     
                     if (!cachedApiKey) {
                         this.chatHistory.push({ sender: 'ai', text: 'API Key belum ditemukan di database Supabase.' });
@@ -337,23 +403,32 @@
                         return;
                     }
 
-                    const prompt = this.userQuery;
+                    const prompt = this.userQuery || "Analisis gambar berikut:";
                     this.userQuery = '';
                     
                     this.chatHistory.push({ sender: 'user', text: prompt });
+                    await this.saveChatToSupabase('user', prompt);
                     this.scrollToBottom();
 
                     this.loadingAI = true;
+
+                    // Menyusun parts untuk mendukung teks dan gambar (Multimodal)
+                    let partsArray = [
+                        {
+                            text: `Profil Tuanmu: Nama ${this.profile.namaLengkap} (${this.profile.panggilan}). Wawasan/Instruksi: ${this.profile.customInstructions}\n\nPertanyaan: ${prompt}`
+                        }
+                    ];
+
+                    if (this.attachedImage) {
+                        partsArray.push(this.attachedImage);
+                        this.attachedImage = null; // Reset setelah dikirim
+                    }
 
                     const payload = {
                         contents: [
                             {
                                 role: "user",
-                                parts: [
-                                    {
-                                        text: `Profil Tuanmu: Nama ${this.profile.namaLengkap} (${this.profile.panggilan}). Wawasan/Instruksi: ${this.profile.customInstructions}\n\nPertanyaan: ${prompt}`
-                                    }
-                                ]
+                                parts: partsArray
                             }
                         ]
                     };
@@ -378,6 +453,7 @@
 
                         if (replyText) {
                             this.chatHistory.push({ sender: 'ai', text: replyText });
+                            await this.saveChatToSupabase('ai', replyText);
                         } else {
                             this.chatHistory.push({ sender: 'ai', text: 'Maaf, format respons tidak dikenali server.' });
                         }
