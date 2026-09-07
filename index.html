@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans" x-data="dashboardApp()">
 
@@ -50,67 +52,76 @@
         </div>
     </header>
 
-    <!-- Main Content / Panel Manajemen (Tetap di bawahnya) -->
+    <!-- Main Content / Panel Manajemen -->
     <main class="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Panel Hafalan Quran -->
+
+        <!-- Panel 1: Hafalan Quran -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-md hover:border-indigo-500 transition">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-indigo-300 flex items-center gap-2">📖 Hafalan Quran</h2>
                 <span class="text-xs bg-indigo-900 text-indigo-200 px-2 py-1 rounded-lg">Target Harian</span>
             </div>
-            <p class="text-slate-400 text-sm mb-4">Belum ada target aktif yang dimuat dari database.</p>
-            <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-sm font-medium transition">Kelola Hafalan</button>
+            <p class="text-slate-400 text-sm mb-4" x-text="hafalanStatus">Memuat data hafalan...</p>
+            <button @click="alert('Fitur tambah hafalan akan segera aktif!')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-sm font-medium transition">Kelola Hafalan</button>
         </div>
 
-        <!-- Panel Keuangan -->
+        <!-- Panel 2: Manajemen Keuangan -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-md hover:border-emerald-500 transition">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-emerald-300 flex items-center gap-2">💰 Keuangan</h2>
                 <span class="text-xs bg-emerald-900 text-emerald-200 px-2 py-1 rounded-lg">Bulan Ini</span>
             </div>
             <div class="mb-4">
-                <span class="text-2xl font-bold text-slate-100">Rp 0</span>
-                <p class="text-xs text-slate-400 mt-1">Total Saldo / Pengeluaran</p>
+                <span class="text-2xl font-bold text-slate-100" x-text="totalKeuangan">Rp 0</span>
+                <p class="text-xs text-slate-400 mt-1">Total Saldo / Transaksi</p>
             </div>
-            <button class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-xl text-sm font-medium transition">Catat Transaksi</button>
+            <button @click="alert('Fitur keuangan segera hadir!')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-xl text-sm font-medium transition">Catat Transaksi</button>
         </div>
 
-        <!-- Panel Manajemen Waktu -->
+        <!-- Panel 3: Manajemen Waktu / To-Do -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-md hover:border-amber-500 transition">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-amber-300 flex items-center gap-2">⏱️ Manajemen Waktu</h2>
                 <span class="text-xs bg-amber-900 text-amber-200 px-2 py-1 rounded-lg">To-Do</span>
             </div>
-            <p class="text-slate-400 text-sm mb-4">Tidak ada tugas mendesak hari ini.</p>
-            <button class="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 rounded-xl text-sm font-medium transition">Tambah Tugas</button>
+            <p class="text-slate-400 text-sm mb-4" x-text="todoStatus">Memuat daftar tugas...</p>
+            <button @click="alert('Fitur to-do list segera hadir!')" class="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 rounded-xl text-sm font-medium transition">Tambah Tugas</button>
         </div>
+
     </main>
 
-    <!-- Script Logika Alpine.js & Typing Effect -->
+    <!-- Script Logika Alpine.js & Supabase -->
     <script>
+        // Inisialisasi Supabase
+        const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         function dashboardApp() {
             return {
                 userQuery: '',
                 fullText: '',
                 typedText: '',
+                hafalanStatus: 'Belum ada target aktif yang dimuat.',
+                totalKeuangan: 'Rp 0',
+                todoStatus: 'Tidak ada tugas mendesak hari ini.',
                 
                 init() {
-                    // Tentukan waktu sapaan
                     const hour = new Date().getHours();
                     let timeGreeting = 'Selamat Pagi';
                     if (hour >= 11 && hour < 15) timeGreeting = 'Selamat Siang';
                     else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
                     else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                    // Susun kalimat sapaan sesuai permintaan
                     this.fullText = `${timeGreeting} Mip, kita mau ngapain hari ini?`;
                     this.startTypingEffect();
+                    this.loadSupabaseData();
                 },
 
                 startTypingEffect() {
                     let i = 0;
                     this.typedText = '';
-                    let speed = 50; // Kecepatan mengetik (ms)
+                    let speed = 50;
                     
                     let typingInterval = setInterval(() => {
                         if (i < this.fullText.length) {
@@ -122,9 +133,27 @@
                     }, speed);
                 },
 
+                async loadSupabaseData() {
+                    try {
+                        // Contoh mengambil data dari tabel hafalan_quran
+                        const { data: hafalan } = await _supabase.from('hafalan_quran').select('*').limit(1);
+                        if (hafalan && hafalan.length > 0) {
+                            this.hafalanStatus = `Target: Surah ${hafalan[0].surah} Ayat ${hafalan[0].ayat}`;
+                        }
+
+                        // Contoh mengambil data dari tabel todos
+                        const { data: todos } = await _supabase.from('todos').select('*').eq('selesai', false).limit(1);
+                        if (todos && todos.length > 0) {
+                            this.todoStatus = `Tugas aktif: ${todos[0].tugas}`;
+                        }
+                    } catch (err) {
+                        console.error('Gagal memuat data supabase:', err);
+                    }
+                },
+
                 submitToAI() {
                     if (!this.userQuery.trim()) return;
-                    alert(`Pesan terkirim ke Gemini: "${this.userQuery}". (Integrasi API Gemini siap dipasang!)`);
+                    alert(`Pesan terkirim: "${this.userQuery}". (Koneksi Supabase aktif!)`);
                     this.userQuery = '';
                 }
             }
