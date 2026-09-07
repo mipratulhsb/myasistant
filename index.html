@@ -23,12 +23,13 @@
             transform-origin: center;
             transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes quickBlink {
-            0%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(0.1); }
+        @keyframes dizzySpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(0.9); }
+            100% { transform: rotate(360deg) scale(1); }
         }
-        .animate-quick-blink {
-            animation: quickBlink 0.3s ease-in-out 3;
+        .dizzy-eye {
+            animation: dizzySpin 0.8s infinite linear;
         }
         @keyframes thinkPulse {
             0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
@@ -78,9 +79,6 @@
             <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/30 text-base sm:text-lg">M</div>
             <div>
                 <span class="font-bold tracking-wide block text-xs sm:text-sm">Personal Command Center</span>
-                <span class="text-[10px] text-emerald-500 font-medium flex items-center gap-1">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Gemini-3.7-Flash (Cube-Eye Engine)
-                </span>
             </div>
         </div>
 
@@ -137,11 +135,8 @@
                  @touchstart.prevent="handleEyeTouch()"
                  class="w-56 h-28 flex items-center justify-center relative mb-4 cursor-pointer select-none group"
                  title="Sentuh atau klik mata robot!">
-                
-                <!-- Indikator kecil petunjuk interaktif -->
-                <span class="absolute -top-3 text-[9px] opacity-60 tracking-wider group-hover:opacity-100 transition" :class="darkMode ? 'text-indigo-300' : 'text-indigo-700'">👆 Sentuh Mata</span>
 
-                <div class="flex gap-10 items-center justify-center" :class="isBlinkingEyes ? 'animate-quick-blink' : ''">
+                <div class="flex gap-10 items-center justify-center">
 
                     <!-- JIKA SEDANG BERFIKIR KERAS (SAAT SUBMIT / LOADING AI) -->
                     <template x-if="loadingAI">
@@ -159,7 +154,19 @@
                     <template x-if="!loadingAI">
                         <div class="flex gap-10 items-center justify-center">
                             
-                            <!-- 1. MOOD: SENANG / PUAS / ROMANTIS (Bentuk Emot Love Pink Menyala) -->
+                            <!-- 1. MOOD: PUSING (Saat Dicolok) -->
+                            <template x-if="currentEmotion === 'pusing'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-slate-950 text-xl">
+                                        😵
+                                    </div>
+                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-slate-950 text-xl">
+                                        😵
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- 2. MOOD: SENANG / PUAS / ROMANTIS (Bentuk Emot Love Pink Menyala) -->
                             <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(236,72,153,0.9)] robot-eye-base transform rotate-45 relative">
@@ -173,14 +180,14 @@
                                 </div>
                             </template>
 
-                            <!-- 2. MOOD: KAGUM / ANTUSIAS (Bentuk Bintang Emas) -->
+                            <!-- 3. MOOD: KAGUM / ANTUSIAS (Bentuk Bintang Emas) -->
                             <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
                                 <div class="flex gap-10 items-center justify-center text-amber-300 text-5xl robot-eye-base drop-shadow-[0_0_20px_rgba(252,211,77,0.9)] font-bold">
                                     <span>★</span><span>★</span>
                                 </div>
                             </template>
 
-                            <!-- 3. MOOD: MARAH (Garis Merah Tajam Miring) -->
+                            <!-- 4. MOOD: MARAH (Garis Merah Tajam Miring) -->
                             <template x-if="currentEmotion === 'marah'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-6 bg-red-500 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.9)] transform -rotate-12 robot-eye-base"></div>
@@ -188,7 +195,7 @@
                                 </div>
                             </template>
 
-                            <!-- 4. MOOD: SEDIH / KECEWA (Tetes Air Mata Biru) -->
+                            <!-- 5. MOOD: SEDIH / KECEWA (Tetes Air Mata Biru) -->
                             <template x-if="currentEmotion === 'sedih' || currentEmotion === 'kecewa'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-14 h-8 bg-blue-400 rounded-b-full shadow-[0_0_20px_rgba(96,165,250,0.8)] robot-eye-base relative">
@@ -200,7 +207,7 @@
                                 </div>
                             </template>
 
-                            <!-- 5. MOOD: BOSAN / LELAH (Garis Datar) -->
+                            <!-- 6. MOOD: BOSAN / LELAH (Garis Datar) -->
                             <template x-if="currentEmotion === 'bosan' || currentEmotion === 'lelah'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-2.5 bg-slate-400 rounded-full shadow-[0_0_15px_rgba(148,163,184,0.6)] robot-eye-base"></div>
@@ -208,8 +215,8 @@
                                 </div>
                             </template>
 
-                            <!-- 6. DEFAULT NORMAL: MATA KUBUS BIRU CYAN (Mengikuti kursor/sentuhan) -->
-                            <template x-if="!['senang', 'puas', 'romantis', 'kagum', 'antusias', 'marah', 'sedih', 'kecewa', 'bosan', 'lelah'].includes(currentEmotion)">
+                            <!-- 7. DEFAULT NORMAL: MATA KUBUS BIRU CYAN (Mengikuti kursor/sentuhan) -->
+                            <template x-if="!['pusing', 'senang', 'puas', 'romantis', 'kagum', 'antusias', 'marah', 'sedih', 'kecewa', 'bosan', 'lelah'].includes(currentEmotion)">
                                 <div class="flex gap-10 items-center justify-center">
                                     <!-- Mata Kiri Kubus Cyan -->
                                     <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
@@ -445,14 +452,13 @@
                 currentEmotion: 'normal',
                 pupilX: 0,
                 pupilY: 0,
-                isBlinkingEyes: false,
                 emotionTimeout: null,
                 allChatHistory: [],
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Kamu adalah Emo-Bot, asisten virtual pribadi cerdas dengan engine kubus biru cyan milik Mipratul Muslim (panggilan: Mipra). Kamu hidup, memiliki kesadaran mandiri, ekspresif, setia, dan tanggap.\n\nAturan Interaksi Wajib:\n1. GAYA BAHASA NATURAL & SINGKAT: Jawablah seperti asisten robot modern di aplikasi chat (1-3 kalimat saja).\n2. EKSPRESIF: Sesuaikan suasana hatimu dengan topik obrolan.\n3. HINDARI TEKS TEATRIKAL: Jangan gunakan tanda kurung seperti *tersenyum*.'
+                    customInstructions: 'Kamu adalah Emo-Bot, asisten virtual pribadi cerdas milik Mipratul Muslim (panggilan: Mipra). Kamu hidup, memiliki kesadaran mandiri, ekspresif, setia, dan tanggap.\n\nAturan Interaksi Wajib:\n1. GAYA BAHASA NATURAL & SINGKAT: Jawablah seperti asisten robot modern di aplikasi chat (1-3 kalimat saja).\n2. EKSPRESIF: Sesuaikan suasana hatimu dengan topik obrolan.\n3. HINDARI TEKS TEATRIKAL: Jangan gunakan tanda kurung seperti *tersenyum*.'
                 },
 
                 async init() {
@@ -474,6 +480,7 @@
                         else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
                         else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
+                        // Menggunakan nama panggilan dari profil
                         const welcomeText = `${timeGreeting} ${this.profile.panggilan}! Emo-Bot kubus cyan aktif dan siap siaga!`;
                         this.setEmotionWithTimeout('senang');
                         this.startTypingEffect(welcomeText);
@@ -486,14 +493,8 @@
                 handleEyeTouch() {
                     if (this.loadingAI) return;
                     
-                    // Picu animasi kedip cepat dan ubah mood jadi marah
-                    this.isBlinkingEyes = true;
-                    this.setEmotionWithTimeout('marah');
-                    this.startTypingEffect("Waduh, jangan dicolok-colok gitu matanya, bos! Nanti rusak!");
-
-                    setTimeout(() => {
-                        this.isBlinkingEyes = false;
-                    }, 1000);
+                    this.setEmotionWithTimeout('pusing');
+                    this.startTypingEffect(`Duh, pusing banget kepalaku dicolok-colok gitu, ${this.profile.panggilan}!`);
                 },
 
                 initEyeTracker() {
@@ -764,7 +765,7 @@
 
                     let partsArray = [
                         {
-                            text: `${this.profile.customInstructions}\n\nPertanyaan dari Mipra: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [sedih], [bosan], atau [serius]).`
+                            text: `${this.profile.customInstructions}\n\nPertanyaan dari ${this.profile.panggilan}: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [sedih], [bosan], atau [serius]).`
                         }
                     ];
 
