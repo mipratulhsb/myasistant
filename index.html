@@ -10,10 +10,18 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Gen AI SDK -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.run/@google/genai"
+        }
+      }
+    </script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans" x-data="dashboardApp()">
 
-    <!-- Header / Sapaan AI Gemini Interaktif -->
+    <!-- Header / Sapaan & Interaksi AI Gemini -->
     <header class="bg-slate-800 border-b border-slate-700 p-6 shadow-xl">
         <div class="max-w-4xl mx-auto flex flex-col items-center text-center">
             
@@ -25,10 +33,10 @@
                 <span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-800 rounded-full animate-pulse"></span>
             </div>
 
-            <!-- Kotak Sapaan AI dengan Efek Mengetik -->
+            <!-- Kotak Sapaan & Respons AI dengan Efek Mengetik -->
             <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl px-6 py-4 max-w-xl shadow-inner w-full mb-4">
                 <p class="text-lg font-medium text-indigo-300 min-h-[3.5rem] flex items-center justify-center">
-                    <span x-text="typedText"></span><span class="animate-pulse text-indigo-400">|</span>
+                    <span x-text="typedText"></span><span class="animate-pulse text-indigo-400" x-show="isTyping">|</span>
                 </p>
             </div>
 
@@ -37,14 +45,16 @@
                 <input 
                     type="text" 
                     x-model="userQuery" 
-                    placeholder="Ketik apa yang ingin Anda lakukan hari ini..." 
-                    class="flex-1 bg-slate-900 border border-slate-700 focus:border-indigo-500 focus:outline-none px-4 py-3 rounded-xl text-sm text-slate-200 placeholder-slate-500 shadow-sm"
+                    :disabled="loadingAI"
+                    placeholder="Tanya sesuatu atau beri perintah ke Gemini..." 
+                    class="flex-1 bg-slate-900 border border-slate-700 focus:border-indigo-500 focus:outline-none px-4 py-3 rounded-xl text-sm text-slate-200 placeholder-slate-500 shadow-sm disabled:opacity-50"
                 >
                 <button 
                     type="submit" 
-                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20 flex items-center gap-2"
+                    :disabled="loadingAI"
+                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-50"
                 >
-                    <span>Kirim</span>
+                    <span x-text="loadingAI ? 'Berpikir...' : 'Kirim'"></span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </form>
@@ -90,23 +100,29 @@
 
     </main>
 
-    <!-- Script Logika Alpine.js & Supabase -->
-    <script>
+    <!-- Script Utama: Supabase & Google Gen AI -->
+    <script type="module">
+        import { GoogleGenAI } from "@google/genai";
+
         // Inisialisasi Supabase
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function dashboardApp() {
-            return {
+        let aiInstance = null;
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('dashboardApp', () => ({
                 userQuery: '',
                 fullText: '',
                 typedText: '',
-                hafalanStatus: 'Belum ada target aktif yang dimuat.',
+                isTyping: true,
+                loadingAI: false,
+                hafalanStatus: 'Memuat data hafalan...',
                 totalKeuangan: 'Rp 0',
-                todoStatus: 'Tidak ada tugas mendesak hari ini.',
+                todoStatus: 'Memuat daftar tugas...',
                 
-                init() {
+                async init() {
                     const hour = new Date().getHours();
                     let timeGreeting = 'Selamat Pagi';
                     if (hour >= 11 && hour < 15) timeGreeting = 'Selamat Siang';
@@ -114,50 +130,86 @@
                     else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
                     this.fullText = `${timeGreeting} Mip, kita mau ngapain hari ini?`;
-                    this.startTypingEffect();
-                    this.loadSupabaseData();
+                    this.startTypingEffect(this.fullText);
+                    
+                    // Muat data database dan API Key dari Supabase
+                    await this.loadConfigAndData();
                 },
 
-                startTypingEffect() {
+                startTypingEffect(text) {
                     let i = 0;
                     this.typedText = '';
-                    let speed = 50;
+                    this.isTyping = true;
+                    let speed = 40;
                     
                     let typingInterval = setInterval(() => {
-                        if (i < this.fullText.length) {
-                            this.typedText += this.fullText.charAt(i);
+                        if (i < text.length) {
+                            this.typedText += text.charAt(i);
                             i++;
                         } else {
                             clearInterval(typingInterval);
+                            this.isTyping = false;
                         }
                     }, speed);
                 },
 
-                async loadSupabaseData() {
+                async loadConfigAndData() {
                     try {
-                        // Contoh mengambil data dari tabel hafalan_quran
+                        // 1. Ambil API Key dari Supabase
+                        const { data: configData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'gemini_api_key').single();
+                        if (configData && configData.key_value) {
+                            aiInstance = new GoogleGenAI({ apiKey: configData.key_value });
+                        }
+
+                        // 2. Ambil data hafalan
                         const { data: hafalan } = await _supabase.from('hafalan_quran').select('*').limit(1);
                         if (hafalan && hafalan.length > 0) {
                             this.hafalanStatus = `Target: Surah ${hafalan[0].surah} Ayat ${hafalan[0].ayat}`;
                         }
 
-                        // Contoh mengambil data dari tabel todos
+                        // 3. Ambil data todos
                         const { data: todos } = await _supabase.from('todos').select('*').eq('selesai', false).limit(1);
                         if (todos && todos.length > 0) {
                             this.todoStatus = `Tugas aktif: ${todos[0].tugas}`;
                         }
                     } catch (err) {
-                        console.error('Gagal memuat data supabase:', err);
+                        console.error('Gagal memuat data dari Supabase:', err);
                     }
                 },
 
-                submitToAI() {
-                    if (!this.userQuery.trim()) return;
-                    alert(`Pesan terkirim: "${this.userQuery}". (Koneksi Supabase aktif!)`);
+                async submitToAI() {
+                    if (!this.userQuery.trim() || this.loadingAI) return;
+                    
+                    if (!aiInstance) {
+                        this.startTypingEffect("API Key belum ditemukan di database Supabase.");
+                        return;
+                    }
+
+                    const prompt = this.userQuery;
                     this.userQuery = '';
+                    this.loadingAI = true;
+                    this.typedText = '';
+                    
+                    try {
+                        const response = await aiInstance.models.generateContent({
+                            model: 'gemini-2.5-flash',
+                            contents: prompt,
+                            config: {
+                                systemInstruction: "Kamu adalah asisten pribadi yang ramah dan siap membantu Mipra mengelola aktivitas hariannya secara ringkas dan solutif."
+                            }
+                        });
+
+                        const replyText = response.text || "Maaf, saya tidak dapat memproses jawaban saat ini.";
+                        this.startTypingEffect(replyText);
+                    } catch (error) {
+                        console.error("Error Gemini API:", error);
+                        this.startTypingEffect("Terjadi kesalahan saat menghubungi server Gemini.");
+                    } finally {
+                        this.loadingAI = false;
+                    }
                 }
-            }
-        }
+            }));
+        });
     </script>
 </body>
 </html>
