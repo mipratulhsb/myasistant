@@ -76,14 +76,14 @@
     <nav class="backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-sm transition-colors duration-500"
          :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 text-slate-100' : 'bg-white/40 border-white/40 text-slate-800'">
         
-        <!-- Bagian Foto Profil & Sapaan Tuan -->
+        <!-- Bagian Foto Profil Bulat ala IG & Sapaan Tuan -->
         <div class="flex items-center gap-3">
             <!-- Input file tersembunyi untuk memilih foto galeri -->
             <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
             
-            <!-- Avatar Foto Profil (Bisa diklik untuk ganti foto) -->
+            <!-- Avatar Foto Profil Bulat ala IG (Bisa diklik untuk ganti foto) -->
             <div @click="document.getElementById('profilePicInput').click()" 
-                 class="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-indigo-600/30 cursor-pointer relative group flex items-center justify-center font-bold text-white bg-gradient-to-tr from-indigo-600 to-purple-600 border border-white/20"
+                 class="w-10 h-10 rounded-full overflow-hidden shadow-lg shadow-indigo-600/30 cursor-pointer relative group flex items-center justify-center font-bold text-white bg-gradient-to-tr from-indigo-600 to-purple-600 border-2 border-indigo-400/50"
                  title="Klik untuk mengganti foto profil dari galeri">
                 <template x-if="userProfilePic">
                     <img :src="userProfilePic" alt="Foto Profil" class="w-full h-full object-cover">
@@ -92,7 +92,7 @@
                     <span class="text-sm" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
                 </template>
                 <!-- Overlay Hover -->
-                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-150 transition flex items-center justify-center text-[9px] text-white font-medium">Ganti</div>
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[8px] text-white font-medium">Ganti</div>
             </div>
 
             <div>
@@ -488,11 +488,6 @@
                         this.darkMode = true;
                     }
 
-                    const savedPic = localStorage.getItem('user_profile_pic');
-                    if (savedPic) {
-                        this.userProfilePic = savedPic;
-                    }
-
                     await this.loadConfigAndData();
                     await this.loadLatestMessageFromSupabase();
                     await this.loadAllChatHistory();
@@ -517,9 +512,19 @@
                     const file = event.target.files[0];
                     if (!file) return;
                     const reader = new FileReader();
-                    reader.onload = (e) => {
+                    reader.onload = async (e) => {
                         this.userProfilePic = e.target.result;
                         localStorage.setItem('user_profile_pic', this.userProfilePic);
+                        
+                        // Simpan ke database Supabase
+                        try {
+                            await _supabase.from('user_config').upsert({
+                                key_name: 'user_profile_pic_base64',
+                                key_value: this.userProfilePic
+                            }, { onConflict: 'key_name' });
+                        } catch (err) {
+                            console.error("Gagal menyimpan foto profil ke Supabase:", err);
+                        }
                     };
                     reader.readAsDataURL(file);
                 },
@@ -703,6 +708,16 @@
                             } catch (e) {
                                 console.error("Gagal parsing profil:", e);
                             }
+                        }
+
+                        // Muat foto profil dari Supabase
+                        const { data: picData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'user_profile_pic_base64').single();
+                        if (picData && picData.key_value) {
+                            this.userProfilePic = picData.key_value;
+                            localStorage.setItem('user_profile_pic', this.userProfilePic);
+                        } else {
+                            const savedPic = localStorage.getItem('user_profile_pic');
+                            if (savedPic) this.userProfilePic = savedPic;
                         }
 
                         const { data: hafalan } = await _supabase.from('hafalan_quran').select('*').limit(1);
