@@ -46,12 +46,10 @@
         }
         .sun-glow { animation: glow 4s infinite ease-in-out; }
         
-        /* Gaya Font Digital LED Biru */
+        /* Gaya Font Digital LED Biru khusus Dark Mode */
         .digital-led-font {
             font-family: 'Share Tech Mono', monospace, sans-serif;
             letter-spacing: 0.05em;
-            color: #38bdf8;
-            text-shadow: 0 0 10px rgba(56, 189, 248, 0.7), 0 0 20px rgba(56, 189, 248, 0.5);
         }
     </style>
 </head>
@@ -263,11 +261,13 @@
                 </div>
             </div>
 
-            <!-- Balon Teks Dialog Transparan Kaca dengan Font Digital LED Biru Lebih Besar -->
+            <!-- Balon Teks Dialog Transparan Kaca -->
             <div class="w-full max-w-2xl border rounded-2xl p-4 sm:p-6 shadow-inner min-h-[110px] flex flex-col justify-center relative backdrop-blur-md transition-colors duration-500"
                  :class="darkMode ? 'bg-slate-950/60 border-indigo-500/30' : 'bg-white/60 border-white/60'">
-                <p class="text-sm sm:text-base font-bold text-center leading-relaxed digital-led-font">
-                    <span x-text="typedText"></span><span class="animate-pulse text-sky-400 font-bold" x-show="isTyping">|</span>
+                <!-- Warna font hitam dan tidak menyala saat Light Mode, serta LED biru bersinar saat Dark Mode -->
+                <p class="text-sm sm:text-base font-bold text-center leading-relaxed digital-led-font"
+                   :class="darkMode ? 'text-sky-400 [text-shadow:0_0_10px_rgba(56,189,248,0.7),0_0_20px_rgba(56,189,248,0.5)]' : 'text-slate-900'">
+                    <span x-text="typedText"></span><span class="animate-pulse font-bold" :class="darkMode ? 'text-sky-400' : 'text-slate-900'" x-show="isTyping">|</span>
                 </p>
                 
                 <div class="absolute bottom-2 right-3">
@@ -502,21 +502,19 @@
                     }
 
                     await this.loadConfigAndData();
-                    await this.loadLatestMessageFromSupabase();
                     await this.loadAllChatHistory();
 
-                    if (!this.fullReplyText || this.fullReplyText === 'Memuat sistem robot...') {
-                        const hour = new Date().getHours();
-                        let timeGreeting = 'Selamat Pagi';
-                        if (hour >= 11 && hour < 15) timeGreeting = 'Selamat Siang';
-                        else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
-                        else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
+                    // Selalu reset dan buat sapaan baru setiap halaman dimuat / direfresh
+                    const hour = new Date().getHours();
+                    let timeGreeting = 'Selamat Pagi';
+                    if (hour >= 11 && hour < 15) timeGreeting = 'Selamat Siang';
+                    else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
+                    else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}, mau ngapain kita hari ini?`;
-                        this.setEmotionWithTimeout('senang');
-                        this.startTypingEffect(welcomeText);
-                        await this.saveChatToSupabase('ai', welcomeText);
-                    }
+                    const welcomeText = `${timeGreeting} ${this.profile.panggilan}, mau ngapain kita hari ini?`;
+                    this.setEmotionWithTimeout('senang');
+                    this.startTypingEffect(welcomeText);
+                    await this.saveChatToSupabase('ai', welcomeText);
 
                     this.initEyeTracker();
                 },
@@ -637,17 +635,6 @@
                         };
                     };
                     reader.readAsDataURL(file);
-                },
-
-                async loadLatestMessageFromSupabase() {
-                    try {
-                        const { data, error } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: false }).limit(1);
-                        if (data && data.length > 0) {
-                            this.startTypingEffect(data[0].text_content);
-                        }
-                    } catch (err) {
-                        console.error("Gagal memuat pesan terakhir:", err);
-                    }
                 },
 
                 async loadAllChatHistory() {
