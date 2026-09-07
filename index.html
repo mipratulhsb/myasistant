@@ -78,10 +78,8 @@
         
         <!-- Bagian Foto Profil Bulat ala IG & Sapaan Tuan -->
         <div class="flex items-center gap-3">
-            <!-- Input file tersembunyi untuk memilih foto galeri -->
             <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
             
-            <!-- Avatar Foto Profil Bulat ala IG (Bisa diklik untuk ganti foto) -->
             <div @click="document.getElementById('profilePicInput').click()" 
                  class="w-10 h-10 rounded-full overflow-hidden shadow-lg shadow-indigo-600/30 cursor-pointer relative group flex items-center justify-center font-bold text-white bg-gradient-to-tr from-indigo-600 to-purple-600 border-2 border-indigo-400/50"
                  title="Klik untuk mengganti foto profil dari galeri">
@@ -91,7 +89,6 @@
                 <template x-if="!userProfilePic">
                     <span class="text-sm" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
                 </template>
-                <!-- Overlay Hover -->
                 <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[8px] text-white font-medium">Ganti</div>
             </div>
 
@@ -172,14 +169,14 @@
                     <template x-if="!loadingAI">
                         <div class="flex gap-10 items-center justify-center">
                             
-                            <!-- 1. MOOD: PUSING (Saat Dicolok) -->
+                            <!-- 1. MOOD: PUSING (Saat Dicolok -> Menggunakan Emot 🌀 Full Berputar) -->
                             <template x-if="currentEmotion === 'pusing'">
                                 <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-slate-950 text-xl">
-                                        😵
+                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">
+                                        🌀
                                     </div>
-                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-slate-950 text-xl">
-                                        😵
+                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">
+                                        🌀
                                     </div>
                                 </div>
                             </template>
@@ -516,7 +513,6 @@
                         this.userProfilePic = e.target.result;
                         localStorage.setItem('user_profile_pic', this.userProfilePic);
                         
-                        // Simpan ke database Supabase
                         try {
                             await _supabase.from('user_config').upsert({
                                 key_name: 'user_profile_pic_base64',
@@ -584,7 +580,7 @@
                         this.pupilY = 0;
                         this.emotionTimeout = setTimeout(() => {
                             this.currentEmotion = 'normal';
-                        }, 10000); // Kembali ke default setelah 10 detik
+                        }, 10000);
                     }
                 },
 
@@ -710,7 +706,6 @@
                             }
                         }
 
-                        // Muat foto profil dari Supabase
                         const { data: picData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'user_profile_pic_base64').single();
                         if (picData && picData.key_value) {
                             this.userProfilePic = picData.key_value;
