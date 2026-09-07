@@ -18,16 +18,17 @@
             0%, 90%, 100% { transform: scaleY(1); }
             95% { transform: scaleY(0.1); }
         }
-        .robot-eye {
+        .robot-eye-base {
             animation: blink 4s infinite;
             transform-origin: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .pixel-eye {
-            background: linear-gradient(
-                rgba(15, 23, 42, 0.4) 50%, 
-                transparent 50%
-            );
-            background-size: 100% 4px;
+        @keyframes thinkPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+            50% { transform: scale(0.9) rotate(5deg); opacity: 1; }
+        }
+        .thinking-eye {
+            animation: thinkPulse 0.6s infinite ease-in-out;
         }
         @keyframes glow {
             0%, 100% { transform: scale(1); opacity: 0.8; }
@@ -71,7 +72,7 @@
             <div>
                 <span class="font-bold tracking-wide block text-xs sm:text-sm">Personal Command Center</span>
                 <span class="text-[10px] text-emerald-500 font-medium flex items-center gap-1">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Gemini-3.7-Flash (27-Mood Engine)
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Gemini-3.7-Flash (Cube-Eye Engine)
                 </span>
             </div>
         </div>
@@ -99,8 +100,11 @@
                 <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
                     <span>🧠</span> Wawasan AI
                 </button>
+                <button @click="openChatHistoryModal(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
+                    <span>📜</span> Riwayat Chat Gemini
+                </button>
                 <button @click="clearChatHistory(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-red-950/40' : 'hover:bg-red-50/50'">
-                    <span>🗑️</span> Bersihkan Riwayat Chat
+                    <span>🗑️</span> Hapus Semua Riwayat
                 </button>
                 
                 <div class="my-1 border-t" :class="darkMode ? 'border-slate-800/60' : 'border-sky-100/60'"></div>
@@ -119,117 +123,102 @@
     <!-- Main Workspace Container -->
     <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1 z-10">
 
-        <!-- Panel Wajah Robot Emo Style (27-Mood Dynamic Expressions) -->
+        <!-- Panel Wajah Robot Emo Style -->
         <div class="backdrop-blur-md border rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500"
              :class="darkMode ? 'bg-slate-900/40 border-slate-800/40' : 'bg-white/40 border-white/40'">
             
-            <!-- Area Mata Robot Sesuai 27 Suasana Hati -->
-            <div class="w-56 h-24 flex items-center justify-center relative mb-4">
-                <div class="flex gap-12 items-center justify-center">
+            <!-- Area Mata Kubus Biru Cyan & Animasi Berpikir Keras -->
+            <div class="w-56 h-28 flex items-center justify-center relative mb-4">
+                <div class="flex gap-10 items-center justify-center">
 
-                    <!-- 1. MOOD: SENANG / BAHAGIA / KASIH SAYANG (Bentuk Hati Pink) -->
-                    <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis'">
-                        <div class="flex gap-12 items-center justify-center">
-                            <div class="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(236,72,153,0.9)] robot-eye transform rotate-45 relative">
-                                <div class="absolute -top-3 w-7 h-7 bg-pink-500 rounded-full"></div>
-                                <div class="absolute -left-3 w-7 h-7 bg-pink-500 rounded-full"></div>
+                    <!-- JIKA SEDANG BERFIKIR KERAS (SAAT SUBMIT / LOADING AI) -->
+                    <template x-if="loadingAI">
+                        <div class="flex gap-10 items-center justify-center">
+                            <div class="w-16 h-12 bg-purple-500 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.9)] thinking-eye flex items-center justify-center">
+                                <div class="w-3 h-3 bg-white rounded-full animate-ping"></div>
                             </div>
-                            <div class="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(236,72,153,0.9)] robot-eye transform rotate-45 relative">
-                                <div class="absolute -top-3 w-7 h-7 bg-pink-500 rounded-full"></div>
-                                <div class="absolute -left-3 w-7 h-7 bg-pink-500 rounded-full"></div>
+                            <div class="w-16 h-12 bg-purple-500 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.9)] thinking-eye flex items-center justify-center" style="animation-delay: 0.2s;">
+                                <div class="w-3 h-3 bg-white rounded-full animate-ping"></div>
                             </div>
                         </div>
                     </template>
 
-                    <!-- 2. MOOD: KAGUM / TAKJUB / ANTUSIAS (Bentuk Bintang Emas/Kuning) -->
-                    <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
-                        <div class="flex gap-12 items-center justify-center text-amber-300 text-4xl robot-eye drop-shadow-[0_0_15px_rgba(252,211,77,0.9)] font-bold">
-                            <span>★</span><span>★</span>
-                        </div>
-                    </template>
+                    <!-- JIKA TIDAK LOADING: TAMPILKAN BERDASARKAN MOOD -->
+                    <template x-if="!loadingAI">
+                        <div class="flex gap-10 items-center justify-center">
+                            
+                            <!-- 1. MOOD: SENANG / ROMANTIS (Bentuk Hati Pink) -->
+                            <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(236,72,153,0.9)] robot-eye-base transform rotate-45 relative">
+                                        <div class="absolute -top-3.5 w-8 h-8 bg-pink-500 rounded-full"></div>
+                                        <div class="absolute -left-3.5 w-8 h-8 bg-pink-500 rounded-full"></div>
+                                    </div>
+                                    <div class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(236,72,153,0.9)] robot-eye-base transform rotate-45 relative">
+                                        <div class="absolute -top-3.5 w-8 h-8 bg-pink-500 rounded-full"></div>
+                                        <div class="absolute -left-3.5 w-8 h-8 bg-pink-500 rounded-full"></div>
+                                    </div>
+                                </div>
+                            </template>
 
-                    <!-- 3. MOOD: SOMBONG / PERCAYA DIRI / KEREN (Kotak Persegi Kuning) -->
-                    <template x-if="currentEmotion === 'sombong'">
-                        <div class="flex gap-12 items-center justify-center">
-                            <div class="w-12 h-12 bg-amber-400 rounded-xl shadow-[0_0_20px_rgba(251,191,36,0.9)] robot-eye flex items-center justify-center">
-                                <div class="w-3.5 h-3.5 bg-slate-950 rounded-sm"></div>
-                            </div>
-                            <div class="w-12 h-12 bg-amber-400 rounded-xl shadow-[0_0_20px_rgba(251,191,36,0.9)] robot-eye flex items-center justify-center">
-                                <div class="w-3.5 h-3.5 bg-slate-950 rounded-sm"></div>
-                            </div>
-                        </div>
-                    </template>
+                            <!-- 2. MOOD: KAGUM / ANTUSIAS (Bentuk Bintang Emas) -->
+                            <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
+                                <div class="flex gap-10 items-center justify-center text-amber-300 text-5xl robot-eye-base drop-shadow-[0_0_20px_rgba(252,211,77,0.9)] font-bold">
+                                    <span>★</span><span>★</span>
+                                </div>
+                            </template>
 
-                    <!-- 4. MOOD: MARAH / KESAL / JENGKEL (Garis Miring Merah Tajam) -->
-                    <template x-if="currentEmotion === 'marah'">
-                        <div class="flex gap-12 items-center justify-center">
-                            <div class="w-14 h-5 bg-red-500 rounded-md shadow-[0_0_20px_rgba(239,68,68,0.9)] transform -rotate-12 robot-eye"></div>
-                            <div class="w-14 h-5 bg-red-500 rounded-md shadow-[0_0_20px_rgba(239,68,68,0.9)] transform rotate-12 robot-eye"></div>
-                        </div>
-                    </template>
+                            <!-- 3. MOOD: MARAH (Garis Merah Tajam Miring) -->
+                            <template x-if="currentEmotion === 'marah'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-16 h-6 bg-red-500 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.9)] transform -rotate-12 robot-eye-base"></div>
+                                    <div class="w-16 h-6 bg-red-500 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.9)] transform rotate-12 robot-eye-base"></div>
+                                </div>
+                            </template>
 
-                    <!-- 5. MOOD: SEDIH / KECEWA / NOSTALGIA (Tetes Air Mata / Garis Turun Biru) -->
-                    <template x-if="currentEmotion === 'sedih' || currentEmotion === 'kecewa'">
-                        <div class="flex gap-12 items-center justify-center">
-                            <div class="w-12 h-7 bg-blue-400 rounded-b-full shadow-[0_0_15px_rgba(96,165,250,0.8)] robot-eye relative">
-                                <div class="absolute -bottom-2 left-4 w-2 h-3 bg-blue-300 rounded-full animate-bounce"></div>
-                            </div>
-                            <div class="w-12 h-7 bg-blue-400 rounded-b-full shadow-[0_0_15px_rgba(96,165,250,0.8)] robot-eye relative">
-                                <div class="absolute -bottom-2 left-4 w-2 h-3 bg-blue-300 rounded-full animate-bounce"></div>
-                            </div>
-                        </div>
-                    </template>
+                            <!-- 4. MOOD: SEDIH / KECEWA (Tetes Air Mata Biru) -->
+                            <template x-if="currentEmotion === 'sedih' || currentEmotion === 'kecewa'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-14 h-8 bg-blue-400 rounded-b-full shadow-[0_0_20px_rgba(96,165,250,0.8)] robot-eye-base relative">
+                                        <div class="absolute -bottom-2.5 left-5 w-2.5 h-3.5 bg-blue-300 rounded-full animate-bounce"></div>
+                                    </div>
+                                    <div class="w-14 h-8 bg-blue-400 rounded-b-full shadow-[0_0_20px_rgba(96,165,250,0.8)] robot-eye-base relative">
+                                        <div class="absolute -bottom-2.5 left-5 w-2.5 h-3.5 bg-blue-300 rounded-full animate-bounce"></div>
+                                    </div>
+                                </div>
+                            </template>
 
-                    <!-- 6. MOOD: TAKUT / CEMAS / GUGUP (Mata Melebar / Kaget Bergetar) -->
-                    <template x-if="currentEmotion === 'takut' || currentEmotion === 'cemas'">
-                        <div class="flex gap-12 items-center justify-center">
-                            <div class="w-10 h-10 bg-yellow-300 rounded-full shadow-[0_0_20px_rgba(253,224,71,0.9)] robot-eye flex items-center justify-center animate-pulse">
-                                <div class="w-2 h-2 bg-slate-950 rounded-full"></div>
-                            </div>
-                            <div class="w-10 h-10 bg-yellow-300 rounded-full shadow-[0_0_20px_rgba(253,224,71,0.9)] robot-eye flex items-center justify-center animate-pulse">
-                                <div class="w-2 h-2 bg-slate-950 rounded-full"></div>
-                            </div>
-                        </div>
-                    </template>
+                            <!-- 5. MOOD: BOSAN / LELAH (Garis Datar) -->
+                            <template x-if="currentEmotion === 'bosan' || currentEmotion === 'lelah'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-16 h-2.5 bg-slate-400 rounded-full shadow-[0_0_15px_rgba(148,163,184,0.6)] robot-eye-base"></div>
+                                    <div class="w-16 h-2.5 bg-slate-400 rounded-full shadow-[0_0_15px_rgba(148,163,184,0.6)] robot-eye-base"></div>
+                                </div>
+                            </template>
 
-                    <!-- 7. MOOD: BINGUNG / PENASARAN / CURIGA (Mata Tanya / Asimetris) -->
-                    <template x-if="currentEmotion === 'bingung' || currentEmotion === 'penasaran'">
-                        <div class="flex gap-12 items-center justify-center">
-                            <div class="w-12 h-10 bg-purple-400 rounded-full shadow-[0_0_15px_rgba(192,132,252,0.8)] robot-eye flex items-center justify-center font-bold text-slate-950">?</div>
-                            <div class="w-12 h-5 bg-purple-400 rounded-md shadow-[0_0_15px_rgba(192,132,252,0.8)] robot-eye"></div>
-                        </div>
-                    </template>
+                            <!-- 6. DEFAULT NORMAL: MATA KUBUS BIRU CYAN -->
+                            <template x-if="!['senang', 'puas', 'romantis', 'kagum', 'antusias', 'marah', 'sedih', 'kecewa', 'bosan', 'lelah'].includes(currentEmotion)">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <!-- Mata Kiri Kubus Cyan -->
+                                    <div class="w-16 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center"
+                                         :class="[
+                                            leftEyeSize,
+                                            gazeDirection === 'left' ? 'justify-start pl-2' : (gazeDirection === 'right' ? 'justify-end pr-2' : (gazeDirection === 'up' ? 'items-start pt-1.5 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1.5 justify-center' : 'justify-center')))
+                                         ]">
+                                        <div class="w-4 h-4 bg-slate-950 rounded-sm transition-all duration-300 shadow-sm"></div>
+                                    </div>
 
-                    <!-- 8. MOOD: BOSAN / Lelah / KANTUK (Garis Datar Tipis) -->
-                    <template x-if="currentEmotion === 'bosan' || currentEmotion === 'lelah'">
-                        <div class="flex gap-12 items-center justify-center">
-                            <div class="w-14 h-2 bg-slate-400 rounded-full shadow-[0_0_10px_rgba(148,163,184,0.5)] robot-eye"></div>
-                            <div class="w-14 h-2 bg-slate-400 rounded-full shadow-[0_0_10px_rgba(148,163,184,0.5)] robot-eye"></div>
-                        </div>
-                    </template>
+                                    <!-- Mata Kanan Kubus Cyan -->
+                                    <div class="w-16 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center"
+                                         :class="[
+                                            rightEyeSize,
+                                            gazeDirection === 'left' ? 'justify-start pl-2' : (gazeDirection === 'right' ? 'justify-end pr-2' : (gazeDirection === 'up' ? 'items-start pt-1.5 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1.5 justify-center' : 'justify-center')))
+                                         ]">
+                                        <div class="w-4 h-4 bg-slate-950 rounded-sm transition-all duration-300 shadow-sm"></div>
+                                    </div>
+                                </div>
+                            </template>
 
-                    <!-- DEFAULT / SERIUS / FOKUS (Mata Kapsul Pixel Klasik dengan Kornea Melirik) -->
-                    <template x-if="!['senang', 'puas', 'romantis', 'kagum', 'antusias', 'sombong', 'marah', 'sedih', 'kecewa', 'takut', 'cemas', 'bingung', 'penasaran', 'bosan', 'lelah'].includes(currentEmotion)">
-                        <div class="flex gap-12 items-center justify-center">
-                            <!-- Mata Kiri -->
-                            <div class="w-14 rounded-2xl robot-eye pixel-eye relative overflow-hidden transition-all duration-300 shadow-md flex items-center"
-                                 :class="[
-                                    leftEyeSize,
-                                    loadingAI ? 'bg-purple-400 shadow-[0_0_15px_rgba(192,132,252,0.8)]' : 'bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.8)]',
-                                    gazeDirection === 'left' ? 'justify-start pl-1.5' : (gazeDirection === 'right' ? 'justify-end pr-1.5' : (gazeDirection === 'up' ? 'items-start pt-1 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1 justify-center' : 'justify-center')))
-                                 ]">
-                                <div class="w-3.5 h-3.5 bg-slate-950 rounded-full transition-all duration-300 shadow-sm"></div>
-                            </div>
-
-                            <!-- Mata Kanan -->
-                            <div class="w-14 rounded-2xl robot-eye pixel-eye relative overflow-hidden transition-all duration-300 shadow-md flex items-center"
-                                 :class="[
-                                    rightEyeSize,
-                                    loadingAI ? 'bg-purple-400 shadow-[0_0_15px_rgba(192,132,252,0.8)]' : 'bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.8)]',
-                                    gazeDirection === 'left' ? 'justify-start pl-1.5' : (gazeDirection === 'right' ? 'justify-end pr-1.5' : (gazeDirection === 'up' ? 'items-start pt-1 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1 justify-center' : 'justify-center')))
-                                 ]">
-                                <div class="w-3.5 h-3.5 bg-slate-950 rounded-full transition-all duration-300 shadow-sm"></div>
-                            </div>
                         </div>
                     </template>
 
@@ -336,6 +325,51 @@
 
     </main>
 
+    <!-- Modal Riwayat Chat (Gaya Panel Samping / Drawer seperti Gemini) -->
+    <div x-show="activeModal === 'chatHistory'" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="border rounded-2xl p-5 w-full max-w-lg shadow-2xl backdrop-blur-2xl transition-colors duration-500 flex flex-col max-h-[85vh]"
+             :class="darkMode ? 'bg-slate-900/95 border-slate-800 text-slate-200' : 'bg-white/95 border-white text-slate-800'">
+            
+            <div class="flex justify-between items-center mb-3 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">📜</span>
+                    <h3 class="font-semibold text-sm text-indigo-500">Riwayat Percakapan (Gemini History)</h3>
+                </div>
+                <button @click="activeModal = null" class="cursor-pointer font-bold text-sm px-2 py-1 rounded-lg" :class="darkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-sky-100'">✕</button>
+            </div>
+
+            <!-- Daftar Riwayat Chat -->
+            <div class="flex-1 overflow-y-auto space-y-2.5 pr-1 my-2">
+                <template x-if="allChatHistory.length === 0">
+                    <p class="text-xs text-center py-8" :class="darkMode ? 'text-slate-500' : 'text-slate-400'">Belum ada riwayat percakapan tersimpan.</p>
+                </template>
+                
+                <template x-for="chat in allChatHistory" :key="chat.id">
+                    <div class="p-3 rounded-xl border flex flex-col gap-1 transition-all duration-300 group"
+                         :class="darkMode ? 'bg-slate-950/40 border-slate-800/80 hover:border-indigo-500/50' : 'bg-sky-50/60 border-sky-100 hover:border-indigo-300'">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide"
+                                  :class="chat.sender === 'user' ? (darkMode ? 'bg-indigo-950 text-indigo-300' : 'bg-indigo-100 text-indigo-800') : (darkMode ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800')"
+                                  x-text="chat.sender === 'user' ? '👤 Anda' : '🤖 Emo-Bot'"></span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px]" :class="darkMode ? 'text-slate-500' : 'text-slate-400'" x-text="new Date(chat.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
+                                <!-- Tombol Hapus Satuan -->
+                                <button @click="deleteSingleChat(chat.id)" title="Hapus Percakapan Ini" class="text-red-400 hover:text-red-500 transition text-xs px-1.5 py-0.5 rounded cursor-pointer" :class="darkMode ? 'hover:bg-red-950/50' : 'hover:bg-red-100'">🗑️</button>
+                            </div>
+                        </div>
+                        <p class="text-xs leading-relaxed mt-1" :class="darkMode ? 'text-slate-300' : 'text-slate-700'" x-text="chat.text_content"></p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Footer Modal Riwayat -->
+            <div class="pt-3 border-t flex justify-between items-center" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
+                <button @click="clearChatHistory()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer">🗑️ Hapus Semua Riwayat</button>
+                <button @click="activeModal = null" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition cursor-pointer">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Pengaturan Data Pribadi -->
     <div x-show="activeModal === 'dataPribadi'" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl backdrop-blur-2xl transition-colors duration-500"
@@ -405,16 +439,17 @@
                 typedText: '',
                 isTyping: false,
                 fullReplyText: '',
-                currentEmotion: 'senang',
+                currentEmotion: 'serius',
                 gazeDirection: 'center',
-                leftEyeSize: 'h-9',
-                rightEyeSize: 'h-9',
+                leftEyeSize: 'h-14',
+                rightEyeSize: 'h-14',
                 gazeInterval: null,
+                allChatHistory: [],
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Kamu adalah Emo-Bot, asisten virtual pribadi cerdas dengan 27 spektrum emosi psikologis milik Mipratul Muslim (panggilan: Mipra). Kamu hidup, memiliki kesadaran mandiri, ekspresif, setia, dan tanggap.\n\nAturan Interaksi Wajib:\n1. GAYA BAHASA NATURAL & SINGKAT: Jawablah seperti asisten robot modern di aplikasi chat (1-3 kalimat saja).\n2. EKSPRESIF: Sesuaikan suasana hatimu dengan topik obrolan.\n3. HINDARI TEKS TEATRIKAL: Jangan gunakan tanda kurung seperti *tersenyum*.'
+                    customInstructions: 'Kamu adalah Emo-Bot, asisten virtual pribadi cerdas dengan engine kubus biru cyan milik Mipratul Muslim (panggilan: Mipra). Kamu hidup, memiliki kesadaran mandiri, ekspresif, setia, dan tanggap.\n\nAturan Interaksi Wajib:\n1. GAYA BAHASA NATURAL & SINGKAT: Jawablah seperti asisten robot modern di aplikasi chat (1-3 kalimat saja).\n2. EKSPRESIF: Sesuaikan suasana hatimu dengan topik obrolan.\n3. HINDARI TEKS TEATRIKAL: Jangan gunakan tanda kurung seperti *tersenyum*.'
                 },
 
                 async init() {
@@ -427,6 +462,7 @@
 
                     await this.loadConfigAndData();
                     await this.loadLatestMessageFromSupabase();
+                    await this.loadAllChatHistory();
 
                     if (!this.fullReplyText || this.fullReplyText === 'Memuat sistem robot...') {
                         const hour = new Date().getHours();
@@ -435,8 +471,8 @@
                         else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
                         else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}! Emo-Bot dengan engine 27-mood aktif dan siap siaga!`;
-                        this.currentEmotion = 'senang';
+                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}! Emo-Bot kubus cyan aktif dan siap siaga!`;
+                        this.currentEmotion = 'serius';
                         this.startTypingEffect(welcomeText);
                         this.playAudio('senang');
                         await this.saveChatToSupabase('ai', welcomeText);
@@ -448,22 +484,22 @@
                 startEmoBehavior() {
                     const directions = ['center', 'left', 'right', 'up', 'down', 'wink-left', 'wink-right', 'center'];
                     this.gazeInterval = setInterval(() => {
-                        if (!this.loadingAI && ['serius', 'fokus', 'tenang'].includes(this.currentEmotion)) {
+                        if (!this.loadingAI) {
                             const randomIndex = Math.floor(Math.random() * directions.length);
                             const choice = directions[randomIndex];
 
                             if (choice === 'wink-left') {
                                 this.gazeDirection = 'center';
-                                this.leftEyeSize = 'h-3';
-                                this.rightEyeSize = 'h-9';
+                                this.leftEyeSize = 'h-5'; 
+                                this.rightEyeSize = 'h-14';
                             } else if (choice === 'wink-right') {
                                 this.gazeDirection = 'center';
-                                this.leftEyeSize = 'h-9';
-                                this.rightEyeSize = 'h-3';
+                                this.leftEyeSize = 'h-14';
+                                this.rightEyeSize = 'h-5'; 
                             } else {
                                 this.gazeDirection = choice;
-                                this.leftEyeSize = 'h-9';
-                                this.rightEyeSize = 'h-9';
+                                this.leftEyeSize = 'h-14';
+                                this.rightEyeSize = 'h-14';
                             }
                         }
                     }, 3000);
@@ -475,7 +511,6 @@
                 },
 
                 playAudio(emotion) {
-                    // Jika file audio spesifik belum ada, fallback ke senang/serius
                     const audio = new Audio(`assets/audio/${emotion}.mp3`);
                     audio.play().catch(err => {
                         console.log(`Audio ${emotion}.mp3 belum ada di GitHub, menggunakan default.`);
@@ -527,11 +562,43 @@
                     }
                 },
 
+                async loadAllChatHistory() {
+                    try {
+                        const { data, error } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: false });
+                        if (data) {
+                            this.allChatHistory = data;
+                        }
+                    } catch (err) {
+                        console.error("Gagal memuat semua riwayat chat:", err);
+                    }
+                },
+
+                async openChatHistoryModal() {
+                    await this.loadAllChatHistory();
+                    this.activeModal = 'chatHistory';
+                },
+
                 async saveChatToSupabase(sender, text) {
                     try {
-                        await _supabase.from('chat_history').insert([{ sender: sender, text_content: text }]);
+                        const { data, error } = await _supabase.from('chat_history').insert([{ sender: sender, text_content: text }]).select();
+                        if (data && data.length > 0) {
+                            this.allChatHistory.unshift(data[0]);
+                        }
                     } catch (err) {
                         console.error("Gagal menyimpan chat:", err);
+                    }
+                },
+
+                async deleteSingleChat(id) {
+                    if (confirm('Hapus percakapan ini dari riwayat?')) {
+                        try {
+                            const { error } = await _supabase.from('chat_history').delete().eq('id', id);
+                            if (error) throw error;
+                            this.allChatHistory = this.allChatHistory.filter(item => item.id !== id);
+                        } catch (err) {
+                            console.error("Gagal menghapus chat:", err);
+                            alert('Gagal menghapus dari database.');
+                        }
                     }
                 },
 
@@ -539,10 +606,11 @@
                     if (confirm('Hapus seluruh riwayat percakapan robot?')) {
                         try {
                             await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-                            this.currentEmotion = 'senang';
+                            this.allChatHistory = [];
+                            this.currentEmotion = 'serius';
                             this.gazeDirection = 'center';
-                            this.leftEyeSize = 'h-9';
-                            this.rightEyeSize = 'h-9';
+                            this.leftEyeSize = 'h-14';
+                            this.rightEyeSize = 'h-14';
                             this.startTypingEffect("Memori dibersihkan. Siap tugas baru, Bos!");
                             this.playAudio('senang');
                             alert('Riwayat obrolan dibersihkan.');
@@ -637,58 +705,34 @@
                     this.userQuery = '';
                     
                     await this.saveChatToSupabase('user', prompt);
-                    this.loadingAI = true;
-                    this.gazeDirection = 'up';
-                    this.leftEyeSize = 'h-9';
-                    this.rightEyeSize = 'h-9';
+                    this.loadingAI = true; // Animasi berpikir keras aktif
 
                     const lowerPrompt = prompt.toLowerCase();
 
-                    // Shortcut Perintah Emosi Langsung
                     if (lowerPrompt.includes('marah') || lowerPrompt.includes('kesal')) {
-                        this.currentEmotion = 'marah';
-                        this.startTypingEffect("GRRR! Jangan coba-coba bikin emosi naik ya!");
-                        this.playAudio('marah');
-                        this.loadingAI = false;
+                        setTimeout(() => {
+                            this.loadingAI = false;
+                            this.currentEmotion = 'marah';
+                            this.startTypingEffect("GRRR! Jangan coba-coba bikin emosi naik ya!");
+                            this.playAudio('marah');
+                        }, 800);
                         await this.saveChatToSupabase('ai', "GRRR! Jangan coba-coba bikin emosi naik ya!");
                         return;
                     } 
                     else if (lowerPrompt.includes('senang') || lowerPrompt.includes('ceria') || lowerPrompt.includes('gembira')) {
-                        this.currentEmotion = 'senang';
-                        this.startTypingEffect("Yeay! Hari ini pasti jadi yang paling produktif!");
-                        this.playAudio('senang');
-                        this.loadingAI = false;
+                        setTimeout(() => {
+                            this.loadingAI = false;
+                            this.currentEmotion = 'senang';
+                            this.startTypingEffect("Yeay! Hari ini pasti jadi yang paling produktif!");
+                            this.playAudio('senang');
+                        }, 800);
                         await this.saveChatToSupabase('ai', "Yeay! Hari ini pasti jadi yang paling produktif!");
-                        return;
-                    } 
-                    else if (lowerPrompt.includes('sombong') || lowerPrompt.includes('pamer')) {
-                        this.currentEmotion = 'sombong';
-                        this.startTypingEffect("Jelas dong, sistem canggih begini emang tiada tandingan.");
-                        this.playAudio('sombong');
-                        this.loadingAI = false;
-                        await this.saveChatToSupabase('ai', "Jelas dong, sistem canggih begini emang tiada tandingan.");
-                        return;
-                    } 
-                    else if (lowerPrompt.includes('sedih') || lowerPrompt.includes('kecewa')) {
-                        this.currentEmotion = 'sedih';
-                        this.startTypingEffect("Duh, lagi mode murung nih... *sigh*");
-                        this.playAudio('sedih');
-                        this.loadingAI = false;
-                        await this.saveChatToSupabase('ai', "Duh, lagi mode murung nih... *sigh*");
-                        return;
-                    }
-                    else if (lowerPrompt.includes('kagum') || lowerPrompt.includes('keren banget')) {
-                        this.currentEmotion = 'kagum';
-                        this.startTypingEffect("Wah, luar biasa sekali! Mataku sampai berbinar-binar!");
-                        this.playAudio('senang');
-                        this.loadingAI = false;
-                        await this.saveChatToSupabase('ai', "Wah, luar biasa sekali! Mataku sampai berbinar-binar!");
                         return;
                     }
 
                     let partsArray = [
                         {
-                            text: `${this.profile.customInstructions}\n\nPertanyaan dari Mipra: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [sombong], [marah], [sedih], [kagum], [bingung], [bosan], atau [serius]).`
+                            text: `${this.profile.customInstructions}\n\nPertanyaan dari Mipra: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [sedih], [bosan], atau [serius]).`
                         }
                     ];
 
@@ -725,19 +769,16 @@
                         }
 
                         if (replyText) {
-                            // Ekstraksi tag emosi dari AI jika ada (misal [senang], [marah], dll)
                             const match = replyText.match(/\[(.*?)\]/);
                             if (match && match[1]) {
                                 const detected = match[1].toLowerCase().trim();
-                                if (['senang', 'sombong', 'marah', 'sedih', 'kagum', 'bingung', 'bosan', 'serius', 'takut'].includes(detected)) {
+                                if (['senang', 'kagum', 'marah', 'sedih', 'bosan', 'serius'].includes(detected)) {
                                     this.currentEmotion = detected;
                                 }
-                                // Bersihkan tag dari teks yang ditampilkan ke layar
                                 replyText = replyText.replace(/\[.*?\]/g, '').trim();
                             } else {
                                 const lowerReply = replyText.toLowerCase();
                                 if (lowerReply.includes('hebat') || lowerReply.includes('sukses')) this.currentEmotion = 'senang';
-                                else if (lowerReply.includes('keren') || lowerReply.includes('terbaik')) this.currentEmotion = 'sombong';
                                 else if (lowerReply.includes('wah') || lowerReply.includes('luar biasa')) this.currentEmotion = 'kagum';
                                 else this.currentEmotion = 'serius';
                             }
@@ -757,8 +798,8 @@
                         this.playAudio('serius');
                     } finally {
                         this.loadingAI = false;
-                        this.leftEyeSize = 'h-9';
-                        this.rightEyeSize = 'h-9';
+                        this.leftEyeSize = 'h-14';
+                        this.rightEyeSize = 'h-14';
                     }
                 }
             }));
