@@ -75,10 +75,28 @@
     <!-- Top Navigation Bar -->
     <nav class="backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-sm transition-colors duration-500"
          :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 text-slate-100' : 'bg-white/40 border-white/40 text-slate-800'">
+        
+        <!-- Bagian Foto Profil & Sapaan Tuan -->
         <div class="flex items-center gap-3">
-            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/30 text-base sm:text-lg">M</div>
+            <!-- Input file tersembunyi untuk memilih foto galeri -->
+            <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
+            
+            <!-- Avatar Foto Profil (Bisa diklik untuk ganti foto) -->
+            <div @click="document.getElementById('profilePicInput').click()" 
+                 class="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-indigo-600/30 cursor-pointer relative group flex items-center justify-center font-bold text-white bg-gradient-to-tr from-indigo-600 to-purple-600 border border-white/20"
+                 title="Klik untuk mengganti foto profil dari galeri">
+                <template x-if="userProfilePic">
+                    <img :src="userProfilePic" alt="Foto Profil" class="w-full h-full object-cover">
+                </template>
+                <template x-if="!userProfilePic">
+                    <span class="text-sm" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
+                </template>
+                <!-- Overlay Hover -->
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-150 transition flex items-center justify-center text-[9px] text-white font-medium">Ganti</div>
+            </div>
+
             <div>
-                <span class="font-bold tracking-wide block text-xs sm:text-sm">Personal Command Center</span>
+                <span class="font-bold tracking-wide block text-xs sm:text-sm" x-text="`Selamat datang, Tuan ${profile.panggilan}`"></span>
             </div>
         </div>
 
@@ -446,6 +464,7 @@
                 activeModal: null,
                 darkMode: true,
                 attachedImage: null,
+                userProfilePic: '',
                 typedText: '',
                 isTyping: false,
                 fullReplyText: '',
@@ -469,6 +488,11 @@
                         this.darkMode = true;
                     }
 
+                    const savedPic = localStorage.getItem('user_profile_pic');
+                    if (savedPic) {
+                        this.userProfilePic = savedPic;
+                    }
+
                     await this.loadConfigAndData();
                     await this.loadLatestMessageFromSupabase();
                     await this.loadAllChatHistory();
@@ -480,8 +504,7 @@
                         else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
                         else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                        // Menggunakan nama panggilan dari profil
-                        const welcomeText = `${timeGreeting} ${this.profile.panggilan}! Emo-Bot kubus cyan aktif dan siap siaga!`;
+                        const welcomeText = `${timeGreeting}, Tuan ${this.profile.panggilan}! Emo-Bot kubus cyan aktif dan siap siaga!`;
                         this.setEmotionWithTimeout('senang');
                         this.startTypingEffect(welcomeText);
                         await this.saveChatToSupabase('ai', welcomeText);
@@ -490,11 +513,22 @@
                     this.initEyeTracker();
                 },
 
+                handleProfilePicChange(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.userProfilePic = e.target.result;
+                        localStorage.setItem('user_profile_pic', this.userProfilePic);
+                    };
+                    reader.readAsDataURL(file);
+                },
+
                 handleEyeTouch() {
                     if (this.loadingAI) return;
                     
                     this.setEmotionWithTimeout('pusing');
-                    this.startTypingEffect(`Duh, pusing banget kepalaku dicolok-colok gitu, ${this.profile.panggilan}!`);
+                    this.startTypingEffect(`Duh, pusing banget kepalaku dicolok-colok gitu, Tuan ${this.profile.panggilan}!`);
                 },
 
                 initEyeTracker() {
@@ -765,7 +799,7 @@
 
                     let partsArray = [
                         {
-                            text: `${this.profile.customInstructions}\n\nPertanyaan dari ${this.profile.panggilan}: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [sedih], [bosan], atau [serius]).`
+                            text: `${this.profile.customInstructions}\n\nPertanyaan dari Tuan ${this.profile.panggilan}: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [sedih], [bosan], atau [serius]).`
                         }
                     ];
 
