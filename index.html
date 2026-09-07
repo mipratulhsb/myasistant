@@ -10,14 +10,6 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Google Gen AI SDK -->
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/genai": "https://esm.run/@google/genai"
-        }
-      }
-    </script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans" x-data="dashboardApp()">
 
@@ -52,9 +44,9 @@
                 <button 
                     type="submit" 
                     :disabled="loadingAI"
-                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-50"
+                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
-                    <span x-text="loadingAI ? 'Berpikir...' : 'Kirim'"></span>
+                    <span x-text="loadingAI ? '...' : 'Kirim'"></span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </form>
@@ -71,7 +63,7 @@
                 <h2 class="text-lg font-semibold text-indigo-300 flex items-center gap-2">📖 Hafalan Quran</h2>
                 <span class="text-xs bg-indigo-900 text-indigo-200 px-2 py-1 rounded-lg">Target Harian</span>
             </div>
-            <p class="text-slate-400 text-sm mb-4" x-text="hafalanStatus">Memuat data hafalan...</p>
+            <p class="text-slate-300 text-sm mb-4" x-text="hafalanStatus">Memuat data hafalan...</p>
             <button @click="alert('Fitur tambah hafalan akan segera aktif!')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-sm font-medium transition">Kelola Hafalan</button>
         </div>
 
@@ -94,22 +86,20 @@
                 <h2 class="text-lg font-semibold text-amber-300 flex items-center gap-2">⏱️ Manajemen Waktu</h2>
                 <span class="text-xs bg-amber-900 text-amber-200 px-2 py-1 rounded-lg">To-Do</span>
             </div>
-            <p class="text-slate-400 text-sm mb-4" x-text="todoStatus">Memuat daftar tugas...</p>
+            <p class="text-slate-300 text-sm mb-4" x-text="todoStatus">Memuat daftar tugas...</p>
             <button @click="alert('Fitur to-do list segera hadir!')" class="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 rounded-xl text-sm font-medium transition">Tambah Tugas</button>
         </div>
 
     </main>
 
-    <!-- Script Utama: Supabase & Google Gen AI -->
-    <script type="module">
-        import { GoogleGenAI } from "@google/genai";
-
+    <!-- Script Utama: Supabase & Gemini REST API -->
+    <script>
         // Inisialisasi Supabase
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let aiInstance = null;
+        let cachedApiKey = '';
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('dashboardApp', () => ({
@@ -131,7 +121,7 @@
                     const greetingText = `${timeGreeting} Mip, kita mau ngapain hari ini?`;
                     this.startTypingEffect(greetingText);
                     
-                    // Muat data database dan API Key di background
+                    // Muat data database dan API Key
                     this.loadConfigAndData();
                 },
 
@@ -157,7 +147,7 @@
                         // 1. Ambil API Key dari Supabase
                         const { data: configData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'gemini_api_key').single();
                         if (configData && configData.key_value) {
-                            aiInstance = new GoogleGenAI({ apiKey: configData.key_value });
+                            cachedApiKey = configData.key_value;
                         }
 
                         // 2. Ambil data hafalan
@@ -185,7 +175,7 @@
                 async submitToAI() {
                     if (!this.userQuery.trim() || this.loadingAI) return;
                     
-                    if (!aiInstance) {
+                    if (!cachedApiKey) {
                         this.startTypingEffect("API Key belum ditemukan di database Supabase.");
                         return;
                     }
@@ -196,19 +186,36 @@
                     this.typedText = '';
                     
                     try {
-                        const response = await aiInstance.models.generateContent({
-                            model: 'gemini-2.5-flash',
-                            contents: prompt,
-                            config: {
-                                systemInstruction: "Kamu adalah asisten pribadi yang ramah dan siap membantu Mipra mengelola aktivitas hariannya secara ringkas dan solutif."
-                            }
+                        // Menggunakan Gemini REST API (gemini-2.5-flash) secara langsung
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${cachedApiKey}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                contents: [
+                                    {
+                                        role: "user",
+                                        parts: [{ text: prompt }]
+                                    }
+                                ],
+                                systemInstruction: {
+                                    parts: [{ text: "Kamu adalah asisten pribadi yang ramah dan siap membantu Mipra mengelola aktivitas hariannya secara ringkas dan solutif." }]
+                                }
+                            })
                         });
 
-                        const replyText = response.text || "Maaf, saya tidak dapat memproses jawaban saat ini.";
-                        this.startTypingEffect(replyText);
+                        const data = await response.json();
+                        
+                        if (data.candidates && data.candidates[0].content.parts[0].text) {
+                            const replyText = data.candidates[0].content.parts[0].text;
+                            this.startTypingEffect(replyText);
+                        } else {
+                            this.startTypingEffect("Maaf, format respons tidak dikenali.");
+                        }
                     } catch (error) {
                         console.error("Error Gemini API:", error);
-                        this.startTypingEffect("Terjadi kesalahan saat menghubungi server Gemini.");
+                        this.startTypingEffect("Terjadi kesalahan koneksi ke server Gemini.");
                     } finally {
                         this.loadingAI = false;
                     }
