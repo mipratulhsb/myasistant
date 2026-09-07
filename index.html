@@ -21,7 +21,14 @@
         .robot-eye-base {
             animation: blink 4s infinite;
             transform-origin: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes quickBlink {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+        .animate-quick-blink {
+            animation: quickBlink 0.3s ease-in-out 3;
         }
         @keyframes thinkPulse {
             0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
@@ -103,9 +110,6 @@
                 <button @click="openChatHistoryModal(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
                     <span>📜</span> Riwayat Chat Gemini
                 </button>
-                <button @click="clearChatHistory(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-red-950/40' : 'hover:bg-red-50/50'">
-                    <span>🗑️</span> Hapus Semua Riwayat
-                </button>
                 
                 <div class="my-1 border-t" :class="darkMode ? 'border-slate-800/60' : 'border-sky-100/60'"></div>
 
@@ -127,9 +131,17 @@
         <div class="backdrop-blur-md border rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500"
              :class="darkMode ? 'bg-slate-900/40 border-slate-800/40' : 'bg-white/40 border-white/40'">
             
-            <!-- Area Mata Kubus Biru Cyan & Animasi Berpikir Keras -->
-            <div class="w-56 h-28 flex items-center justify-center relative mb-4">
-                <div class="flex gap-10 items-center justify-center">
+            <!-- Area Mata Kubus Biru Cyan & Interaksi Klik/Sentuh -->
+            <div id="robot-eyes-container" 
+                 @click="handleEyeTouch()" 
+                 @touchstart.prevent="handleEyeTouch()"
+                 class="w-56 h-28 flex items-center justify-center relative mb-4 cursor-pointer select-none group"
+                 title="Sentuh atau klik mata robot!">
+                
+                <!-- Indikator kecil petunjuk interaktif -->
+                <span class="absolute -top-3 text-[9px] opacity-60 tracking-wider group-hover:opacity-100 transition" :class="darkMode ? 'text-indigo-300' : 'text-indigo-700'">👆 Sentuh Mata</span>
+
+                <div class="flex gap-10 items-center justify-center" :class="isBlinkingEyes ? 'animate-quick-blink' : ''">
 
                     <!-- JIKA SEDANG BERFIKIR KERAS (SAAT SUBMIT / LOADING AI) -->
                     <template x-if="loadingAI">
@@ -147,7 +159,7 @@
                     <template x-if="!loadingAI">
                         <div class="flex gap-10 items-center justify-center">
                             
-                            <!-- 1. MOOD: SENANG / ROMANTIS (Bentuk Hati Pink) -->
+                            <!-- 1. MOOD: SENANG / PUAS / ROMANTIS (Bentuk Emot Love Pink Menyala) -->
                             <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(236,72,153,0.9)] robot-eye-base transform rotate-45 relative">
@@ -196,25 +208,19 @@
                                 </div>
                             </template>
 
-                            <!-- 6. DEFAULT NORMAL: MATA KUBUS BIRU CYAN -->
+                            <!-- 6. DEFAULT NORMAL: MATA KUBUS BIRU CYAN (Mengikuti kursor/sentuhan) -->
                             <template x-if="!['senang', 'puas', 'romantis', 'kagum', 'antusias', 'marah', 'sedih', 'kecewa', 'bosan', 'lelah'].includes(currentEmotion)">
                                 <div class="flex gap-10 items-center justify-center">
                                     <!-- Mata Kiri Kubus Cyan -->
-                                    <div class="w-16 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center"
-                                         :class="[
-                                            leftEyeSize,
-                                            gazeDirection === 'left' ? 'justify-start pl-2' : (gazeDirection === 'right' ? 'justify-end pr-2' : (gazeDirection === 'up' ? 'items-start pt-1.5 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1.5 justify-center' : 'justify-center')))
-                                         ]">
-                                        <div class="w-4 h-4 bg-slate-950 rounded-sm transition-all duration-300 shadow-sm"></div>
+                                    <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
+                                        <div class="w-4 h-4 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm"
+                                             :style="`transform: translate(${pupilX}px, ${pupilY}px);`"></div>
                                     </div>
 
                                     <!-- Mata Kanan Kubus Cyan -->
-                                    <div class="w-16 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center"
-                                         :class="[
-                                            rightEyeSize,
-                                            gazeDirection === 'left' ? 'justify-start pl-2' : (gazeDirection === 'right' ? 'justify-end pr-2' : (gazeDirection === 'up' ? 'items-start pt-1.5 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1.5 justify-center' : 'justify-center')))
-                                         ]">
-                                        <div class="w-4 h-4 bg-slate-950 rounded-sm transition-all duration-300 shadow-sm"></div>
+                                    <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
+                                        <div class="w-4 h-4 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm"
+                                             :style="`transform: translate(${pupilX}px, ${pupilY}px);`"></div>
                                     </div>
                                 </div>
                             </template>
@@ -232,12 +238,10 @@
                     <span x-text="typedText"></span><span class="animate-pulse text-indigo-500 font-bold" x-show="isTyping">|</span>
                 </p>
                 
-                <div class="absolute bottom-2 right-3 flex items-center gap-1.5">
+                <div class="absolute bottom-2 right-3">
                     <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded border backdrop-blur-md transition-colors duration-500" 
                           :class="darkMode ? 'bg-slate-900/60 border-slate-800 text-indigo-300' : 'bg-white/60 border-white text-indigo-700'" 
                           x-text="'Mood: ' + currentEmotion"></span>
-                    <button @click="playAudio(currentEmotion)" title="Ulangi Suara" class="text-[10px] border px-2 py-0.5 rounded-lg transition cursor-pointer backdrop-blur-md"
-                            :class="darkMode ? 'text-slate-400 hover:text-indigo-300 bg-slate-900/60 border-slate-800' : 'text-slate-600 hover:text-indigo-600 bg-white/60 border-white'">🔊 Ulangi</button>
                 </div>
             </div>
 
@@ -325,7 +329,7 @@
 
     </main>
 
-    <!-- Modal Riwayat Chat (Gaya Panel Samping / Drawer seperti Gemini) -->
+    <!-- Modal Riwayat Chat -->
     <div x-show="activeModal === 'chatHistory'" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="border rounded-2xl p-5 w-full max-w-lg shadow-2xl backdrop-blur-2xl transition-colors duration-500 flex flex-col max-h-[85vh]"
              :class="darkMode ? 'bg-slate-900/95 border-slate-800 text-slate-200' : 'bg-white/95 border-white text-slate-800'">
@@ -353,7 +357,6 @@
                                   x-text="chat.sender === 'user' ? '👤 Anda' : '🤖 Emo-Bot'"></span>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px]" :class="darkMode ? 'text-slate-500' : 'text-slate-400'" x-text="new Date(chat.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
-                                <!-- Tombol Hapus Satuan -->
                                 <button @click="deleteSingleChat(chat.id)" title="Hapus Percakapan Ini" class="text-red-400 hover:text-red-500 transition text-xs px-1.5 py-0.5 rounded cursor-pointer" :class="darkMode ? 'hover:bg-red-950/50' : 'hover:bg-red-100'">🗑️</button>
                             </div>
                         </div>
@@ -439,11 +442,11 @@
                 typedText: '',
                 isTyping: false,
                 fullReplyText: '',
-                currentEmotion: 'serius',
-                gazeDirection: 'center',
-                leftEyeSize: 'h-14',
-                rightEyeSize: 'h-14',
-                gazeInterval: null,
+                currentEmotion: 'normal',
+                pupilX: 0,
+                pupilY: 0,
+                isBlinkingEyes: false,
+                emotionTimeout: null,
                 allChatHistory: [],
                 
                 profile: {
@@ -472,49 +475,82 @@
                         else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
                         const welcomeText = `${timeGreeting} ${this.profile.panggilan}! Emo-Bot kubus cyan aktif dan siap siaga!`;
-                        this.currentEmotion = 'serius';
+                        this.setEmotionWithTimeout('senang');
                         this.startTypingEffect(welcomeText);
-                        this.playAudio('senang');
                         await this.saveChatToSupabase('ai', welcomeText);
                     }
 
-                    this.startEmoBehavior();
+                    this.initEyeTracker();
                 },
 
-                startEmoBehavior() {
-                    const directions = ['center', 'left', 'right', 'up', 'down', 'wink-left', 'wink-right', 'center'];
-                    this.gazeInterval = setInterval(() => {
-                        if (!this.loadingAI) {
-                            const randomIndex = Math.floor(Math.random() * directions.length);
-                            const choice = directions[randomIndex];
+                handleEyeTouch() {
+                    if (this.loadingAI) return;
+                    
+                    // Picu animasi kedip cepat dan ubah mood jadi marah
+                    this.isBlinkingEyes = true;
+                    this.setEmotionWithTimeout('marah');
+                    this.startTypingEffect("Waduh, jangan dicolok-colok gitu matanya, bos! Nanti rusak!");
 
-                            if (choice === 'wink-left') {
-                                this.gazeDirection = 'center';
-                                this.leftEyeSize = 'h-5'; 
-                                this.rightEyeSize = 'h-14';
-                            } else if (choice === 'wink-right') {
-                                this.gazeDirection = 'center';
-                                this.leftEyeSize = 'h-14';
-                                this.rightEyeSize = 'h-5'; 
-                            } else {
-                                this.gazeDirection = choice;
-                                this.leftEyeSize = 'h-14';
-                                this.rightEyeSize = 'h-14';
-                            }
+                    setTimeout(() => {
+                        this.isBlinkingEyes = false;
+                    }, 1000);
+                },
+
+                initEyeTracker() {
+                    const updatePupils = (clientX, clientY) => {
+                        if (this.loadingAI || this.currentEmotion !== 'normal') return;
+                        
+                        const eyeContainer = document.getElementById('robot-eyes-container');
+                        if (!eyeContainer) return;
+
+                        const rect = eyeContainer.getBoundingClientRect();
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+
+                        const deltaX = clientX - centerX;
+                        const deltaY = clientY - centerY;
+
+                        const maxOffset = 10;
+                        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        
+                        if (distance === 0) {
+                            this.pupilX = 0;
+                            this.pupilY = 0;
+                            return;
                         }
-                    }, 3000);
+
+                        const scale = Math.min(distance, maxOffset) / distance;
+                        this.pupilX = deltaX * scale;
+                        this.pupilY = deltaY * scale;
+                    };
+
+                    window.addEventListener('mousemove', (e) => {
+                        updatePupils(e.clientX, e.clientY);
+                    });
+
+                    window.addEventListener('touchmove', (e) => {
+                        if (e.touches.length > 0) {
+                            updatePupils(e.touches[0].clientX, e.touches[0].clientY);
+                        }
+                    }, { passive: true });
+                },
+
+                setEmotionWithTimeout(emotion) {
+                    if (this.emotionTimeout) clearTimeout(this.emotionTimeout);
+                    this.currentEmotion = emotion;
+
+                    if (emotion !== 'normal') {
+                        this.pupilX = 0;
+                        this.pupilY = 0;
+                        this.emotionTimeout = setTimeout(() => {
+                            this.currentEmotion = 'normal';
+                        }, 10000); // Kembali ke default setelah 10 detik
+                    }
                 },
 
                 toggleDarkMode() {
                     this.darkMode = !this.darkMode;
                     localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
-                },
-
-                playAudio(emotion) {
-                    const audio = new Audio(`assets/audio/${emotion}.mp3`);
-                    audio.play().catch(err => {
-                        console.log(`Audio ${emotion}.mp3 belum ada di GitHub, menggunakan default.`);
-                    });
                 },
 
                 startTypingEffect(text) {
@@ -607,12 +643,10 @@
                         try {
                             await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
                             this.allChatHistory = [];
-                            this.currentEmotion = 'serius';
-                            this.gazeDirection = 'center';
-                            this.leftEyeSize = 'h-14';
-                            this.rightEyeSize = 'h-14';
+                            this.setEmotionWithTimeout('normal');
+                            this.pupilX = 0;
+                            this.pupilY = 0;
                             this.startTypingEffect("Memori dibersihkan. Siap tugas baru, Bos!");
-                            this.playAudio('senang');
                             alert('Riwayat obrolan dibersihkan.');
                         } catch (err) {
                             console.error("Gagal menghapus chat:", err);
@@ -694,10 +728,10 @@
                     if ((!this.userQuery.trim() && !this.attachedImage) || this.loadingAI) return;
                     
                     if (!cachedApiKey) {
-                        this.currentEmotion = 'serius';
-                        this.gazeDirection = 'center';
+                        this.setEmotionWithTimeout('serius');
+                        this.pupilX = 0;
+                        this.pupilY = 0;
                         this.startTypingEffect('API Key belum ditemukan di database Supabase.');
-                        this.playAudio('serius');
                         return;
                     }
 
@@ -705,16 +739,15 @@
                     this.userQuery = '';
                     
                     await this.saveChatToSupabase('user', prompt);
-                    this.loadingAI = true; // Animasi berpikir keras aktif
+                    this.loadingAI = true;
 
                     const lowerPrompt = prompt.toLowerCase();
 
                     if (lowerPrompt.includes('marah') || lowerPrompt.includes('kesal')) {
                         setTimeout(() => {
                             this.loadingAI = false;
-                            this.currentEmotion = 'marah';
+                            this.setEmotionWithTimeout('marah');
                             this.startTypingEffect("GRRR! Jangan coba-coba bikin emosi naik ya!");
-                            this.playAudio('marah');
                         }, 800);
                         await this.saveChatToSupabase('ai', "GRRR! Jangan coba-coba bikin emosi naik ya!");
                         return;
@@ -722,9 +755,8 @@
                     else if (lowerPrompt.includes('senang') || lowerPrompt.includes('ceria') || lowerPrompt.includes('gembira')) {
                         setTimeout(() => {
                             this.loadingAI = false;
-                            this.currentEmotion = 'senang';
+                            this.setEmotionWithTimeout('senang');
                             this.startTypingEffect("Yeay! Hari ini pasti jadi yang paling produktif!");
-                            this.playAudio('senang');
                         }, 800);
                         await this.saveChatToSupabase('ai', "Yeay! Hari ini pasti jadi yang paling produktif!");
                         return;
@@ -773,33 +805,30 @@
                             if (match && match[1]) {
                                 const detected = match[1].toLowerCase().trim();
                                 if (['senang', 'kagum', 'marah', 'sedih', 'bosan', 'serius'].includes(detected)) {
-                                    this.currentEmotion = detected;
+                                    this.setEmotionWithTimeout(detected);
                                 }
                                 replyText = replyText.replace(/\[.*?\]/g, '').trim();
                             } else {
                                 const lowerReply = replyText.toLowerCase();
-                                if (lowerReply.includes('hebat') || lowerReply.includes('sukses')) this.currentEmotion = 'senang';
-                                else if (lowerReply.includes('wah') || lowerReply.includes('luar biasa')) this.currentEmotion = 'kagum';
-                                else this.currentEmotion = 'serius';
+                                if (lowerReply.includes('hebat') || lowerReply.includes('sukses')) this.setEmotionWithTimeout('senang');
+                                else if (lowerReply.includes('wah') || lowerReply.includes('luar biasa')) this.setEmotionWithTimeout('kagum');
+                                else this.setEmotionWithTimeout('normal');
                             }
 
-                            this.playAudio(this.currentEmotion);
                             this.startTypingEffect(replyText);
                             await this.saveChatToSupabase('ai', replyText);
                         } else {
-                            this.currentEmotion = 'serius';
+                            this.setEmotionWithTimeout('serius');
                             this.startTypingEffect('Duh, server lagi bengong nih.');
-                            this.playAudio('serius');
                         }
                     } catch (error) {
                         console.error("Error koneksi Gemini API:", error);
-                        this.currentEmotion = 'serius';
+                        this.setEmotionWithTimeout('serius');
                         this.startTypingEffect('Waduh, koneksi error bos.');
-                        this.playAudio('serius');
                     } finally {
                         this.loadingAI = false;
-                        this.leftEyeSize = 'h-14';
-                        this.rightEyeSize = 'h-14';
+                        this.pupilX = 0;
+                        this.pupilY = 0;
                     }
                 }
             }));
