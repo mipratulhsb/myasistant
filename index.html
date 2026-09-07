@@ -29,7 +29,6 @@
             );
             background-size: 100% 4px;
         }
-        /* Animasi sinar matahari/bulan */
         @keyframes glow {
             0%, 100% { transform: scale(1); opacity: 0.8; }
             50% { transform: scale(1.08); opacity: 1; }
@@ -38,28 +37,25 @@
     </style>
 </head>
 <body class="min-h-screen font-sans flex flex-col justify-between transition-colors duration-500 relative overflow-x-hidden" 
-      :class="darkMode ? 'bg-slate-950 text-slate-100' : 'bg-sky-100 text-slate-800'" 
+      :class="darkMode ? 'bg-slate-950 text-slate-100' : 'bg-sky-200 text-slate-800'" 
       x-data="dashboardApp()">
 
-    <!-- Latar Belakang Pemandangan Minimalis (Sesuai Mode Light/Dark) -->
-    <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end">
-        <!-- Langit & Matahari / Bulan -->
-        <div class="absolute inset-0 transition-colors duration-700" :class="darkMode ? 'bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950' : 'bg-gradient-to-b from-sky-400 via-sky-200 to-sky-100'"></div>
+    <!-- Latar Belakang Pemandangan Minimalis -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end">
+        <div class="absolute inset-0 transition-colors duration-700" :class="darkMode ? 'bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950' : 'bg-gradient-to-b from-sky-400 via-sky-300 to-sky-200'"></div>
 
-        <!-- Matahari (Muncul saat Light Mode) -->
+        <!-- Matahari / Bulan -->
         <div x-show="!darkMode" class="absolute top-12 right-20 w-20 h-20 bg-amber-300 rounded-full blur-sm sun-glow shadow-[0_0_40px_rgba(252,211,77,0.8)]"></div>
-        
-        <!-- Bulan (Muncul saat Dark Mode) -->
         <div x-show="darkMode" class="absolute top-12 right-24 w-16 h-16 bg-slate-200 rounded-full shadow-[0_0_30px_rgba(226,232,240,0.4)] opacity-90"></div>
 
-        <!-- Siluet Gunung / Bukit Belakang -->
+        <!-- Siluet Gunung Belakang -->
         <div class="absolute bottom-0 w-full h-48 opacity-40 transition-colors duration-700" :class="darkMode ? 'text-indigo-900/60' : 'text-emerald-700/30'">
             <svg viewBox="0 0 1200 300" preserveAspectRatio="none" class="w-full h-full fill-current">
                 <path d="M0,300 L0,150 Q250,50 500,200 T1000,100 L1200,300 Z"></path>
             </svg>
         </div>
 
-        <!-- Siluet Gunung / Bukit Depan & Rumah Minimalis -->
+        <!-- Siluet Gunung Depan -->
         <div class="absolute bottom-0 w-full h-32 transition-colors duration-700" :class="darkMode ? 'text-slate-900' : 'text-emerald-800/40'">
             <svg viewBox="0 0 1200 200" preserveAspectRatio="none" class="w-full h-full fill-current">
                 <path d="M0,200 L0,80 Q350,20 700,120 T1200,60 L1200,200 Z"></path>
@@ -67,9 +63,9 @@
         </div>
     </div>
 
-    <!-- Top Navigation Bar -->
-    <nav class="backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-md transition-colors duration-500"
-         :class="darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-100' : 'bg-white/80 border-sky-200 text-slate-800'">
+    <!-- Top Navigation Bar (Glassmorphism Transparan) -->
+    <nav class="backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-sm transition-colors duration-500"
+         :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 text-slate-100' : 'bg-white/40 border-white/40 text-slate-800'">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/30 text-base sm:text-lg">M</div>
             <div>
@@ -82,39 +78,39 @@
 
         <!-- Menu Profil 3 Garis (Hamburger) -->
         <div class="relative" x-data="{ open: false }">
-            <button @click="open = !open" class="flex items-center justify-center w-10 h-10 border rounded-xl transition cursor-pointer shadow-sm"
-                    :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200' : 'bg-sky-50 hover:bg-sky-100 border-sky-200 text-slate-700'">
+            <button @click="open = !open" class="flex items-center justify-center w-10 h-10 border rounded-xl transition cursor-pointer shadow-sm backdrop-blur-md"
+                    :class="darkMode ? 'bg-slate-800/60 hover:bg-slate-700/60 border-slate-700/50 text-slate-200' : 'bg-white/60 hover:bg-white/80 border-white/50 text-slate-700'">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
             </button>
 
             <!-- Dropdown Menu -->
-            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 border rounded-2xl shadow-2xl p-2 z-50 transition-colors duration-500"
-                 :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-sky-200 text-slate-800'">
-                <div class="px-3 py-2 border-b mb-1" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
+            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 border rounded-2xl shadow-2xl p-2 z-50 backdrop-blur-xl transition-colors duration-500"
+                 :class="darkMode ? 'bg-slate-900/80 border-slate-800/60 text-slate-200' : 'bg-white/80 border-white/60 text-slate-800'">
+                <div class="px-3 py-2 border-b mb-1" :class="darkMode ? 'border-slate-800/60' : 'border-sky-100/60'">
                     <p class="text-[10px]" :class="darkMode ? 'text-slate-500' : 'text-slate-400'">Masuk sebagai:</p>
                     <p class="text-xs font-semibold text-indigo-500" x-text="profile.namaLengkap"></p>
                 </div>
                 
-                <button @click="activeModal = 'dataPribadi'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800' : 'hover:bg-sky-50'">
+                <button @click="activeModal = 'dataPribadi'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
                     <span>👤</span> Pengaturan Data Pribadi
                 </button>
-                <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800' : 'hover:bg-sky-50'">
+                <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
                     <span>🧠</span> Wawasan AI
                 </button>
-                <button @click="clearChatHistory(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-red-950/40' : 'hover:bg-red-50'">
+                <button @click="clearChatHistory(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-red-950/40' : 'hover:bg-red-50/50'">
                     <span>🗑️</span> Bersihkan Riwayat Chat
                 </button>
                 
-                <div class="my-1 border-t" :class="darkMode ? 'border-slate-800' : 'border-sky-100'"></div>
+                <div class="my-1 border-t" :class="darkMode ? 'border-slate-800/60' : 'border-sky-100/60'"></div>
 
-                <button @click="toggleDarkMode(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer" :class="darkMode ? 'hover:bg-slate-800' : 'hover:bg-sky-50'">
+                <button @click="toggleDarkMode(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
                     <span class="flex items-center gap-2">
                         <span x-text="darkMode ? '☀️' : '🌙'"></span> 
                         <span x-text="darkMode ? 'Mode Terang' : 'Mode Gelap'"></span>
                     </span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded" :class="darkMode ? 'bg-slate-800 text-slate-400' : 'bg-sky-100 text-slate-600'" x-text="darkMode ? 'Dark' : 'Light'"></span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded border" :class="darkMode ? 'bg-slate-800/60 border-slate-700 text-slate-400' : 'bg-white/60 border-white text-slate-600'" x-text="darkMode ? 'Dark' : 'Light'"></span>
                 </button>
             </div>
         </div>
@@ -123,20 +119,21 @@
     <!-- Main Workspace Container -->
     <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1 z-10">
 
-        <!-- Panel Wajah Robot Emo Style -->
+        <!-- Panel Wajah Robot Emo Style (Transparan Kaca Tipis) -->
         <div class="backdrop-blur-md border rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500"
-             :class="darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-sky-200'">
+             :class="darkMode ? 'bg-slate-900/40 border-slate-800/40' : 'bg-white/40 border-white/40'">
             
-            <!-- Wajah Robot: Mata Besar Lonjong dengan Kornea Bergerak -->
+            <!-- Wajah Robot: Sistem Mata Emo Asli (Bisa melirik dan menyipit sebelah) -->
             <div class="w-56 h-28 rounded-2xl flex flex-col items-center justify-center relative mb-4 transition-colors duration-500"
-                 :class="darkMode ? 'bg-slate-950/40' : 'bg-sky-100/60'">
+                 :class="darkMode ? 'bg-slate-950/20' : 'bg-white/20'">
                 <div class="absolute -top-1 w-12 h-1 rounded-full animate-pulse transition-colors duration-500" 
                      :class="loadingAI ? 'bg-purple-500' : (currentEmotion === 'marah' ? 'bg-red-500' : (currentEmotion === 'senang' ? 'bg-emerald-500' : (currentEmotion === 'sombong' ? 'bg-amber-500' : 'bg-indigo-500')))"></div>
 
                 <div class="flex gap-12 items-center justify-center">
                     <!-- Mata Kiri -->
-                    <div class="w-14 h-9 rounded-2xl robot-eye pixel-eye relative overflow-hidden transition-colors duration-300 shadow-md flex items-center"
+                    <div class="w-14 rounded-2xl robot-eye pixel-eye relative overflow-hidden transition-all duration-300 shadow-md flex items-center"
                          :class="[
+                            leftEyeSize,
                             loadingAI ? 'bg-purple-400 shadow-[0_0_15px_rgba(192,132,252,0.8)]' : (currentEmotion === 'marah' ? 'bg-red-500 shadow-[0_0_18px_rgba(239,68,68,0.9)]' : (currentEmotion === 'senang' ? 'bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)]' : (currentEmotion === 'sombong' ? 'bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.8)]' : 'bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.8)]'))),
                             gazeDirection === 'left' ? 'justify-start pl-1.5' : (gazeDirection === 'right' ? 'justify-end pr-1.5' : (gazeDirection === 'up' ? 'items-start pt-1 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1 justify-center' : 'justify-center')))
                          ]">
@@ -144,8 +141,9 @@
                     </div>
 
                     <!-- Mata Kanan -->
-                    <div class="w-14 h-9 rounded-2xl robot-eye pixel-eye relative overflow-hidden transition-colors duration-300 shadow-md flex items-center"
+                    <div class="w-14 rounded-2xl robot-eye pixel-eye relative overflow-hidden transition-all duration-300 shadow-md flex items-center"
                          :class="[
+                            rightEyeSize,
                             loadingAI ? 'bg-purple-400 shadow-[0_0_15px_rgba(192,132,252,0.8)]' : (currentEmotion === 'marah' ? 'bg-red-500 shadow-[0_0_18px_rgba(239,68,68,0.9)]' : (currentEmotion === 'senang' ? 'bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)]' : (currentEmotion === 'sombong' ? 'bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.8)]' : 'bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.8)]'))),
                             gazeDirection === 'left' ? 'justify-start pl-1.5' : (gazeDirection === 'right' ? 'justify-end pr-1.5' : (gazeDirection === 'up' ? 'items-start pt-1 justify-center' : (gazeDirection === 'down' ? 'items-end pb-1 justify-center' : 'justify-center')))
                          ]">
@@ -154,38 +152,38 @@
                 </div>
             </div>
 
-            <!-- Balon Teks Dialog dengan Efek Mengetik -->
-            <div class="w-full max-w-2xl border rounded-2xl p-4 sm:p-5 shadow-inner min-h-[100px] flex flex-col justify-center relative transition-colors duration-500"
-                 :class="darkMode ? 'bg-slate-950/90 border-indigo-500/30 text-indigo-200' : 'bg-white/90 border-sky-200 text-slate-700'">
+            <!-- Balon Teks Dialog Transparan Kaca -->
+            <div class="w-full max-w-2xl border rounded-2xl p-4 sm:p-5 shadow-inner min-h-[100px] flex flex-col justify-center relative backdrop-blur-md transition-colors duration-500"
+                 :class="darkMode ? 'bg-slate-950/50 border-indigo-500/30 text-indigo-200' : 'bg-white/50 border-white/60 text-slate-800'">
                 <p class="text-xs sm:text-sm font-medium text-center leading-relaxed">
                     <span x-text="typedText"></span><span class="animate-pulse text-indigo-500 font-bold" x-show="isTyping">|</span>
                 </p>
                 
                 <div class="absolute bottom-2 right-3 flex items-center gap-1.5">
-                    <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded border transition-colors duration-500" 
-                          :class="darkMode ? 'bg-slate-900 border-slate-800 text-indigo-300' : 'bg-sky-50 border-sky-200 text-sky-700'" 
+                    <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded border backdrop-blur-md transition-colors duration-500" 
+                          :class="darkMode ? 'bg-slate-900/60 border-slate-800 text-indigo-300' : 'bg-white/60 border-white text-indigo-700'" 
                           x-text="'Mood: ' + currentEmotion"></span>
-                    <button @click="playAudio(currentEmotion)" title="Ulangi Suara" class="text-[10px] border px-2 py-0.5 rounded-lg transition cursor-pointer"
-                            :class="darkMode ? 'text-slate-400 hover:text-indigo-300 bg-slate-900 border-slate-800' : 'text-slate-600 hover:text-sky-600 bg-sky-50 border-sky-200'">🔊 Ulangi</button>
+                    <button @click="playAudio(currentEmotion)" title="Ulangi Suara" class="text-[10px] border px-2 py-0.5 rounded-lg transition cursor-pointer backdrop-blur-md"
+                            :class="darkMode ? 'text-slate-400 hover:text-indigo-300 bg-slate-900/60 border-slate-800' : 'text-slate-600 hover:text-indigo-600 bg-white/60 border-white'">🔊 Ulangi</button>
                 </div>
             </div>
 
             <!-- Tombol Pintasan Cepat (Quick Pills) -->
             <div class="w-full pt-4 mt-4 border-t flex gap-2 overflow-x-auto justify-center transition-colors duration-500"
-                 :class="darkMode ? 'border-slate-800' : 'border-sky-200'">
-                <button @click="sendQuickPrompt('Bagaimana jadwal dinas dan tugasku di Yanma Polda Sumbar hari ini?')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm"
-                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/60 text-indigo-300' : 'bg-white hover:bg-sky-50 border-sky-200 text-sky-700'">🛡️ Tugas Yanma</button>
-                <button @click="sendQuickPrompt('Ingatkan target studiku di S1 Hukum Universitas Terbuka.')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm"
-                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/60 text-indigo-300' : 'bg-white hover:bg-sky-50 border-sky-200 text-sky-700'">📚 Kuliah UT</button>
-                <button @click="sendQuickPrompt('Beri motivasi dan evaluasi untuk kegiatan di Bimbel Pradipta.')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm"
-                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/60 text-indigo-300' : 'bg-white hover:bg-sky-50 border-sky-200 text-sky-700'">🏢 Bimbel Pradipta</button>
+                 :class="darkMode ? 'border-slate-800/40' : 'border-white/40'">
+                <button @click="sendQuickPrompt('Bagaimana jadwal dinas dan tugasku di Yanma Polda Sumbar hari ini?')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm backdrop-blur-md"
+                        :class="darkMode ? 'bg-slate-800/50 hover:bg-slate-700/60 border-slate-700/50 text-indigo-300' : 'bg-white/50 hover:bg-white/80 border-white/60 text-indigo-800'">🛡️ Tugas Yanma</button>
+                <button @click="sendQuickPrompt('Ingatkan target studiku di S1 Hukum Universitas Terbuka.')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm backdrop-blur-md"
+                        :class="darkMode ? 'bg-slate-800/50 hover:bg-slate-700/60 border-slate-700/50 text-indigo-300' : 'bg-white/50 hover:bg-white/80 border-white/60 text-indigo-800'">📚 Kuliah UT</button>
+                <button @click="sendQuickPrompt('Beri motivasi dan evaluasi untuk kegiatan di Bimbel Pradipta.')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm backdrop-blur-md"
+                        :class="darkMode ? 'bg-slate-800/50 hover:bg-slate-700/60 border-slate-700/50 text-indigo-300' : 'bg-white/50 hover:bg-white/80 border-white/60 text-indigo-800'">🏢 Bimbel Pradipta</button>
             </div>
         </div>
 
         <!-- Input Chat & Kirim + Lampiran Gambar -->
         <form @submit.prevent="submitToAI" class="flex gap-2 items-center">
-            <label class="border p-3 sm:py-3.5 rounded-xl cursor-pointer transition flex items-center justify-center shadow-sm"
-                   :class="darkMode ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-400 hover:text-indigo-400' : 'bg-white hover:bg-sky-50 border-sky-200 text-slate-500 hover:text-sky-600'" 
+            <label class="border p-3 sm:py-3.5 rounded-xl cursor-pointer transition flex items-center justify-center shadow-sm backdrop-blur-md"
+                   :class="darkMode ? 'bg-slate-900/50 hover:bg-slate-800/60 border-slate-800/50 text-slate-400 hover:text-indigo-400' : 'bg-white/50 hover:bg-white/80 border-white/60 text-slate-600 hover:text-indigo-600'" 
                    title="Unggah Gambar / Dokumen">
                 <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -196,82 +194,82 @@
                 x-model="userQuery" 
                 :disabled="loadingAI"
                 placeholder="Ketik perintah atau tanyakan sesuatu pada robot..." 
-                class="flex-1 border focus:border-indigo-500 focus:outline-none px-4 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm shadow-inner disabled:opacity-50 transition-colors duration-500"
-                :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200 placeholder-slate-500' : 'bg-white border-sky-200 text-slate-800 placeholder-slate-400'"
+                class="flex-1 border focus:border-indigo-500 focus:outline-none px-4 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm shadow-inner disabled:opacity-50 transition-colors duration-500 backdrop-blur-md"
+                :class="darkMode ? 'bg-slate-900/50 border-slate-800/50 text-slate-200 placeholder-slate-500' : 'bg-white/50 border-white/60 text-slate-800 placeholder-slate-500'"
             >
             <button 
                 type="submit" 
                 :disabled="loadingAI"
-                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-semibold transition shadow-lg shadow-indigo-600/20 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-semibold transition shadow-lg shadow-indigo-600/20 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer backdrop-blur-md"
             >
                 <span>Kirim</span>
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
         </form>
-        <p class="text-[10px] px-1 transition-colors duration-500" :class="darkMode ? 'text-slate-500' : 'text-slate-600'" x-show="attachedImage">📎 Gambar siap dikirim bersama pesan Anda.</p>
+        <p class="text-[10px] px-1 transition-colors duration-500" :class="darkMode ? 'text-slate-400' : 'text-slate-700'" x-show="attachedImage">📎 Gambar siap dikirim bersama pesan Anda.</p>
 
-        <!-- Panel Modul Ringkasan Bawah (Live dari Supabase) -->
+        <!-- Panel Modul Ringkasan Bawah (Glassmorphism Kaca Transparan) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <!-- Panel 1 -->
             <div class="backdrop-blur-md border rounded-2xl p-4 shadow-md transition-all duration-500"
-                 :class="darkMode ? 'bg-slate-900/60 border-slate-800 hover:border-indigo-500/50' : 'bg-white/70 border-sky-200 hover:border-sky-400'">
+                 :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 hover:border-indigo-500/50' : 'bg-white/40 border-white/50 hover:border-indigo-400'">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xs font-semibold flex items-center gap-1.5" :class="darkMode ? 'text-indigo-300' : 'text-indigo-700'">📖 Hafalan Quran</h2>
-                    <span class="text-[10px] px-2 py-0.5 rounded-md border transition-colors duration-500" :class="darkMode ? 'bg-indigo-950 text-indigo-300 border-indigo-800/50' : 'bg-indigo-50 text-indigo-700 border-indigo-200'">Live DB</span>
+                    <h2 class="text-xs font-semibold flex items-center gap-1.5" :class="darkMode ? 'text-indigo-300' : 'text-indigo-800'">📖 Hafalan Quran</h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded-md border backdrop-blur-md transition-colors duration-500" :class="darkMode ? 'bg-indigo-950/60 text-indigo-300 border-indigo-800/50' : 'bg-white/60 text-indigo-800 border-white'">Live DB</span>
                 </div>
-                <p class="text-xs mb-3 transition-colors duration-500" :class="darkMode ? 'text-slate-300' : 'text-slate-700'" x-text="hafalanStatus">Memuat data...</p>
-                <button @click="loadConfigAndData()" class="w-full border py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
-                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 text-indigo-300 border-slate-700' : 'bg-white hover:bg-sky-50 text-indigo-700 border-sky-200'">Segarkan Data</button>
+                <p class="text-xs mb-3 transition-colors duration-500 font-medium" :class="darkMode ? 'text-slate-300' : 'text-slate-800'" x-text="hafalanStatus">Memuat data...</p>
+                <button @click="loadConfigAndData()" class="w-full border py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm backdrop-blur-md"
+                        :class="darkMode ? 'bg-slate-800/50 hover:bg-slate-700/60 text-indigo-300 border-slate-700/50' : 'bg-white/60 hover:bg-white/90 text-indigo-800 border-white/60'">Segarkan Data</button>
             </div>
 
             <!-- Panel 2 -->
             <div class="backdrop-blur-md border rounded-2xl p-4 shadow-md transition-all duration-500"
-                 :class="darkMode ? 'bg-slate-900/60 border-slate-800 hover:border-emerald-500/50' : 'bg-white/70 border-sky-200 hover:border-emerald-400'">
+                 :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 hover:border-emerald-500/50' : 'bg-white/40 border-white/50 hover:border-emerald-400'">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xs font-semibold flex items-center gap-1.5" :class="darkMode ? 'text-emerald-300' : 'text-emerald-700'">💰 Keuangan & Emas</h2>
-                    <span class="text-[10px] px-2 py-0.5 rounded-md border transition-colors duration-500" :class="darkMode ? 'bg-emerald-950 text-emerald-300 border-emerald-800/50' : 'bg-emerald-50 text-emerald-700 border-emerald-200'">Live DB</span>
+                    <h2 class="text-xs font-semibold flex items-center gap-1.5" :class="darkMode ? 'text-emerald-300' : 'text-emerald-800'">💰 Keuangan & Emas</h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded-md border backdrop-blur-md transition-colors duration-500" :class="darkMode ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/50' : 'bg-white/60 text-emerald-800 border-white'">Live DB</span>
                 </div>
                 <div class="mb-3">
                     <span class="text-lg font-bold transition-colors duration-500" :class="darkMode ? 'text-slate-100' : 'text-slate-900'" x-text="totalKeuangan">Rp 0</span>
-                    <p class="text-[10px] mt-0.5 transition-colors duration-500" :class="darkMode ? 'text-slate-500' : 'text-slate-500'">Akumulasi Saldo</p>
+                    <p class="text-[10px] mt-0.5 transition-colors duration-500 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-700'">Akumulasi Saldo</p>
                 </div>
-                <button @click="loadConfigAndData()" class="w-full border py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
-                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 text-emerald-300 border-slate-700' : 'bg-white hover:bg-sky-50 text-emerald-700 border-sky-200'">Segarkan Data</button>
+                <button @click="loadConfigAndData()" class="w-full border py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm backdrop-blur-md"
+                        :class="darkMode ? 'bg-slate-800/50 hover:bg-slate-700/60 text-emerald-300 border-slate-700/50' : 'bg-white/60 hover:bg-white/90 text-emerald-800 border-white/60'">Segarkan Data</button>
             </div>
 
             <!-- Panel 3 -->
             <div class="backdrop-blur-md border rounded-2xl p-4 shadow-md transition-all duration-500"
-                 :class="darkMode ? 'bg-slate-900/60 border-slate-800 hover:border-amber-500/50' : 'bg-white/70 border-sky-200 hover:border-amber-400'">
+                 :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 hover:border-amber-500/50' : 'bg-white/40 border-white/50 hover:border-amber-400'">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xs font-semibold flex items-center gap-1.5" :class="darkMode ? 'text-amber-300' : 'text-amber-700'">⏱️ Manajemen Waktu</h2>
-                    <span class="text-[10px] px-2 py-0.5 rounded-md border transition-colors duration-500" :class="darkMode ? 'bg-amber-950 text-amber-300 border-amber-800/50' : 'bg-amber-50 text-amber-700 border-amber-200'">Live DB</span>
+                    <h2 class="text-xs font-semibold flex items-center gap-1.5" :class="darkMode ? 'text-amber-300' : 'text-amber-800'">⏱️ Manajemen Waktu</h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded-md border backdrop-blur-md transition-colors duration-500" :class="darkMode ? 'bg-amber-950/60 text-amber-300 border-amber-800/50' : 'bg-white/60 text-amber-800 border-white'">Live DB</span>
                 </div>
-                <p class="text-xs mb-3 transition-colors duration-500" :class="darkMode ? 'text-slate-300' : 'text-slate-700'" x-text="todoStatus">Memuat daftar tugas...</p>
-                <button @click="loadConfigAndData()" class="w-full border py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
-                        :class="darkMode ? 'bg-slate-800 hover:bg-slate-700 text-amber-300 border-slate-700' : 'bg-white hover:bg-sky-50 text-amber-700 border-sky-200'">Segarkan Data</button>
+                <p class="text-xs mb-3 transition-colors duration-500 font-medium" :class="darkMode ? 'text-slate-300' : 'text-slate-800'" x-text="todoStatus">Memuat daftar tugas...</p>
+                <button @click="loadConfigAndData()" class="w-full border py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm backdrop-blur-md"
+                        :class="darkMode ? 'bg-slate-800/50 hover:bg-slate-700/60 text-amber-300 border-slate-700/50' : 'bg-white/60 hover:bg-white/90 text-amber-800 border-white/60'">Segarkan Data</button>
             </div>
         </div>
 
     </main>
 
     <!-- Modal Pengaturan Data Pribadi -->
-    <div x-show="activeModal === 'dataPribadi'" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl transition-colors duration-500"
-             :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-sky-200 text-slate-800'">
+    <div x-show="activeModal === 'dataPribadi'" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl backdrop-blur-2xl transition-colors duration-500"
+             :class="darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-200' : 'bg-white/90 border-white text-slate-800'">
             <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
                 <h3 class="font-semibold text-sm text-indigo-500">👤 Pengaturan Data Pribadi</h3>
                 <button @click="activeModal = null" class="cursor-pointer" :class="darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'">✕</button>
             </div>
             <div class="space-y-3 mb-4">
                 <div>
-                    <label class="block text-xs mb-1" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">Nama Lengkap</label>
+                    <label class="block text-xs mb-1 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">Nama Lengkap</label>
                     <input type="text" x-model="profile.namaLengkap" class="w-full border rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 transition-colors duration-500"
-                           :class="darkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-sky-50 border-sky-200 text-slate-800'">
+                           :class="darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-200' : 'bg-sky-50/60 border-sky-200 text-slate-800'">
                 </div>
                 <div>
-                    <label class="block text-xs mb-1" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">Nama Panggilan</label>
+                    <label class="block text-xs mb-1 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">Nama Panggilan</label>
                     <input type="text" x-model="profile.panggilan" class="w-full border rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 transition-colors duration-500"
-                           :class="darkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-sky-50 border-sky-200 text-slate-800'">
+                           :class="darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-200' : 'bg-sky-50/60 border-sky-200 text-slate-800'">
                 </div>
             </div>
             <button @click="saveProfile(); activeModal = null;" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer">Simpan Perubahan</button>
@@ -279,26 +277,26 @@
     </div>
 
     <!-- Modal Wawasan AI -->
-    <div x-show="activeModal === 'wawasanAI'" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl transition-colors duration-500"
-             :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-sky-200 text-slate-800'">
+    <div x-show="activeModal === 'wawasanAI'" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl backdrop-blur-2xl transition-colors duration-500"
+             :class="darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-200' : 'bg-white/90 border-white text-slate-800'">
             <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
                 <h3 class="font-semibold text-sm text-indigo-500">🧠 Wawasan & Instruksi Dasar AI</h3>
                 <button @click="activeModal = null" class="cursor-pointer" :class="darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'">✕</button>
             </div>
             <div class="mb-4">
-                <label class="block text-xs mb-1" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">Instruksi & Konteks Berkembang</label>
+                <label class="block text-xs mb-1 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">Instruksi & Konteks Berkembang</label>
                 <textarea x-model="profile.customInstructions" rows="6" class="w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-indigo-500 resize-none transition-colors duration-500"
-                          :class="darkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-sky-50 border-sky-200 text-slate-800'"></textarea>
-                <p class="text-[10px] mt-1" :class="darkMode ? 'text-slate-500' : 'text-slate-500'">AI membaca wawasan ini untuk menyesuaikan rekomendasi dengan Anda.</p>
+                          :class="darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-200' : 'bg-sky-50/60 border-sky-200 text-slate-800'"></textarea>
+                <p class="text-[10px] mt-1 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">AI membaca wawasan ini untuk menyesuaikan rekomendasi dengan Anda.</p>
             </div>
             <button @click="saveProfile(); activeModal = null;" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer">Simpan Wawasan</button>
         </div>
     </div>
 
     <!-- Footer Tipis -->
-    <footer class="text-center py-3 text-[11px] border-t z-10 transition-colors duration-500"
-            :class="darkMode ? 'text-slate-600 border-slate-900' : 'text-slate-700 border-sky-200'">
+    <footer class="text-center py-3 text-[11px] border-t z-10 transition-colors duration-500 backdrop-blur-md"
+            :class="darkMode ? 'text-slate-400 border-slate-900/40 bg-slate-950/30' : 'text-slate-700 border-white/40 bg-white/30'">
         Personal Command Center &bull; Mipratul Muslim &copy; 2026
     </footer>
 
@@ -325,6 +323,8 @@
                 fullReplyText: '',
                 currentEmotion: 'senang',
                 gazeDirection: 'center',
+                leftEyeSize: 'h-9',
+                rightEyeSize: 'h-9',
                 gazeInterval: null,
                 
                 profile: {
@@ -358,22 +358,36 @@
                         await this.saveChatToSupabase('ai', welcomeText);
                     }
 
-                    this.startRandomGaze();
+                    this.startEmoBehavior();
+                },
+
+                startEmoBehavior() {
+                    const directions = ['center', 'left', 'right', 'up', 'down', 'wink-left', 'wink-right', 'center'];
+                    this.gazeInterval = setInterval(() => {
+                        if (!this.loadingAI) {
+                            const randomIndex = Math.floor(Math.random() * directions.length);
+                            const choice = directions[randomIndex];
+
+                            if (choice === 'wink-left') {
+                                this.gazeDirection = 'center';
+                                this.leftEyeSize = 'h-3'; // Menyipit sebelah
+                                this.rightEyeSize = 'h-9';
+                            } else if (choice === 'wink-right') {
+                                this.gazeDirection = 'center';
+                                this.leftEyeSize = 'h-9';
+                                this.rightEyeSize = 'h-3'; // Menyipit sebelah
+                            } else {
+                                this.gazeDirection = choice;
+                                this.leftEyeSize = 'h-9';
+                                this.rightEyeSize = 'h-9';
+                            }
+                        }
+                    }, 3000);
                 },
 
                 toggleDarkMode() {
                     this.darkMode = !this.darkMode;
                     localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
-                },
-
-                startRandomGaze() {
-                    const directions = ['center', 'left', 'right', 'up', 'down', 'center'];
-                    this.gazeInterval = setInterval(() => {
-                        if (!this.loadingAI) {
-                            const randomIndex = Math.floor(Math.random() * directions.length);
-                            this.gazeDirection = directions[randomIndex];
-                        }
-                    }, 3500);
                 },
 
                 playAudio(emotion) {
@@ -442,6 +456,8 @@
                             await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
                             this.currentEmotion = 'serius';
                             this.gazeDirection = 'center';
+                            this.leftEyeSize = 'h-9';
+                            this.rightEyeSize = 'h-9';
                             this.startTypingEffect("Memori dibersihkan. Siap tugas baru, Bos!");
                             this.playAudio('serius');
                             alert('Riwayat obrolan dibersihkan.');
@@ -527,6 +543,8 @@
                     if (!cachedApiKey) {
                         this.currentEmotion = 'serius';
                         this.gazeDirection = 'center';
+                        this.leftEyeSize = 'h-9';
+                        this.rightEyeSize = 'h-9';
                         this.startTypingEffect('API Key belum ditemukan di database Supabase.');
                         this.playAudio('serius');
                         return;
@@ -538,6 +556,8 @@
                     await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
                     this.gazeDirection = 'up';
+                    this.leftEyeSize = 'h-9';
+                    this.rightEyeSize = 'h-9';
 
                     const lowerPrompt = prompt.toLowerCase();
 
@@ -648,6 +668,8 @@
                         this.playAudio('serius');
                     } finally {
                         this.loadingAI = false;
+                        this.leftEyeSize = 'h-9';
+                        this.rightEyeSize = 'h-9';
                     }
                 }
             }));
