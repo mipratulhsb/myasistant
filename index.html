@@ -79,7 +79,7 @@
             </div>
 
             <h2 class="text-base font-bold mb-1">Face ID Biometrik Mipra</h2>
-            <p class="text-xs mb-6 opacity-70" x-text="modelLoaded ? 'Pindai wajah untuk mencocokkan matriks unik Anda.' : 'Memuat model AI Face-API.js...'"></p>
+            <p class="text-xs mb-6 opacity-70" x-text="modelLoaded ? 'Pindai wajah untuk mencocokkan matriks Cloud Supabase.' : 'Memuat model AI Face-API.js...'"></p>
 
             <div class="relative w-48 h-36 rounded-2xl overflow-hidden border border-indigo-500/30 mb-4 bg-slate-950 shadow-inner">
                 <video id="lockscreenVideo" autoplay playsinline muted class="w-full h-full object-cover transform -scale-x-100"></video>
@@ -587,7 +587,6 @@
                     await this.loadAllChatHistory();
                     await this.loadDynamicMemories();
 
-                    // Muat model Face-API.js lokal dari CDN weights
                     await this.loadFaceApiModels();
                     await this.initFaceIDCamera();
                 },
@@ -630,7 +629,7 @@
                         return;
                     }
 
-                    this.scanStatusText = 'Menganalisis matriks biometrik wajah...';
+                    this.scanStatusText = 'Menganalisis matriks biometrik wajah di Cloud Supabase...';
                     const lockVideo = document.getElementById('lockscreenVideo') || document.getElementById('webcamVideo');
                     
                     if (!lockVideo || !lockVideo.videoWidth) {
@@ -639,7 +638,6 @@
                     }
 
                     try {
-                        // Deteksi wajah menggunakan Face-API.js (mencari landmark dan face descriptor 128 dimensi)
                         const detection = await faceapi.detectSingleFace(lockVideo, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
 
                         if (!detection) {
@@ -647,34 +645,40 @@
                             return;
                         }
 
-                        // Mengambil data pembanding (reference descriptor) dari localStorage atau Supabase user_config
-                        let savedDescriptorJson = localStorage.getItem('mipra_face_descriptor');
-                        
-                        if (!savedDescriptorJson) {
-                            // Pendaftaran pertama kali (Enrollment): Simpan wajah pengguna saat ini sebagai referensi mutlak Mipra
+                        // Ambil data referensi face descriptor dari Supabase user_config
+                        const { data: dbData, error } = await _supabase
+                            .from('user_config')
+                            .select('key_value')
+                            .eq('key_name', 'mipra_face_descriptor')
+                            .single();
+
+                        if (!dbData || !dbData.key_value) {
+                            // Jika belum ada di Supabase, daftarkan wajah saat ini sebagai referensi utama Mipra ke Supabase
                             const descriptorArray = Array.from(detection.descriptor);
-                            localStorage.setItem('mipra_face_descriptor', JSON.stringify(descriptorArray));
+                            await _supabase.from('user_config').upsert({
+                                key_name: 'mipra_face_descriptor',
+                                key_value: JSON.stringify(descriptorArray)
+                            }, { onConflict: 'key_name' });
                             
-                            this.scanStatusText = 'Wajah berhasil didaftarkan sebagai referensi Face ID!';
+                            this.scanStatusText = 'Wajah berhasil didaftarkan ke Cloud Supabase!';
                             this.unlockDashboard();
                             return;
                         }
 
-                        // Bandingkan wajah yang memindai dengan referensi Mipra menggunakan Euclidean Distance
-                        const referenceDescriptor = new Float32Array(JSON.parse(savedDescriptorJson));
+                        // Bandingkan wajah saat ini dengan referensi cloud Supabase
+                        const referenceDescriptor = new Float32Array(JSON.parse(dbData.key_value));
                         const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
 
-                        // Threshold 0.6 adalah standar industri; semakin kecil semakin mirip
                         if (distance < 0.55) {
-                            this.scanStatusText = `Wajah cocok! (Akurasi tinggi)`;
+                            this.scanStatusText = `Wajah cocok dengan database cloud!`;
                             this.unlockDashboard();
                         } else {
                             this.scanStatusText = 'Wajah tidak dikenali! Akses ditolak. Gunakan Sandi.';
                             playRobotSound('dizzy');
                         }
                     } catch (err) {
-                        console.error("Face-API Error:", err);
-                        this.scanStatusText = 'Gagal memindai biometrik. Gunakan Sandi Supabase.';
+                        console.error("Face-API Cloud Error:", err);
+                        this.scanStatusText = 'Gagal memindai biometrik cloud. Gunakan Sandi Supabase.';
                     }
                 },
 
@@ -725,7 +729,7 @@
                     else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
                     else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                    const welcomeText = `${timeGreeting} ${this.profile.panggilan}, Face ID biometrik terverifikasi. Akses terbuka!`;
+                    const welcomeText = `${timeGreeting} ${this.profile.panggilan}, Face ID Cloud Supabase terverifikasi. Akses terbuka!`;
                     this.setEmotionWithTimeout('senang');
                     this.startTypingEffect(welcomeText);
                     this.saveChatToSupabase('ai', welcomeText);
@@ -736,7 +740,7 @@
 
                 async triggerBiometricScan() {
                     this.isUnlocked = false;
-                    this.scanStatusText = 'Memindai ulang Face-API...';
+                    this.scanStatusText = 'Memindai ulang Face-API Cloud...';
                     await this.initFaceIDCamera();
                 },
 
@@ -1095,7 +1099,7 @@
                         if (response.ok) {
                             const data = await response.json();
                             if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                                replyTest = data.candidates[0].content.parts[0].text;
+                                replyText = data.candidates[0].content.parts[0].text;
                             }
                         }
 
