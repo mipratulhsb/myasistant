@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Command Center - Executive AI Assistant v3</title>
+    <title>Personal Assistant - Executive Command Center</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -13,65 +13,79 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Google Fonts SF Pro / Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
         }
-        @keyframes floatShip {
-            0%, 100% { transform: translateY(0px) rotate(-1deg) scale(1); }
-            50% { transform: translateY(-12px) rotate(1deg) scale(1.02); }
+        /* Efek macOS Liquid Glass & Blur Sonoma */
+        .macos-glass {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
-        .floating-ship {
-            animation: floatShip 5s infinite ease-in-out;
-        }
-        .digital-led-font {
-            font-family: 'Share Tech Mono', monospace, sans-serif;
-            letter-spacing: 0.05em;
-        }
-        /* Efek Liquid Glass iOS Style dengan Blur Sempurna (Tidak Bening) */
-        .liquid-glass {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(35px) saturate(200%);
-            -webkit-backdrop-filter: blur(35px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-        .dark .liquid-glass {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(40px) saturate(220%);
-            -webkit-backdrop-filter: blur(40px) saturate(220%);
+        .dark .macos-glass {
+            background: rgba(30, 30, 35, 0.55);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
-        .liquid-glass-subtle {
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+        .macos-glass-subtle {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        .dark .liquid-glass-subtle {
-            background: rgba(2, 6, 23, 0.55);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+        .dark .macos-glass-subtle {
+            background: rgba(45, 45, 55, 0.35);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* macOS Dock Icon Bounce Hover */
+        .dock-item {
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .dock-item:hover {
+            transform: translateY(-8px) scale(1.15);
         }
     </style>
 </head>
-<body class="min-h-screen font-sans flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden" 
-      :class="darkMode ? 'bg-slate-950 text-slate-100' : 'bg-sky-200 text-slate-900'" 
-      x-data="dashboardApp()">
+<body class="min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden select-none" 
+      :class="darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'" 
+      x-data="macosApp()"
+      @mousemove="resetInactivityTimer()"
+      @keydown="resetInactivityTimer()">
 
-    <!-- POP-UP LOCKSCREEN GOOGLE OAUTH -->
-    <div x-show="!isUnlocked" class="fixed inset-0 bg-black/95 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-sm liquid-glass rounded-[32px] p-6 shadow-2xl flex flex-col items-center text-center">
-            <div class="w-16 h-16 rounded-2xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20 backdrop-blur-xl">
-                <span class="text-3xl">🔐</span>
+    <!-- WALLPAPER DINAMIS macOS SONOMA -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute inset-0 transition-opacity duration-1000 bg-cover bg-center filter brightness-90"
+             :style="darkMode ? 'background-image: url(\'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80\'); opacity: 0.4;' : 'background-image: url(\'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=2000&q=80\'); opacity: 0.6;'"></div>
+        <div class="absolute inset-0 backdrop-blur-[2px]"></div>
+    </div>
+
+    <!-- POP-UP LOCKSCREEN GOOGLE OAUTH (Teks & Foto Profil Disesuaikan) -->
+    <div x-show="!isUnlocked" class="fixed inset-0 bg-black/80 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-sm macos-glass rounded-[28px] p-8 shadow-2xl flex flex-col items-center text-center">
+            
+            <!-- Foto Profil Pengguna (Menggunakan foto yang tersimpan atau Google Avatar) -->
+            <div class="w-20 h-20 rounded-full overflow-hidden shadow-xl mb-4 border-2 border-white/40 flex items-center justify-center bg-gradient-to-tr from-blue-500 to-indigo-600 text-white text-2xl font-bold relative">
+                <template x-if="userProfilePic">
+                    <img :src="userProfilePic" alt="Foto Profil" class="w-full h-full object-cover">
+                </template>
+                <template x-if="!userProfilePic">
+                    <span class="text-2xl" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
+                </template>
             </div>
-            <h2 class="text-base font-bold mb-1 tracking-tight">Otentikasi Sistem Diperlukan</h2>
-            <p class="text-xs mb-6 opacity-75">Silakan masuk menggunakan akun Google resmi Anda untuk mengakses Personal Command Center.</p>
-            <button @click="loginWithGoogle()" class="w-full bg-white/90 hover:bg-white text-slate-900 border border-white/40 py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-xl backdrop-blur-md flex items-center justify-center gap-2">
+
+            <h2 class="text-base font-semibold mb-1 tracking-tight">Selamat Datang di Personal Assistant</h2>
+            <p class="text-xs mb-6 opacity-75">Silakan login untuk masuk ke ruang kerja eksekutif Anda.</p>
+            
+            <button @click="loginWithGoogle()" class="w-full bg-white/90 hover:bg-white text-slate-900 border border-white/40 py-3 rounded-xl text-xs font-medium transition cursor-pointer shadow-lg backdrop-blur-md flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -84,12 +98,12 @@
     </div>
 
     <!-- MODAL PENGATURAN API KEY JIKA BELUM ADA -->
-    <div x-show="showApiKeyModal" style="display: none;" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="liquid-glass rounded-3xl p-6 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
-            <h3 class="font-semibold text-sm text-blue-400 mb-2">🔑 Konfigurasi Kunci API Gemini</h3>
+    <div x-show="showApiKeyModal" style="display: none;" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="macos-glass rounded-[24px] p-6 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
+            <h3 class="font-semibold text-sm text-blue-500 mb-2">🔑 Konfigurasi Kunci API Gemini</h3>
             <p class="text-xs opacity-80 mb-4">Masukkan Gemini API Key Anda agar sistem AI eksekutif dapat berfungsi penuh.</p>
-            <input type="password" x-model="tempApiKey" placeholder="Tempel API Key di sini..." class="w-full liquid-glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500 mb-4 text-center">
-            <button @click="saveApiKey()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan & Aktifkan</button>
+            <input type="password" x-model="tempApiKey" placeholder="Tempel API Key di sini..." class="w-full macos-glass-subtle rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500 mb-4 text-center">
+            <button @click="saveApiKey()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-lg">Simpan & Aktifkan</button>
         </div>
     </div>
 
@@ -100,224 +114,183 @@
     </div>
     <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
 
-    <!-- LATAR BELAKANG OMBAK & KAPAL BESAR ONE PIECE -->
-    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end transition-colors duration-700"
-         :class="darkMode ? 'bg-slate-950' : 'bg-sky-200'">
-        
-        <div class="absolute inset-0 transition-opacity duration-700" 
-             :class="darkMode ? 'opacity-95 bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950' : 'opacity-100 bg-gradient-to-b from-sky-400 via-sky-300 to-sky-100'"></div>
-
-        <div x-show="!darkMode" class="absolute top-12 right-24 w-24 h-24 bg-amber-300 rounded-full blur-xs shadow-[0_0_60px_rgba(252,211,77,0.8)]"></div>
-        <div x-show="darkMode" class="absolute top-12 right-24 w-16 h-16 bg-slate-200 rounded-full shadow-[0_0_40px_rgba(226,232,240,0.6)] opacity-90 flex items-center justify-center">
-            <div class="w-12 h-12 bg-indigo-950 rounded-full absolute -top-1 -right-1"></div>
+    <!-- macOS TOP MENU BAR -->
+    <header class="macos-glass px-4 py-1.5 flex justify-between items-center sticky top-0 z-40 text-xs font-medium shadow-sm">
+        <div class="flex items-center gap-4">
+            <span class="font-bold cursor-pointer hover:opacity-80"></span>
+            <span class="font-semibold cursor-pointer hover:opacity-80">Personal Assistant</span>
+            <span class="hidden sm:inline opacity-75 cursor-pointer hover:opacity-100" @click="activeModal = 'dataPribadi'">File</span>
+            <span class="hidden sm:inline opacity-75 cursor-pointer hover:opacity-100" @click="activeModal = 'wawasanAI'">Edit</span>
+            <span class="hidden sm:inline opacity-75 cursor-pointer hover:opacity-100" @click="openChatHistoryModal()">Window</span>
         </div>
-
-        <!-- Kapal Besar One Piece Mega -->
-        <div class="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-0 floating-ship opacity-95 flex flex-col items-center w-full max-w-lg px-4">
-            <div class="absolute bottom-10 w-48 h-20 bg-amber-500/20 rounded-full blur-xl"></div>
-            <div class="w-8 h-6 bg-black rounded-sm relative flex items-center justify-center shadow-lg mb-1 border border-amber-500/40">
-                <span class="text-[10px]">🏴‍☠️</span>
-            </div>
-            <div class="w-full flex justify-center items-end relative h-36">
-                <div class="w-1.5 h-28 bg-amber-900 relative mx-4">
-                    <div class="absolute top-2 -left-10 w-20 h-12 bg-gradient-to-r from-amber-100 to-amber-200 border border-amber-300 rounded-lg shadow-xl transform -rotate-6"></div>
-                </div>
-                <div class="w-2.5 h-36 bg-amber-950 relative mx-6">
-                    <div class="absolute top-2 -left-16 w-32 h-20 bg-gradient-to-r from-amber-50 via-white to-amber-100 border border-amber-300 rounded-xl shadow-2xl flex items-center justify-center">
-                        <span class="text-xl text-amber-900/80 font-serif font-bold">⚓</span>
-                    </div>
-                </div>
-                <div class="w-1.5 h-30 bg-amber-900 relative mx-4">
-                    <div class="absolute top-3 -left-10 w-20 h-12 bg-gradient-to-r from-amber-100 to-amber-200 border border-amber-300 rounded-lg shadow-xl transform rotate-6"></div>
-                </div>
-            </div>
-            <div class="w-72 sm:w-96 h-16 bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 rounded-b-[40px] border-t-4 border-amber-600 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative flex items-center justify-center">
-                <div class="absolute flex gap-2">
-                    <div class="w-3 h-3 bg-amber-300 rounded-full shadow-[0_0_10px_#f59e0b]"></div>
-                    <div class="w-3 h-3 bg-amber-300 rounded-full shadow-[0_0_10px_#f59e0b]"></div>
-                    <div class="w-3 h-3 bg-amber-300 rounded-full shadow-[0_0_10px_#f59e0b]"></div>
-                </div>
-                <span class="text-[11px] text-amber-200/90 font-bold tracking-[0.3em] uppercase absolute bottom-2">Grand Line Galleon</span>
-            </div>
-        </div>
-
-        <div class="absolute bottom-0 w-full h-48 transition-colors duration-700 opacity-60" :class="darkMode ? 'text-blue-900' : 'text-blue-400'">
-            <svg viewBox="0 0 1200 300" preserveAspectRatio="none" class="w-full h-full fill-current">
-                <path d="M0,300 L0,120 Q150,40 300,120 T600,100 T900,140 T1200,90 L1200,300 Z"></path>
-            </svg>
-        </div>
-        <div class="absolute bottom-0 w-full h-32 transition-colors duration-700 opacity-95" :class="darkMode ? 'text-blue-950' : 'text-blue-600'">
-            <svg viewBox="0 0 1200 200" preserveAspectRatio="none" class="w-full h-full fill-current">
-                <path d="M0,200 L0,70 Q200,10 400,90 T800,50 T1200,80 L1200,200 Z"></path>
-            </svg>
-            <div class="absolute bottom-0 w-full h-5 bg-white opacity-50 blur-[2px]"></div>
-        </div>
-    </div>
-
-    <!-- TOP NAVIGATION BAR -->
-    <nav class="liquid-glass border-b px-4 sm:px-6 py-3 flex justify-between items-center sticky top-0 z-40 shadow-xl transition-colors duration-500">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-lg shadow-inner bg-gradient-to-br from-blue-500 to-cyan-500 text-white backdrop-blur-md">
-                ⌘
-            </div>
-            <div class="hidden sm:block">
-                <h1 class="text-xs font-bold uppercase tracking-wider opacity-90">Command Center</h1>
-                <p class="text-[9px] opacity-60">Sistem Asisten Eksekutif</p>
-            </div>
+        <div class="flex items-center gap-4">
             <button @click="toggleVisionMonitoring()" 
-                    class="px-2.5 py-1 rounded-xl text-[10px] font-semibold transition flex items-center gap-1.5 cursor-pointer border liquid-glass-subtle"
-                    :class="isVisionActive ? 'text-emerald-400 border-emerald-500/50 animate-pulse' : 'opacity-80'">
-                <span x-text="isVisionActive ? '👁️ AI Vision: ON' : '👁️ AI Vision: OFF'"></span>
+                    class="px-2 py-0.5 rounded-lg text-[10px] font-semibold transition flex items-center gap-1 cursor-pointer border macos-glass-subtle"
+                    :class="isVisionActive ? 'text-emerald-500 border-emerald-500/50 animate-pulse' : 'opacity-80'">
+                <span x-text="isVisionActive ? '👁️ Vision ON' : '👁️ Vision OFF'"></span>
             </button>
+            <span class="opacity-95" x-text="currentWeather"></span>
+            <span class="font-semibold" x-text="currentDateTime"></span>
         </div>
+    </header>
 
-        <!-- Menu Profil (Bilah Menu di Kanan Atas dengan Liquid Glass Ber-blur Solid) -->
-        <div class="relative" x-data="{ open: false }">
-            <button @click="open = !open" @click.away="open = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1 rounded-2xl transition hover:bg-white/10">
-                <div class="hidden sm:block text-right">
-                    <span class="block text-xs font-bold" x-text="profile.namaLengkap"></span>
-                    <span class="block text-[9px] opacity-60 uppercase tracking-wide">Administrator Utama</span>
-                </div>
-                <div class="w-9 h-9 rounded-full overflow-hidden shadow-lg relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-blue-600 to-purple-600 border border-white/30">
-                    <template x-if="userProfilePic">
-                        <img :src="userProfilePic" alt="Profil" class="w-full h-full object-cover">
-                    </template>
-                    <template x-if="!userProfilePic">
-                        <span class="text-sm" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
-                    </template>
-                </div>
-                <svg class="w-3.5 h-3.5 opacity-60 hidden sm:block transition-transform duration-300" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
+    <!-- MAIN WORKSPACE CONTAINER (macOS Desktop Widgets Layout) -->
+    <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
-            <!-- Dropdown Menu Kanan Atas (Blur Solid, Tidak Bening) -->
-            <div x-show="open" style="display: none;"
-                 class="absolute right-0 mt-3 w-64 liquid-glass rounded-3xl shadow-2xl z-50 overflow-hidden transition-colors duration-500 p-1.5 space-y-1 backdrop-blur-3xl">
-                <div class="p-3 rounded-2xl liquid-glass-subtle mb-1">
-                    <p class="text-[9px] uppercase tracking-wider font-semibold opacity-60 mb-0.5">Akun Tertaut</p>
-                    <p class="text-xs font-bold truncate text-blue-400" x-text="userEmail"></p>
+        <!-- WIDGETS GRID ATAS (Kalender, Cuaca, Jam Digital, Catatan Cepat) -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            
+            <!-- Widget Kalender macOS Sonoma -->
+            <div class="macos-glass rounded-[24px] p-5 shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.01]">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs font-semibold text-red-500 uppercase tracking-wider" x-text="currentMonthName"></span>
+                    <span class="text-[10px] opacity-60">Kalender</span>
                 </div>
-                <button @click="activeModal = 'dataPribadi'; open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center gap-3 cursor-pointer hover:bg-white/10">
-                    <span class="text-base">👤</span> Profil & Data Diri
-                </button>
-                <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center gap-3 cursor-pointer hover:bg-white/10">
-                    <span class="text-base">🧠</span> Konfigurasi Sistem Formal
-                </button>
-                <button @click="openChatHistoryModal(); open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center gap-3 cursor-pointer hover:bg-white/10">
-                    <span class="text-base">📜</span> Riwayat Percakapan
-                </button>
-                <div class="border-t border-white/10 pt-1">
-                    <button @click="toggleDarkMode(); open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center justify-between cursor-pointer hover:bg-white/10">
-                        <span class="flex items-center gap-3">
-                            <span x-text="darkMode ? '☀️' : '🌙'"></span> 
-                            <span>Ubah Tema Tampilan</span>
-                        </span>
-                        <span class="text-[9px] px-2 py-0.5 rounded-lg liquid-glass-subtle uppercase tracking-wider" x-text="darkMode ? 'Dark' : 'Light'"></span>
-                    </button>
+                <div class="text-center my-auto py-2">
+                    <span class="text-5xl font-bold tracking-tight" x-text="currentDayNum"></span>
+                    <p class="text-xs font-medium mt-1 opacity-80" x-text="currentDayName"></p>
                 </div>
-                <div class="border-t border-white/10 pt-1">
-                    <button @click="logout()" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-semibold text-red-400 transition flex items-center gap-3 cursor-pointer hover:bg-red-500/20">
-                        <span class="text-base">🚪</span> Keluar Aplikasi
-                    </button>
-                </div>
+                <div class="text-[10px] opacity-70 text-center pt-2 border-t border-white/10">Sinkronisasi Jadwal Aktif</div>
             </div>
+
+            <!-- Widget Cuaca & Lokasi -->
+            <div class="macos-glass rounded-[24px] p-5 shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.01]">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold text-blue-500">Padang, ID</span>
+                    <span class="text-2xl">⛅</span>
+                </div>
+                <div>
+                    <span class="text-4xl font-bold tracking-tight">28°C</span>
+                    <p class="text-xs mt-1 opacity-80 font-medium">Cerah Berawan</p>
+                </div>
+                <div class="text-[10px] opacity-70 pt-2 border-t border-white/10">Kelembapan: 78% &bull; Angin: 12 km/j</div>
+            </div>
+
+            <!-- Widget Ringkasan Keuangan -->
+            <div class="macos-glass rounded-[24px] p-5 shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.01]">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-xs font-semibold text-emerald-500">💰 Keuangan & Emas</h2>
+                        <span class="text-[10px] px-2 py-0.5 rounded-lg macos-glass-subtle">Live DB</span>
+                    </div>
+                    <span class="text-2xl font-bold" x-text="totalKeuangan">Rp 0</span>
+                    <p class="text-[10px] mt-0.5 opacity-70">Akumulasi Saldo Utama</p>
+                </div>
+                <button @click="loadConfigAndData()" class="w-full macos-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm hover:bg-white/20 mt-3">Segarkan Data</button>
+            </div>
+
+            <!-- Widget Hafalan Quran & Tugas -->
+            <div class="macos-glass rounded-[24px] p-5 shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.01]">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-xs font-semibold text-indigo-500">📖 Target & Tugas</h2>
+                        <span class="text-[10px] px-2 py-0.5 rounded-lg macos-glass-subtle">Live DB</span>
+                    </div>
+                    <p class="text-xs font-medium mb-1 truncate" x-text="hafalanStatus">Memuat hafalan...</p>
+                    <p class="text-xs font-medium truncate opacity-80" x-text="todoStatus">Memuat tugas...</p>
+                </div>
+                <button @click="loadConfigAndData()" class="w-full macos-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm hover:bg-white/20 mt-3">Segarkan Data</button>
+            </div>
+
         </div>
-    </nav>
 
-    <!-- MAIN WORKSPACE CONTAINER -->
-    <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1 z-10">
-
-        <!-- PANEL BALON DIALOG UTAMA (Layar Robot dan Status Mood Dihilangkan) -->
-        <div class="liquid-glass rounded-[40px] p-6 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500">
-            <div class="w-full max-w-3xl liquid-glass-subtle rounded-3xl p-5 sm:p-7 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl transition-colors duration-500">
-                <p class="text-sm sm:text-base font-bold text-center leading-relaxed digital-led-font"
-                   :class="darkMode ? 'text-sky-400 [text-shadow:0_0_12px_rgba(56,189,248,0.8)]' : 'text-slate-900'">
-                    <span x-text="typedText"></span><span class="animate-pulse font-bold" x-show="isTyping">|</span>
+        <!-- PANEL CHAT & DIALOG UTAMA (Spotlight Search Style macOS) -->
+        <div class="macos-glass rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
+            
+            <!-- Kotak Output Dialog AI -->
+            <div class="macos-glass-subtle rounded-[20px] p-5 shadow-inner min-h-[100px] flex flex-col justify-center relative backdrop-blur-2xl">
+                <p class="text-sm sm:text-base font-medium text-center leading-relaxed tracking-wide"
+                   :class="darkMode ? 'text-slate-100' : 'text-slate-800'">
+                    <span x-text="typedText"></span><span class="animate-pulse font-bold text-blue-500" x-show="isTyping">|</span>
                 </p>
                 <div class="absolute top-3 left-4">
-                    <span class="text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-xl liquid-glass backdrop-blur-md opacity-75">Sistem Eksekutif Aktif</span>
+                    <span class="text-[9px] uppercase tracking-wider px-2.5 py-0.5 rounded-full macos-glass opacity-80 font-semibold">Personal Assistant Aktif</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Input Chat & Kirim + Lampiran Gambar -->
-        <form @submit.prevent="submitToAI" class="flex gap-3 items-center">
-            <label class="liquid-glass p-3 sm:py-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-lg relative hover:scale-105 active:scale-95" 
-                   title="Unggah Berkas Visual">
-                <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
-                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
-            </label>
+            <!-- Input Pencarian / Perintah ala Spotlight macOS -->
+            <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
+                <label class="macos-glass p-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-md hover:scale-105 active:scale-95" 
+                       title="Unggah Berkas Visual">
+                    <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
+                    <svg class="w-5 h-5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
+                </label>
 
-            <input 
-                type="text" 
-                x-ref="searchInput"
-                x-model="userQuery" 
-                :disabled="loadingAI"
-                placeholder="Masukkan instruksi atau kueri kepada sistem..." 
-                class="flex-1 liquid-glass focus:border-blue-500 focus:outline-none px-5 py-3.5 sm:py-4 rounded-2xl text-base shadow-inner disabled:opacity-50 transition-all duration-500 backdrop-blur-2xl"
-                :class="darkMode ? 'text-slate-100 placeholder-slate-400' : 'text-slate-900 placeholder-slate-500'"
-            >
-            <button 
-                type="submit" 
-                :disabled="loadingAI"
-                class="bg-blue-600/80 hover:bg-blue-500 text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-xs sm:text-sm font-semibold transition shadow-xl shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95"
-            >
-                <span>Kirim</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </button>
-        </form>
-        <p class="text-[10px] px-2 opacity-80" x-show="attachedImage">📎 Berkas gambar terlampir untuk analisis sistem.</p>
-
-        <!-- Panel Modul Ringkasan Bawah (Tinggi & Lebar Tombol Disamaratakan) -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="liquid-glass rounded-3xl p-5 shadow-xl transition-all duration-500 hover:scale-[1.02] flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-xs font-semibold flex items-center gap-1.5 text-blue-400">📖 Hafalan Quran</h2>
-                        <span class="text-[10px] px-2 py-0.5 rounded-lg liquid-glass-subtle">Live DB</span>
-                    </div>
-                    <p class="text-xs mb-4 font-medium" x-text="hafalanStatus">Memuat data...</p>
+                <div class="flex-1 relative flex items-center">
+                    <span class="absolute left-4 text-lg opacity-50">🔍</span>
+                    <input 
+                        type="text" 
+                        x-ref="searchInput"
+                        x-model="userQuery" 
+                        :disabled="loadingAI"
+                        placeholder="Ketik perintah atau tanyakan sesuatu pada Spotlight AI..." 
+                        class="w-full macos-glass focus:border-blue-500 focus:outline-none pl-12 pr-5 py-3.5 rounded-2xl text-sm shadow-inner disabled:opacity-50 transition-all backdrop-blur-2xl"
+                        :class="darkMode ? 'text-slate-100 placeholder-slate-400' : 'text-slate-900 placeholder-slate-500'"
+                    >
                 </div>
-                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Perbarui Data</button>
-            </div>
 
-            <div class="liquid-glass rounded-3xl p-5 shadow-xl transition-all duration-500 hover:scale-[1.02] flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-xs font-semibold flex items-center gap-1.5 text-emerald-400">💰 Keuangan & Emas</h2>
-                        <span class="text-[10px] px-2 py-0.5 rounded-lg liquid-glass-subtle">Live DB</span>
-                    </div>
-                    <div class="mb-4">
-                        <span class="text-xl font-bold" x-text="totalKeuangan">Rp 0</span>
-                        <p class="text-[10px] mt-0.5 opacity-70">Akumulasi Saldo</p>
-                    </div>
-                </div>
-                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Perbarui Data</button>
-            </div>
-
-            <div class="liquid-glass rounded-3xl p-5 shadow-xl transition-all duration-500 hover:scale-[1.02] flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-xs font-semibold flex items-center gap-1.5 text-amber-400">⏱️ Manajemen Waktu</h2>
-                        <span class="text-[10px] px-2 py-0.5 rounded-lg liquid-glass-subtle">Live DB</span>
-                    </div>
-                    <p class="text-xs mb-4 font-medium truncate" x-text="todoStatus">Memuat daftar tugas...</p>
-                </div>
-                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Perbarui Data</button>
-            </div>
+                <button 
+                    type="submit" 
+                    :disabled="loadingAI"
+                    class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-xs font-semibold transition shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95"
+                >
+                    <span>Kirim</span>
+                </button>
+            </form>
+            <p class="text-[10px] px-2 opacity-70" x-show="attachedImage">📎 Berkas gambar terlampir untuk analisis sistem.</p>
         </div>
 
     </main>
 
+    <!-- macOS DOCK NAVIGATION BAR BAWAH -->
+    <nav class="w-full pb-4 pt-2 flex justify-center z-40">
+        <div class="macos-glass px-4 py-2 rounded-[28px] shadow-2xl flex items-center gap-3 backdrop-blur-3xl">
+            
+            <!-- Tombol Dock: Finder / Data Diri -->
+            <button @click="activeModal = 'dataPribadi'" class="dock-item w-12 h-12 rounded-2xl macos-glass flex items-center justify-center text-xl shadow-md cursor-pointer relative group" title="Profil & Data Diri">
+                📁
+                <span class="absolute -top-8 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none">Profil</span>
+            </button>
+
+            <!-- Tombol Dock: Kalender -->
+            <button @click="activeModal = 'wawasanAI'" class="dock-item w-12 h-12 rounded-2xl macos-glass flex items-center justify-center text-xl shadow-md cursor-pointer relative group" title="Konfigurasi Sistem">
+                ⚙️
+                <span class="absolute -top-8 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none">Pengaturan</span>
+            </button>
+
+            <!-- Tombol Dock: Pesan / Riwayat Chat -->
+            <button @click="openChatHistoryModal()" class="dock-item w-12 h-12 rounded-2xl macos-glass flex items-center justify-center text-xl shadow-md cursor-pointer relative group" title="Riwayat Percakapan">
+                💬
+                <span class="absolute -top-8 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none">Riwayat</span>
+            </button>
+
+            <div class="w-[1px] h-8 bg-white/20 mx-1"></div>
+
+            <!-- Tombol Dock: Browser / Google -->
+            <a href="https://google.com" target="_blank" class="dock-item w-12 h-12 rounded-2xl macos-glass flex items-center justify-center text-xl shadow-md cursor-pointer relative group" title="Browser Safari / Google">
+                🌐
+                <span class="absolute -top-8 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none">Browser</span>
+            </a>
+
+            <!-- Tombol Dock: Tema Dark / Light -->
+            <button @click="toggleDarkMode()" class="dock-item w-12 h-12 rounded-2xl macos-glass flex items-center justify-center text-xl shadow-md cursor-pointer relative group" title="Ubah Tema Tampilan">
+                <span x-text="darkMode ? '☀️' : '🌙'"></span>
+                <span class="absolute -top-8 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none">Tema</span>
+            </button>
+
+        </div>
+    </nav>
+
     <!-- Modal Riwayat Chat -->
-    <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="liquid-glass rounded-3xl p-6 w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
+    <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="macos-glass rounded-[28px] p-6 w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center mb-3 pb-3 border-b border-white/10">
                 <div class="flex items-center gap-2">
                     <span class="text-base">📜</span>
-                    <h3 class="font-semibold text-sm text-blue-400">Riwayat Percakapan Sistem</h3>
+                    <h3 class="font-semibold text-sm text-blue-500">Riwayat Percakapan Sistem</h3>
                 </div>
-                <button @click="activeModal = null" class="cursor-pointer font-bold text-sm px-2.5 py-1 rounded-xl liquid-glass-subtle">✕</button>
+                <button @click="activeModal = null" class="cursor-pointer font-bold text-sm px-2.5 py-1 rounded-xl macos-glass-subtle">✕</button>
             </div>
 
             <div class="flex-1 overflow-y-auto space-y-3 pr-1 my-2">
@@ -325,14 +298,14 @@
                     <p class="text-xs text-center py-8 opacity-60">Belum ada riwayat percakapan tersimpan.</p>
                 </template>
                 <template x-for="chat in allChatHistory" :key="chat.id">
-                    <div class="p-3.5 rounded-2xl liquid-glass-subtle flex flex-col gap-1.5">
+                    <div class="p-3.5 rounded-2xl macos-glass-subtle flex flex-col gap-1.5">
                         <div class="flex justify-between items-center">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wide"
-                                  :class="chat.sender === 'user' ? 'bg-blue-600/30 text-blue-300' : 'bg-emerald-600/30 text-emerald-300'"
+                                  :class="chat.sender === 'user' ? 'bg-blue-600/30 text-blue-400' : 'bg-emerald-600/30 text-emerald-400'"
                                   x-text="chat.sender === 'user' ? '👤 Tuan' : '🤖 Sistem AI'"></span>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] opacity-60" x-text="new Date(chat.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
-                                <button @click="deleteSingleChat(chat.id)" class="text-red-400 hover:text-red-500 transition text-xs px-2 py-0.5 rounded-lg liquid-glass-subtle">🗑️</button>
+                                <button @click="deleteSingleChat(chat.id)" class="text-red-400 hover:text-red-500 transition text-xs px-2 py-0.5 rounded-lg macos-glass-subtle">🗑️</button>
                             </div>
                         </div>
                         <p class="text-xs leading-relaxed" x-text="chat.text_content"></p>
@@ -348,11 +321,11 @@
     </div>
 
     <!-- Modal Pengaturan Profil -->
-    <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="liquid-glass rounded-3xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="macos-glass rounded-[28px] p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
-                <h3 class="font-semibold text-sm text-blue-400">👤 Data Administrator</h3>
-                <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl liquid-glass-subtle">✕</button>
+                <h3 class="font-semibold text-sm text-blue-500">👤 Data Administrator</h3>
+                <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl macos-glass-subtle">✕</button>
             </div>
 
             <div class="mb-5 pb-4 border-b border-white/10 flex flex-col items-center text-center">
@@ -366,10 +339,10 @@
                     </template>
                 </div>
                 <div class="flex gap-2 w-full">
-                    <button @click="setGoogleProfilePic()" class="flex-1 liquid-glass-subtle hover:bg-white/20 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <button @click="setGoogleProfilePic()" class="flex-1 macos-glass-subtle hover:bg-white/20 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5">
                         🌐 Google
                     </button>
-                    <button @click="document.getElementById('profilePicInput').click()" class="flex-1 bg-blue-600/80 hover:bg-blue-500 text-white py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-lg">
+                    <button @click="document.getElementById('profilePicInput').click()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-lg">
                         📁 Unggah
                     </button>
                 </div>
@@ -378,11 +351,11 @@
             <div class="space-y-3 mb-5">
                 <div>
                     <label class="block text-xs mb-1 font-medium opacity-80">Nama Lengkap</label>
-                    <input type="text" x-model="profile.namaLengkap" class="w-full liquid-glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500">
+                    <input type="text" x-model="profile.namaLengkap" class="w-full macos-glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <label class="block text-xs mb-1 font-medium opacity-80">Nama Panggilan</label>
-                    <input type="text" x-model="profile.panggilan" class="w-full liquid-glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500">
+                    <input type="text" x-model="profile.panggilan" class="w-full macos-glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500">
                 </div>
             </div>
             <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan Perubahan</button>
@@ -390,26 +363,21 @@
     </div>
 
     <!-- Modal Konfigurasi AI Formal -->
-    <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="liquid-glass rounded-3xl p-6 w-full max-w-md shadow-2xl">
+    <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="macos-glass rounded-[28px] p-6 w-full max-w-md shadow-2xl">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
-                <h3 class="font-semibold text-sm text-blue-400">🧠 Konfigurasi Persona Formal</h3>
-                <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl liquid-glass-subtle">✕</button>
+                <h3 class="font-semibold text-sm text-blue-500">🧠 Konfigurasi Persona Formal</h3>
+                <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl macos-glass-subtle">✕</button>
             </div>
             <div class="mb-5">
                 <label class="block text-xs mb-1.5 font-medium opacity-80">Instruksi Sistem Eksekutif</label>
-                <textarea x-model="profile.customInstructions" rows="6" class="w-full liquid-glass-subtle rounded-2xl p-3.5 text-xs focus:outline-none focus:border-blue-500 resize-none"></textarea>
+                <textarea x-model="profile.customInstructions" rows="6" class="w-full macos-glass-subtle rounded-2xl p-3.5 text-xs focus:outline-none focus:border-blue-500 resize-none"></textarea>
             </div>
             <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan Konfigurasi</button>
         </div>
     </div>
 
-    <!-- Footer Tipis -->
-    <footer class="text-center py-4 text-[11px] border-t border-white/10 z-10 liquid-glass backdrop-blur-2xl">
-        Personal Command Center &bull; Mipratul Muslim &copy; 2026
-    </footer>
-
-    <!-- Script Utama -->
+    <!-- Script Utama macOS Sonoma Desktop -->
     <script>
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
@@ -417,26 +385,11 @@
         const ALLOWED_EMAIL = 'muslimmipratul7@gmail.com';
 
         let cachedApiKey = '';
-        let audioCtx = null;
         let activeTypingInterval = null;
         let googleUserAvatarUrl = '';
 
-        function playRobotSound() {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.setValueAtTime(700, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.08);
-            } catch (e) {}
-        }
-
         document.addEventListener('alpine:init', () => {
-            Alpine.data('dashboardApp', () => ({
+            Alpine.data('macosApp', () => ({
                 userQuery: '',
                 loadingAI: false,
                 hafalanStatus: 'Memuat data...',
@@ -449,6 +402,12 @@
                 userEmail: '',
                 typedText: '',
                 isTyping: false,
+                currentDateTime: '',
+                currentDayNum: '',
+                currentDayName: '',
+                currentMonthName: '',
+                currentWeather: '28°C ⛅',
+                inactivityTimer: null,
                 autonomousTimer: null,
                 visionTimer: null,
                 isVisionActive: false,
@@ -461,12 +420,15 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Tuan',
-                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Tuan Mipratul Muslim. Gunakan gaya bahasa yang sangat formal, sopan, berwibawa, dan profesional (misalnya: "Selamat pagi Tuan", "Ada yang bisa saya bantu, Tuan?"). Jawab secara terstruktur, jelas, dan lugas.'
+                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Tuan Mipratul Muslim dalam lingkungan Personal Assistant. Gunakan gaya bahasa yang sangat formal, sopan, berwibawa, dan profesional.'
                 },
 
                 async init() {
                     const savedTheme = localStorage.getItem('theme');
                     this.darkMode = savedTheme === 'light' ? false : true;
+
+                    this.updateClockAndCalendar();
+                    setInterval(() => this.updateClockAndCalendar(), 1000);
 
                     const { data: { session } } = await _supabase.auth.getSession();
                     if (session) {
@@ -480,6 +442,7 @@
                         this.userEmail = email;
                         if (session.user.user_metadata?.avatar_url) {
                             googleUserAvatarUrl = session.user.user_metadata.avatar_url;
+                            this.userProfilePic = googleUserAvatarUrl;
                         }
                         await this.loadConfigAndData();
                         await this.loadAllChatHistory();
@@ -488,7 +451,7 @@
                         if (!cachedApiKey) {
                             this.showApiKeyModal = true;
                         } else {
-                            this.startTypingEffect(`Selamat pagi Tuan Mipra, ada yang bisa saya bantu?`);
+                            this.startTypingEffect(`Selamat pagi Tuan Mipra, Personal Assistant siap melayani.`);
                             this.startAutonomousLoop();
                         }
                     }
@@ -504,6 +467,7 @@
                             this.userEmail = session.user.email;
                             if (session.user.user_metadata?.avatar_url) {
                                 googleUserAvatarUrl = session.user.user_metadata.avatar_url;
+                                this.userProfilePic = googleUserAvatarUrl;
                             }
                             await this.loadConfigAndData();
                             await this.loadAllChatHistory();
@@ -512,7 +476,7 @@
                             if (!cachedApiKey) {
                                 this.showApiKeyModal = true;
                             } else {
-                                this.startTypingEffect(`Selamat pagi Tuan Mipra, ada yang bisa saya bantu?`);
+                                this.startTypingEffect(`Selamat pagi Tuan Mipra, Personal Assistant siap melayani.`);
                                 this.startAutonomousLoop();
                             }
                         } else if (!session) {
@@ -522,6 +486,14 @@
                             this.stopVisionMonitoring();
                         }
                     });
+                },
+
+                updateClockAndCalendar() {
+                    const now = new Date();
+                    this.currentDateTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    this.currentDayNum = now.getDate();
+                    this.currentDayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
+                    this.currentMonthName = now.toLocaleDateString('id-ID', { month: 'long' });
                 },
 
                 async saveApiKey() {
@@ -600,7 +572,7 @@
                             this.startTypingEffect("AI Vision aktif. Sistem siap menganalisis lingkungan secara real-time.");
                             this.visionTimer = setInterval(() => this.analyzeUserEnvironment(), 60000);
                         } catch (err) {
-                            alert("Akses kamera ditolak atau tidak tersedia pada perangkat.");
+                            alert("Akses kamera ditolak atau tidak tersedia.");
                         }
                     }
                 },
@@ -638,6 +610,15 @@
                     } catch (e) {}
                 },
 
+                resetInactivityTimer() {
+                    if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
+                    this.inactivityTimer = setTimeout(() => {
+                        if (!this.loadingAI && this.isUnlocked) {
+                            this.startTypingEffect("Apakah ada dokumen atau instruksi lanjutan yang Tuan perlukan?");
+                        }
+                    }, 120000);
+                },
+
                 startTypingEffect(text) {
                     if (activeTypingInterval) clearInterval(activeTypingInterval);
                     let i = 0;
@@ -660,6 +641,25 @@
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         this.attachedImage = { inlineData: { data: e.target.result.split(',')[1], mimeType: file.type } };
+                    };
+                    reader.readAsDataURL(file);
+                },
+
+                setGoogleProfilePic() {
+                    if (googleUserAvatarUrl) {
+                        this.userProfilePic = googleUserAvatarUrl;
+                        alert('Foto profil berhasil disinkronkan dengan Google.');
+                    } else {
+                        alert('Foto profil Google tidak ditemukan.');
+                    }
+                },
+
+                handleProfilePicChange(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.userProfilePic = e.target.result;
                     };
                     reader.readAsDataURL(file);
                 },
@@ -707,7 +707,7 @@
                     }
 
                     const { data: todos } = await _supabase.from('todos').select('*').eq('selesai', false).limit(1);
-                    if (todos?.[0]) this.todoStatus = `Tugas aktif: ${todos[0].tugas}`;
+                    if (todos?.[0]) this.todoStatus = `Tugas: ${todos[0].tugas}`;
                     else this.todoStatus = 'Tidak ada tugas aktif.';
                 },
 
@@ -767,13 +767,17 @@
                             const data = await res.json();
                             let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah sedang diproses, Tuan.";
                             this.startTypingEffect(reply);
-                            await this.saveChatToSupabase('ai', reply);
+                            await this.saveChatTOSupabase('ai', reply);
                         }
                     } catch (e) {
                         this.startTypingEffect("Gangguan koneksi terdeteksi pada server pusat.");
                     } finally {
                         this.loadingAI = false;
                     }
+                },
+
+                async saveChatTOSupabase(sender, text) {
+                    await this.saveChatToSupabase(sender, text);
                 }
             }));
         });
