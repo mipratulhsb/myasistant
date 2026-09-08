@@ -566,6 +566,9 @@
                         await this.loadConfigAndData();
                         await this.loadAllChatHistory();
                         await this.loadDynamicMemories();
+                        
+                        // Sapaan otomatis saat berhasil masuk
+                        this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, Emo siap mendampingi dan membantu tugasmu hari ini!`);
                     } else {
                         this.isUnlocked = false;
                     }
@@ -585,6 +588,8 @@
                             await this.loadConfigAndData();
                             await this.loadAllChatHistory();
                             await this.loadDynamicMemories();
+                            
+                            this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, Emo siap mendampingi dan membantu tugasmu hari ini!`);
                         } else {
                             this.isUnlocked = false;
                             this.userEmail = '';
