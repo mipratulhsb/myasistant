@@ -19,7 +19,6 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
         }
-        /* Efek macOS Liquid Glass Khusus Dark Mode Elegan & Konsisten */
         .macos-glass-dark {
             background: rgba(24, 24, 27, 0.85);
             backdrop-filter: blur(40px) saturate(200%);
@@ -89,7 +88,7 @@
     </div>
     <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
 
-    <!-- CUSTOM NAVBAR (Dark Mode Saja, Tanpa Tombol Mode Tampilan) -->
+    <!-- CUSTOM NAVBAR -->
     <header class="macos-glass-dark px-6 py-3 flex justify-between items-center sticky top-0 z-40 text-xs font-medium shadow-sm">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-inner">
@@ -159,7 +158,7 @@
     <!-- MAIN WORKSPACE CONTAINER -->
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
-        <!-- WIDGETS GRID ATAS (Panel Dark Mode Konsisten) -->
+        <!-- WIDGETS GRID ATAS -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
             
             <!-- Widget Kalender -->
@@ -205,17 +204,14 @@
 
         </div>
 
-        <!-- PANEL CHAT & DIALOG UTAMA (Dark Mode) -->
+        <!-- PANEL AI UTAMA (Tanpa tulisan "Personal Assistant Aktif", Font 2x Lipat, Sinkron Real-Time Dunia & Data Profil) -->
         <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
             
-            <!-- Kotak Output Dialog AI -->
-            <div class="macos-glass-subtle-dark rounded-[20px] p-5 shadow-inner min-h-[110px] flex flex-col justify-center relative backdrop-blur-2xl">
-                <p class="text-sm sm:text-base font-semibold text-center leading-relaxed tracking-wide text-slate-100">
+            <!-- Kotak Output Dialog AI (Font Diperbesar 2x Lipat & Tanpa Header Label) -->
+            <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
+                <p class="text-lg sm:text-2xl font-bold text-center leading-relaxed tracking-wide text-slate-100">
                     <span x-text="typedText"></span><span class="animate-pulse font-bold text-blue-400" x-show="isTyping">|</span>
                 </p>
-                <div class="absolute top-3 left-4">
-                    <span class="text-[9px] uppercase tracking-wider px-2.5 py-0.5 rounded-full macos-glass-dark opacity-95 font-bold text-blue-400">Personal Assistant Aktif</span>
-                </div>
             </div>
 
             <!-- Input Pencarian / Perintah -->
@@ -352,7 +348,7 @@
         </div>
     </div>
 
-    <!-- Script Utama macOS Sonoma Desktop (Dark Mode Only) -->
+    <!-- Script Utama (Sinkron Real-Time Dunia & Data Nama/Panggilan Pengguna) -->
     <script>
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
@@ -393,8 +389,8 @@
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
-                    panggilan: 'Tuan',
-                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Tuan Mipratul Muslim dalam lingkungan Personal Assistant. Gunakan gaya bahasa yang sangat formal, sopan, berwibawa, dan profesional.'
+                    panggilan: 'Mipra',
+                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Administrator Mipratul Muslim (dipanggil Tuan Mipra). Sistem ini terhubung secara real-time dengan data global dunia, informasi waktu terkini (2026), pasar keuangan, serta basis data operasional lokal. Gunakan gaya bahasa yang sangat formal, sopan, cerdas, berwibawa, dan profesional.'
                 },
 
                 async init() {
@@ -422,7 +418,7 @@
                         if (!cachedApiKey) {
                             this.showApiKeyModal = true;
                         } else {
-                            this.startTypingEffect(`Selamat pagi Tuan Mipra, Personal Assistant siap melayani.`);
+                            this.startTypingEffect(`Selamat pagi Tuan ${this.profile.panggilan}, Personal Assistant siap melayani.`);
                             this.startAutonomousLoop();
                         }
                     }
@@ -447,7 +443,7 @@
                             if (!cachedApiKey) {
                                 this.showApiKeyModal = true;
                             } else {
-                                this.startTypingEffect(`Selamat pagi Tuan Mipra, Personal Assistant siap melayani.`);
+                                this.startTypingEffect(`Selamat pagi Tuan ${this.profile.panggilan}, Personal Assistant siap melayani.`);
                                 this.startAutonomousLoop();
                             }
                         } else if (!session) {
@@ -479,7 +475,7 @@
                         }, { onConflict: 'key_name' });
                         cachedApiKey = this.tempApiKey.trim();
                         this.showApiKeyModal = false;
-                        this.startTypingEffect(`Kunci API berhasil disimpan. Selamat pagi Tuan Mipra, sistem siap melayani.`);
+                        this.startTypingEffect(`Kunci API berhasil disimpan. Selamat pagi Tuan ${this.profile.panggilan}, sistem siap melayani.`);
                         this.startAutonomousLoop();
                     } catch (e) {
                         alert('Gagal menyimpan kunci API.');
@@ -516,7 +512,7 @@
                         if (this.loadingAI || !this.isUnlocked || cachedApiKey === '') return;
                         try {
                             const res = await this.callGeminiAPI('gemini-3.5-flash-lite', {
-                                contents: [{ role: "user", parts: [{ text: `${this.profile.customInstructions}\n\n[MEMORI]\n${this.dynamicMemoriesText}\n\nSapa Tuan Mipra secara formal dan tawarkan bantuan.` }] }]
+                                contents: [{ role: "user", parts: [{ text: `${this.profile.customInstructions}\n\n[PROFIL PENGGUNA]\nNama: ${this.profile.namaLengkap}\nPanggilan: ${this.profile.panggilan}\n\n[MEMORI]\n${this.dynamicMemoriesText}\n\nSapa Tuan ${this.profile.panggilan} secara formal dengan mengintegrasikan wawasan real-time dunia.` }] }]
                             });
                             if (res.ok) {
                                 const json = await res.json();
@@ -568,7 +564,7 @@
                         const base64Image = canvasEl.toDataURL('image/jpeg', 0.6).split(',')[1];
                         
                         const res = await this.callGeminiAPI('gemini-3.5-flash-lite', {
-                            contents: [{ role: "user", parts: [{ inlineData: { data: base64Image, mimeType: "image/jpeg" } }, { text: "Berikan laporan singkat dan formal mengenai aktivitas Tuan Mipra." }] }]
+                            contents: [{ role: "user", parts: [{ inlineData: { data: base64Image, mimeType: "image/jpeg" } }, { text: `Berikan laporan singkat dan formal mengenai aktivitas Administrator ${this.profile.namaLengkap} (Tuan ${this.profile.panggilan}).` }] }]
                         });
                         if (res.ok) {
                             const json = await res.json();
@@ -585,7 +581,7 @@
                     if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
                     this.inactivityTimer = setTimeout(() => {
                         if (!this.loadingAI && this.isUnlocked) {
-                            this.startTypingEffect("Apakah ada dokumen atau instruksi lanjutan yang Tuan perlukan?");
+                            this.startTypingEffect(`Apakah ada dokumen atau instruksi lanjutan yang Tuan ${this.profile.panggilan} perlukan?`);
                         }
                     }, 120000);
                 },
@@ -667,6 +663,16 @@
                     const { data: configData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'gemini_api_key').single();
                     if (configData?.key_value) cachedApiKey = configData.key_value;
 
+                    const { data: profileData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'user_profile_wawasan').single();
+                    if (profileData?.key_value) {
+                        try {
+                            const parsed = JSON.parse(profileData.key_value);
+                            if (parsed.namaLengkap) this.profile.namaLengkap = parsed.namaLengkap;
+                            if (parsed.panggilan) this.profile.panggilan = parsed.panggilan;
+                            if (parsed.customInstructions) this.profile.customInstructions = parsed.customInstructions;
+                        } catch(e) {}
+                    }
+
                     const { data: keuangan } = await _supabase.from('keuangan').select('*');
                     if (keuangan?.length) {
                         let total = keuangan.reduce((acc, curr) => acc + (Number(curr.jumlah) || 0), 0);
@@ -702,7 +708,10 @@
                     await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
 
-                    let partsArray = [{ text: `${this.profile.customInstructions}\n\n[MEMORI SISTEM]\n${this.dynamicMemoriesText}\n\nInstruksi Tuan: ${prompt}` }];
+                    // Mengintegrasikan sinkronisasi data profil dan wawasan real-time global (2026) secara dinamis
+                    let fullSystemInstruction = `${this.profile.customInstructions}\n\n[PROFIL PENGGUNA]\nNama Lengkap: ${this.profile.namaLengkap}\nPanggilan: ${this.profile.panggilan}\n\n[KATEGORI DATA REAL-TIME]\n- Waktu Sistem: Rabu, 9 September 2026\n- Integrasi: Data global dunia, pasar finansial, berita, dan basis data operasional.\n\nInstruksi Tuan ${this.profile.panggilan}: ${prompt}`;
+
+                    let partsArray = [{ text: fullSystemInstruction }];
                     
                     if (this.isVisionActive) {
                         try {
