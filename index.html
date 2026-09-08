@@ -507,7 +507,7 @@
 
                     await this.loadConfigAndData();
                     await this.loadAllChatHistory();
-                    await this.loadDynamicMemories(); // Memuat memori jangka panjang dari Supabase
+                    await this.loadDynamicMemories();
 
                     const hour = new Date().getHours();
                     let timeGreeting = 'Selamat Pagi';
@@ -525,7 +525,6 @@
                     this.resetInactivityTimer();
                 },
 
-                // Memuat memori dinamis dari tabel ai_memories di Supabase
                 async loadDynamicMemories() {
                     try {
                         const { data, error } = await _supabase.from('ai_memories').select('memory_content').order('created_at', { ascending: false }).limit(10);
@@ -540,23 +539,22 @@
                     }
                 },
 
-                // Menyimpan ringkasan percakapan otomatis ke tabel ai_memories
                 async extractAndSaveMemory(recentUserPrompt, recentAiReply) {
                     try {
-                        // Menggunakan Gemini Flash ringan untuk merangkum poin penting percakapan
                         const memoryPayload = {
                             contents: [{
                                 role: "user",
                                 parts: [{ text: `Buat satu kalimat ringkasan pendek (maksimal 15 kata) tentang informasi penting atau topik yang dibicarakan dari interaksi ini:\nUser: "${recentUserPrompt}"\nAI: "${recentAiReply}"\n\nLangsung tulis ringkasannya tanpa pengantar.` }]
                             }]
                         };
-                        const response = await this.callGeminiAPI('gemini-2.5-flash-lite', memoryPayload);
+                        // Menggunakan gemini-3.5-flash-lite untuk ekstraksi memori ringan
+                        const response = await this.callGeminiAPI('gemini-3.5-flash-lite', memoryPayload);
                         if (response.ok) {
                             const resJson = await response.json();
                             const summary = resJson?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                             if (summary) {
                                 await _supabase.from('ai_memories').insert([{ memory_content: summary, category: 'chat_summary' }]);
-                                await this.loadDynamicMemories(); // Refresh memori lokal
+                                await this.loadDynamicMemories();
                             }
                         }
                     } catch (e) {
@@ -857,7 +855,6 @@
                         return;
                     }
 
-                    // Menggabungkan Wawasan AI dan Memori Jangka Panjang (Dynamic Memories) ke dalam System Prompt
                     let systemPromptCombined = `${this.profile.customInstructions}\n\n[CATATAN MEMORI JANGKA PANJANG TENTANG TUAN MIPRA]\n${this.dynamicMemoriesText}`;
 
                     let partsArray = [
@@ -875,9 +872,13 @@
                     let replyText = null;
 
                     try {
-                        let response = await this.callGeminiAPI('gemini-2.5-flash', payload);
+                        // MENGGUNAKAN MODEL UTAMA: gemini-3.7-flash
+                        let response = await this.callGeminiAPI('gemini-3.7-flash', payload);
+                        
+                        // KONDISI FALLBACK: Jika model utama terkena quota atau tidak tersedia, gunakan gemini-3.5-flash-lite
                         if (!response.ok) {
-                            response = await this.callGeminiAPI('gemini-2.5-flash-lite', payload);
+                            console.warn("Model utama gemini-3.7-flash gagal/kuota habis, beralih ke fallback gemini-3.5-flash-lite...");
+                            response = await this.callGeminiAPI('gemini-3.5-flash-lite', payload);
                         }
 
                         if (response.ok) {
@@ -906,7 +907,6 @@
                             this.startTypingEffect(replyText);
                             await this.saveChatToSupabase('ai', replyText);
 
-                            // Ekstrak dan simpan poin memori penting di latar belakang secara otomatis
                             this.extractAndSaveMemory(prompt, replyText);
                         } else {
                             this.setEmotionWithTimeout('serius');
