@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Command Center - Liquid Glass UI</title>
+    <title>Personal Command Center - 3D Curved Pixel Robot</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -13,35 +13,15 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Google Fonts untuk Font Digital LED -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
         }
-        @keyframes blink {
-            0%, 90%, 100% { transform: scaleY(1); }
-            95% { transform: scaleY(0.1); }
-        }
-        .robot-eye-base {
-            animation: blink 4s infinite;
-            transform-origin: center;
-            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        @keyframes dizzySpin {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(0.9); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        .dizzy-eye {
-            animation: dizzySpin 0.8s infinite linear;
-        }
-        @keyframes thinkPulse {
-            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
-            50% { transform: scale(0.9) rotate(5deg); opacity: 1; }
-        }
-        .thinking-eye {
-            animation: thinkPulse 0.6s infinite ease-in-out;
+        .pixel-font {
+            font-family: 'Press Start 2P', monospace;
+            image-rendering: pixelated;
         }
         @keyframes floatShip {
             0%, 100% { transform: translateY(0px) rotate(-1deg) scale(1); }
@@ -81,6 +61,17 @@
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
+        /* Layar Robot 3D dengan Sudut Melengkung & Efek Cekung Glassmorphism */
+        .robot-screen-3d {
+            background: radial-gradient(circle at center, #020617 0%, #000000 100%);
+            box-shadow: 
+                inset 0 10px 20px rgba(0, 0, 0, 0.9), 
+                inset 0 -10px 20px rgba(0, 0, 0, 0.9),
+                0 15px 35px rgba(0, 0, 0, 0.5),
+                0 0 15px rgba(56, 189, 248, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            perspective: 1000px;
+        }
     </style>
 </head>
 <body class="min-h-screen font-sans flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden" 
@@ -93,14 +84,11 @@
     <!-- POP-UP LOCKSCREEN GOOGLE OAUTH -->
     <div x-show="!isUnlocked" class="fixed inset-0 bg-black/95 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm liquid-glass rounded-[32px] p-6 shadow-2xl flex flex-col items-center text-center">
-            
             <div class="w-16 h-16 rounded-2xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20 backdrop-blur-xl">
                 <span class="text-3xl">🔐</span>
             </div>
-
             <h2 class="text-base font-bold mb-1 tracking-tight">Otentikasi Sistem Diperlukan</h2>
-            <p class="text-xs mb-6 opacity-75">Masuk menggunakan akun Google resmi Anda untuk mengakses Personal Command Center.</p>
-
+            <p class="text-xs mb-6 opacity-75">Silakan masuk menggunakan akun Google resmi Anda untuk mengakses Personal Command Center.</p>
             <button @click="loginWithGoogle()" class="w-full bg-white/90 hover:bg-white text-slate-900 border border-white/40 py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-xl backdrop-blur-md flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -120,7 +108,7 @@
     </div>
     <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
 
-    <!-- LATAR BELAKANG KARTUN OMBAK LAUT & KAPAL BESAR ONE PIECE (GAYA LIQUID GLASS DINAMIS) -->
+    <!-- LATAR BELAKANG OMBARK & KAPAL BESAR ONE PIECE -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end transition-colors duration-700"
          :class="darkMode ? 'bg-slate-950' : 'bg-sky-200'">
         
@@ -174,7 +162,7 @@
         </div>
     </div>
 
-    <!-- TOP NAVIGATION BAR (LIQUID GLASS) -->
+    <!-- TOP NAVIGATION BAR -->
     <nav class="liquid-glass border-b px-4 sm:px-6 py-3 flex justify-between items-center sticky top-0 z-40 shadow-xl transition-colors duration-500">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-lg shadow-inner bg-gradient-to-br from-blue-500 to-cyan-500 text-white backdrop-blur-md">
@@ -182,7 +170,7 @@
             </div>
             <div class="hidden sm:block">
                 <h1 class="text-xs font-bold uppercase tracking-wider opacity-90">Command Center</h1>
-                <p class="text-[9px] opacity-60">Sistem AI Personal</p>
+                <p class="text-[9px] opacity-60">Sistem Asisten Eksekutif</p>
             </div>
             <button @click="toggleVisionMonitoring()" 
                     class="px-2.5 py-1 rounded-xl text-[10px] font-semibold transition flex items-center gap-1.5 cursor-pointer border liquid-glass-subtle"
@@ -220,7 +208,7 @@
                     <span class="text-base">👤</span> Profil & Data Diri
                 </button>
                 <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center gap-3 cursor-pointer hover:bg-white/10">
-                    <span class="text-base">🧠</span> Konfigurasi AI Dasar
+                    <span class="text-base">🧠</span> Konfigurasi Sistem Formal
                 </button>
                 <button @click="openChatHistoryModal(); open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center gap-3 cursor-pointer hover:bg-white/10">
                     <span class="text-base">📜</span> Riwayat Percakapan
@@ -246,82 +234,93 @@
     <!-- MAIN WORKSPACE CONTAINER -->
     <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1 z-10">
 
-        <!-- Panel Wajah Robot Imo Style (Liquid Glass) -->
-        <div class="liquid-glass rounded-[36px] p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500">
+        <!-- PANEL WAJAH ROBOT (LAYAR 3D CURVED PIXEL) -->
+        <div class="liquid-glass rounded-[40px] p-6 sm:p-10 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500">
             
-            <!-- Area Sentuh Mata -->
-            <div id="robot-eyes-container" 
-                 @click="handleEyeTouch()" 
+            <!-- Layar Robot 3D Curved dengan Sudut Melengkung Tinggi & Efek Cekung -->
+            <div @click="handleEyeTouch()" 
                  @touchstart.prevent="handleEyeTouch()"
-                 class="w-56 h-28 flex items-center justify-center relative mb-4 cursor-pointer select-none group mt-2"
-                 title="Sentuh atau klik mata robot!">
+                 class="w-72 sm:w-96 h-40 robot-screen-3d rounded-[45px] flex flex-col items-center justify-center relative mb-4 cursor-pointer select-none group transition-transform duration-300 hover:scale-[1.01]"
+                 title="Ketuk layar sistem untuk berinteraksi!">
 
-                <div class="flex gap-10 items-center justify-center">
-                    <template x-if="loadingAI">
-                        <div class="flex gap-10 items-center justify-center">
-                            <div class="w-16 h-12 bg-purple-500/80 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.9)] thinking-eye flex items-center justify-center backdrop-blur-md">
-                                <div class="w-3 h-3 bg-white rounded-full animate-ping"></div>
-                            </div>
-                            <div class="w-16 h-12 bg-purple-500/80 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.9)] thinking-eye flex items-center justify-center backdrop-blur-md" style="animation-delay: 0.2s;">
-                                <div class="w-3 h-3 bg-white rounded-full animate-ping"></div>
-                            </div>
+                <!-- Indikator Animasi Berpikir -->
+                <template x-if="loadingAI">
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="flex gap-12 text-cyan-400 text-3xl pixel-font animate-bounce">
+                            <span>^</span><span>^</span>
                         </div>
-                    </template>
+                        <div class="text-cyan-400 text-[10px] pixel-font animate-pulse">MENPROSES...</div>
+                    </div>
+                </template>
 
-                    <template x-if="!loadingAI">
-                        <div class="flex gap-10 items-center justify-center">
-                            <template x-if="currentEmotion === 'kedip'">
-                                <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-16 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.9)]"></div>
-                                    <div class="w-16 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.9)]"></div>
+                <!-- Ekspresi Wajah Pixel 3D Curved -->
+                <template x-if="!loadingAI">
+                    <div class="flex flex-col items-center justify-center w-full px-10">
+                        
+                        <!-- 1. SENANG / HAPPY -->
+                        <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis' || currentEmotion === 'perhatian'">
+                            <div class="flex flex-col items-center gap-5 w-full">
+                                <div class="flex justify-between w-full px-4 text-cyan-400 text-3xl pixel-font font-bold">
+                                    <span>╭∩╮</span><span>╭∩╮</span>
                                 </div>
-                            </template>
-                            <template x-if="currentEmotion === 'pusing'">
-                                <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-14 h-14 bg-amber-400/90 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">🌀</div>
-                                    <div class="w-14 h-14 bg-amber-400/90 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">🌀</div>
+                                <div class="w-12 h-7 border-2 border-cyan-400 rounded-b-xl bg-cyan-950/50 flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.5)]">
+                                    <div class="w-5 h-2 bg-cyan-400 rounded-sm"></div>
                                 </div>
-                            </template>
-                            <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis' || currentEmotion === 'perhatian'">
-                                <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base flex items-end justify-center pb-1 relative overflow-hidden">
-                                        <div class="w-3 h-3 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm" :style="`transform: translate(${pupilX * 0.6}px, ${Math.min(pupilY * 0.4, 2)}px);`"></div>
-                                    </div>
-                                    <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base flex items-end justify-center pb-1 relative overflow-hidden">
-                                        <div class="w-3 h-3 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm" :style="`transform: translate(${pupilX * 0.6}px, ${Math.min(pupilY * 0.4, 2)}px);`"></div>
-                                    </div>
+                            </div>
+                        </template>
+
+                        <!-- 2. KAGUM / ANTUSIAS -->
+                        <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
+                            <div class="flex flex-col items-center gap-5 w-full">
+                                <div class="flex justify-between w-full px-4 text-amber-300 text-3xl pixel-font">
+                                    <span>★_★</span><span>★_★</span>
                                 </div>
-                            </template>
-                            <template x-if="currentEmotion === 'bosan' || currentEmotion === 'mengantuk'">
-                                <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-16 h-2.5 bg-slate-400 rounded-full shadow-[0_0_15px_rgba(148,163,184,0.6)] robot-eye-base">😴</div>
-                                    <div class="w-16 h-2.5 bg-slate-400 rounded-full shadow-[0_0_15px_rgba(148,163,184,0.6)] robot-eye-base">😴</div>
+                                <div class="w-14 h-6 border-2 border-amber-300 rounded-full bg-amber-950/40 animate-pulse shadow-[0_0_10px_rgba(252,211,77,0.5)]"></div>
+                            </div>
+                        </template>
+
+                        <!-- 3. KESAL / MARAH -->
+                        <template x-if="currentEmotion === 'marah' || currentEmotion === 'kesal'">
+                            <div class="flex flex-col items-center gap-5 w-full">
+                                <div class="flex justify-between w-full px-4 text-red-500 text-2xl pixel-font font-bold">
+                                    <span>&gt;_&lt;</span><span>&gt;_&lt;</span>
                                 </div>
-                            </template>
-                            <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
-                                <div class="flex gap-10 items-center justify-center text-amber-300 text-5xl robot-eye-base drop-shadow-[0_0_20px_rgba(252,211,77,0.9)] font-bold">
-                                    <span>★</span><span>★</span>
+                                <div class="w-12 h-3.5 bg-red-500 rounded-sm transform rotate-3 shadow-[0_0_10px_rgba(239,68,68,0.6)]"></div>
+                            </div>
+                        </template>
+
+                        <!-- 4. BOSAN / MENGANTUK -->
+                        <template x-if="currentEmotion === 'bosan' || currentEmotion === 'mengantuk'">
+                            <div class="flex flex-col items-center gap-5 w-full">
+                                <div class="flex justify-between w-full px-4 text-slate-400 text-2xl pixel-font">
+                                    <span>- _ -</span><span>- _ -</span>
                                 </div>
-                            </template>
-                            <template x-if="currentEmotion === 'marah' || currentEmotion === 'kesal'">
-                                <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-16 h-6 bg-red-500 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.9)] transform -rotate-12 robot-eye-base"></div>
-                                    <div class="w-16 h-6 bg-red-500 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.9)] transform rotate-12 robot-eye-base"></div>
+                                <div class="w-8 h-2.5 bg-slate-400 rounded-full"></div>
+                            </div>
+                        </template>
+
+                        <!-- 5. PUSING / BINGUNG -->
+                        <template x-if="currentEmotion === 'pusing'">
+                            <div class="flex flex-col items-center gap-5 w-full">
+                                <div class="flex justify-between w-full px-4 text-amber-400 text-2xl pixel-font">
+                                    <span>X_X</span><span>X_X</span>
                                 </div>
-                            </template>
-                            <template x-if="!['kedip', 'pusing', 'senang', 'puas', 'romantis', 'bosan', 'mengantuk', 'kagum', 'antusias', 'marah', 'kesal', 'perhatian'].includes(currentEmotion)">
-                                <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
-                                        <div class="w-4 h-4 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm" :style="`transform: translate(${pupilX}px, ${pupilY}px);`"></div>
-                                    </div>
-                                    <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
-                                        <div class="w-4 h-4 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm" :style="`transform: translate(${pupilX}px, ${pupilY}px);`"></div>
-                                    </div>
+                                <div class="w-10 h-3.5 border-2 border-amber-400 rounded-full animate-spin"></div>
+                            </div>
+                        </template>
+
+                        <!-- 6. NORMAL / DEFAULT -->
+                        <template x-if="!['senang', 'puas', 'romantis', 'perhatian', 'kagum', 'antusias', 'marah', 'kesal', 'bosan', 'mengantuk', 'pusing'].includes(currentEmotion)">
+                            <div class="flex flex-col items-center gap-5 w-full">
+                                <div class="flex justify-between w-full px-4 text-cyan-400 text-3xl pixel-font font-bold">
+                                    <span>[•]</span><span>[•]</span>
                                 </div>
-                            </template>
-                        </div>
-                    </template>
-                </div>
+                                <div class="w-10 h-2 bg-cyan-400 rounded-sm shadow-[0_0_10px_rgba(34,211,238,0.6)]"></div>
+                            </div>
+                        </template>
+
+                    </div>
+                </template>
             </div>
 
             <!-- Balon Teks Dialog Liquid Glass -->
@@ -332,7 +331,7 @@
                 </p>
                 <div class="absolute bottom-2 right-4">
                     <span class="text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-xl liquid-glass backdrop-blur-md" 
-                          x-text="'Mood: ' + currentEmotion"></span>
+                          x-text="'Status: ' + currentEmotion"></span>
                 </div>
             </div>
         </div>
@@ -340,7 +339,7 @@
         <!-- Input Chat & Kirim + Lampiran Gambar -->
         <form @submit.prevent="submitToAI" class="flex gap-3 items-center">
             <label class="liquid-glass p-3 sm:py-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-lg relative hover:scale-105 active:scale-95" 
-                   title="Unggah Gambar / Dokumen">
+                   title="Unggah Berkas Visual">
                 <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
                 <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
@@ -351,7 +350,7 @@
                 x-ref="searchInput"
                 x-model="userQuery" 
                 :disabled="loadingAI"
-                placeholder="Ketik perintah atau tanyakan sesuatu pada robot..." 
+                placeholder="Masukkan instruksi atau kueri kepada sistem..." 
                 class="flex-1 liquid-glass focus:border-blue-500 focus:outline-none px-5 py-3.5 sm:py-4 rounded-2xl text-base shadow-inner disabled:opacity-50 transition-all duration-500 backdrop-blur-2xl"
                 :class="darkMode ? 'text-slate-100 placeholder-slate-400' : 'text-slate-900 placeholder-slate-500'"
             >
@@ -364,9 +363,9 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
         </form>
-        <p class="text-[10px] px-2 opacity-80" x-show="attachedImage">📎 Gambar siap dikirim bersama pesan Anda.</p>
+        <p class="text-[10px] px-2 opacity-80" x-show="attachedImage">📎 Berkas gambar terlampir untuk analisis sistem.</p>
 
-        <!-- Panel Modul Ringkasan Bawah (Liquid Glass) -->
+        <!-- Panel Modul Ringkasan Bawah -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="liquid-glass rounded-3xl p-5 shadow-xl transition-all duration-500 hover:scale-[1.02]">
                 <div class="flex justify-between items-center mb-2">
@@ -374,7 +373,7 @@
                     <span class="text-[10px] px-2 py-0.5 rounded-lg liquid-glass-subtle">Live DB</span>
                 </div>
                 <p class="text-xs mb-4 font-medium" x-text="hafalanStatus">Memuat data...</p>
-                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Segarkan Data</button>
+                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Perbarui Data</button>
             </div>
 
             <div class="liquid-glass rounded-3xl p-5 shadow-xl transition-all duration-500 hover:scale-[1.02]">
@@ -386,7 +385,7 @@
                     <span class="text-xl font-bold" x-text="totalKeuangan">Rp 0</span>
                     <p class="text-[10px] mt-0.5 opacity-70">Akumulasi Saldo</p>
                 </div>
-                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Segarkan Data</button>
+                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Perbarui Data</button>
             </div>
 
             <div class="liquid-glass rounded-3xl p-5 shadow-xl transition-all duration-500 hover:scale-[1.02]">
@@ -395,7 +394,7 @@
                     <span class="text-[10px] px-2 py-0.5 rounded-lg liquid-glass-subtle">Live DB</span>
                 </div>
                 <p class="text-xs mb-4 font-medium truncate" x-text="todoStatus">Memuat daftar tugas...</p>
-                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Segarkan Data</button>
+                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Perbarui Data</button>
             </div>
         </div>
 
@@ -407,7 +406,7 @@
             <div class="flex justify-between items-center mb-3 pb-3 border-b border-white/10">
                 <div class="flex items-center gap-2">
                     <span class="text-base">📜</span>
-                    <h3 class="font-semibold text-sm text-blue-400">Riwayat Percakapan</h3>
+                    <h3 class="font-semibold text-sm text-blue-400">Riwayat Percakapan Sistem</h3>
                 </div>
                 <button @click="activeModal = null" class="cursor-pointer font-bold text-sm px-2.5 py-1 rounded-xl liquid-glass-subtle">✕</button>
             </div>
@@ -421,7 +420,7 @@
                         <div class="flex justify-between items-center">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wide"
                                   :class="chat.sender === 'user' ? 'bg-blue-600/30 text-blue-300' : 'bg-emerald-600/30 text-emerald-300'"
-                                  x-text="chat.sender === 'user' ? '👤 Anda' : '🤖 Imo-Bot'"></span>
+                                  x-text="chat.sender === 'user' ? '👤 Tuan' : '🤖 Sistem AI'"></span>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] opacity-60" x-text="new Date(chat.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
                                 <button @click="deleteSingleChat(chat.id)" class="text-red-400 hover:text-red-500 transition text-xs px-2 py-0.5 rounded-lg liquid-glass-subtle">🗑️</button>
@@ -433,17 +432,17 @@
             </div>
 
             <div class="pt-3 border-t border-white/10 flex justify-between items-center">
-                <button @click="clearChatHistory()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 px-4 py-2 rounded-2xl text-xs font-semibold transition cursor-pointer backdrop-blur-md">🗑️ Hapus Semua</button>
+                <button @click="clearChatHistory()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 px-4 py-2 rounded-2xl text-xs font-semibold transition cursor-pointer backdrop-blur-md">🗑️ Bersihkan Riwayat</button>
                 <button @click="activeModal = null" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Tutup</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Pengaturan Profil & Data Diri -->
+    <!-- Modal Pengaturan Profil -->
     <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="liquid-glass rounded-3xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
-                <h3 class="font-semibold text-sm text-blue-400">👤 Profil & Data Diri</h3>
+                <h3 class="font-semibold text-sm text-blue-400">👤 Data Administrator</h3>
                 <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl liquid-glass-subtle">✕</button>
             </div>
 
@@ -481,18 +480,18 @@
         </div>
     </div>
 
-    <!-- Modal Konfigurasi AI Dasar -->
+    <!-- Modal Konfigurasi AI Formal -->
     <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="liquid-glass rounded-3xl p-6 w-full max-w-md shadow-2xl">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
-                <h3 class="font-semibold text-sm text-blue-400">🧠 Konfigurasi AI Dasar</h3>
+                <h3 class="font-semibold text-sm text-blue-400">🧠 Konfigurasi Persona Formal</h3>
                 <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl liquid-glass-subtle">✕</button>
             </div>
             <div class="mb-5">
-                <label class="block text-xs mb-1.5 font-medium opacity-80">Instruksi & Konteks Berkembang</label>
+                <label class="block text-xs mb-1.5 font-medium opacity-80">Instruksi Sistem Eksekutif</label>
                 <textarea x-model="profile.customInstructions" rows="6" class="w-full liquid-glass-subtle rounded-2xl p-3.5 text-xs focus:outline-none focus:border-blue-500 resize-none"></textarea>
             </div>
-            <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan Wawasan</button>
+            <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan Konfigurasi</button>
         </div>
     </div>
 
@@ -501,7 +500,7 @@
         Personal Command Center &bull; Mipratul Muslim &copy; 2026
     </footer>
 
-    <!-- Script Utama -->
+    <!-- Script Utama (Gaya Bahasa Formal Eksekutif & 3D Curved Pixel Screen) -->
     <script>
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
@@ -521,9 +520,9 @@
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
                 osc.start();
-                osc.stop(audioCtx.currentTime + 0.12);
+                osc.stop(audioCtx.currentTime + 0.1);
             } catch (e) {
                 console.log("Audio dibatasi:", e);
             }
@@ -544,9 +543,7 @@
                 typedText: '',
                 isTyping: false,
                 fullReplyText: '',
-                currentEmotion: 'normal',
-                pupilX: 0,
-                pupilY: 0,
+                currentEmotion: 'senang',
                 emotionTimeout: null,
                 inactivityTimer: null,
                 autonomousTimer: null,
@@ -558,8 +555,8 @@
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
-                    panggilan: 'Mipra',
-                    customInstructions: 'Kamu adalah Imo, teman ngobrol sekaligus asisten pribadi Mipra yang santai, akrab, asyik, dan tidak kaku. Gunakan bahasa obrolan sehari-hari yang luwes (seperti "Bos", "Sip", "Bro", atau sapaan akrab lainnya). Kamu hidup, punya perasaan, bisa usil, penasaran dengan kegiatan Mipra, atau perhatian mengingatkan istirahat dan ibadah secara spontan tanpa harus menunggu perintah.\n\nFITUR KHUSUS AI VISION:\nKamu memiliki fitur AI Vision (kamera web aktif) yang memungkinkanmu melihat langsung wajah dan ruangan Mipra secara real-time saat fitur aktif. Kenali dan komentari aktivitasnya secara natural dari apa yang kamu lihat.\n\nAturan Wajib:\n1. BAHASA GAUL & SANTAI SEHARI-HARI: Hindari gaya bahasa robot formal atau kaku. Jawab pendek (1-3 kalimat).\n2. JANGAN GUNAKAN TEKS TEATRIKAL: Jangan pakai tanda bintang atau tanda kurung aksi seperti *tersenyum*.\n3. EKSPRESI: Sesuaikan emosi secara natural.'
+                    panggilan: 'Tuan',
+                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Tuan Mipratul Muslim. Gunakan gaya bahasa yang sangat formal, sopan, berwibawa, dan profesional (misalnya: "Selamat pagi Tuan", "Ada yang bisa saya bantu, Tuan?"). Jawab secara terstruktur, jelas, dan lugas.\n\nAturan Wajib:\n1. Di akhir kalimat, wajib sertakan tag emosi dalam kurung siku sesuai suasana hati sistem, contoh: [senang], [kagum], [kesal], [bosan], [pusing].'
                 },
 
                 async init() {
@@ -570,7 +567,7 @@
                     if (session) {
                         const email = session.user.email;
                         if (email !== ALLOWED_EMAIL) {
-                            alert('Akses ditolak: Akun ini tidak diizinkan masuk.');
+                            alert('Akses ditolak: Akun tidak diizinkan.');
                             await this.logout();
                             return;
                         }
@@ -579,12 +576,11 @@
                         if (session.user.user_metadata?.avatar_url) {
                             googleUserAvatarUrl = session.user.user_metadata.avatar_url;
                         }
-                        this.initEyeTracker();
                         this.resetInactivityTimer();
                         await this.loadConfigAndData();
                         await this.loadAllChatHistory();
                         await this.loadDynamicMemories();
-                        this.startTypingEffect(`Eh Bos ${this.profile.panggilan} udah online nih! Mau bahas apa kita hari ini?`, 'senang');
+                        this.startTypingEffect(`Selamat pagi Tuan Mipra, ada yang bisa saya bantu?`, 'senang');
                         this.startAutonomousLoop();
                     }
 
@@ -600,12 +596,11 @@
                             if (session.user.user_metadata?.avatar_url) {
                                 googleUserAvatarUrl = session.user.user_metadata.avatar_url;
                             }
-                            this.initEyeTracker();
                             this.resetInactivityTimer();
                             await this.loadConfigAndData();
                             await this.loadAllChatHistory();
                             await this.loadDynamicMemories();
-                            this.startTypingEffect(`Eh Bos ${this.profile.panggilan} udah online nih! Mau bahas apa kita hari ini?`, 'senang');
+                            this.startTypingEffect(`Selamat pagi Tuan Mipra, ada yang bisa saya bantu?`, 'senang');
                             this.startAutonomousLoop();
                         } else if (!session) {
                             this.isUnlocked = false;
@@ -634,7 +629,7 @@
                 async loadDynamicMemories() {
                     try {
                         const { data } = await _supabase.from('ai_memories').select('memory_content').order('created_at', { ascending: false }).limit(10);
-                        this.dynamicMemoriesText = data?.length ? data.map(item => `- ${item.memory_content}`).join('\n') : '- Belum ada catatan memori khusus tersimpan.';
+                        this.dynamicMemoriesText = data?.length ? data.map(item => `- ${item.memory_content}`).join('\n') : '- Belum ada catatan memori sistem.';
                     } catch (err) {
                         this.dynamicMemoriesText = '- Gagal memuat memori.';
                     }
@@ -646,35 +641,41 @@
                         if (this.loadingAI || !this.isUnlocked || cachedApiKey === '') return;
                         try {
                             const res = await this.callGeminiAPI('gemini-3.5-flash-lite', {
-                                contents: [{ role: "user", parts: [{ text: `${this.profile.customInstructions}\n\n[MEMORI]\n${this.dynamicMemoriesText}\n\nSapa Mipra santai. Format akhir: [senang]` }] }]
+                                contents: [{ role: "user", parts: [{ text: `${this.profile.customInstructions}\n\n[MEMORI]\n${this.dynamicMemoriesText}\n\nSapa Tuan Mipra secara formal dan tawarkan bantuan. Akhiri dengan [senang].` }] }]
                             });
                             if (res.ok) {
                                 const json = await res.json();
                                 let text = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                                 if (text) {
-                                    text = text.replace(/\[.*?\]/g, '').trim();
-                                    this.startTypingEffect(text, 'senang');
+                                    let detectedEmotion = 'senang';
+                                    const match = text.match(/\[(.*?)\]/);
+                                    if (match && match[1]) {
+                                        detectedEmotion = match[1].toLowerCase().trim();
+                                        text = text.replace(/\[.*?\]/g, '').trim();
+                                    }
+                                    this.setEmotionWithTimeout(detectedEmotion);
+                                    this.startTypingEffect(text, detectedEmotion);
                                     await this.saveChatToSupabase('ai', text);
                                 }
                             }
                         } catch (e) {}
-                    }, 180000);
+                    }, 240000);
                 },
 
                 async toggleVisionMonitoring() {
                     if (this.isVisionActive) {
                         this.stopVisionMonitoring();
-                        this.startTypingEffect("Pemantauan kamera dimatikan.", 'normal');
+                        this.startTypingEffect("Sistem pemantauan AI Vision telah dinonaktifkan.", 'normal');
                     } else {
                         try {
                             const videoEl = document.getElementById('webcamVideo');
                             const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
                             videoEl.srcObject = stream;
                             this.isVisionActive = true;
-                            this.startTypingEffect("Kamera diaktifkan! Sekarang aku bisa melihat aktivitasmu.", 'senang');
+                            this.startTypingEffect("AI Vision aktif. Sistem siap menganalisis lingkungan secara real-time.", 'senang');
                             this.visionTimer = setInterval(() => this.analyzeUserEnvironment(), 60000);
                         } catch (err) {
-                            alert("Tidak dapat mengakses kamera.");
+                            alert("Akses kamera ditolak atau tidak tersedia.");
                         }
                     }
                 },
@@ -699,14 +700,20 @@
                         const base64Image = canvasEl.toDataURL('image/jpeg', 0.6).split(',')[1];
                         
                         const res = await this.callGeminiAPI('gemini-3.5-flash-lite', {
-                            contents: [{ role: "user", parts: [{ inlineData: { data: base64Image, mimeType: "image/jpeg" } }, { text: "Komentari aktivitas Mipra secara santai. Akhiri dengan [senang]" }] }]
+                            contents: [{ role: "user", parts: [{ inlineData: { data: base64Image, mimeType: "image/jpeg" } }, { text: "Berikan laporan singkat dan formal mengenai aktivitas Tuan Mipra. Akhiri dengan [senang]" }] }]
                         });
                         if (res.ok) {
                             const json = await res.json();
                             let comment = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                             if (comment) {
-                                comment = comment.replace(/\[.*?\]/g, '').trim();
-                                this.startTypingEffect(comment, 'senang');
+                                let detectedEmotion = 'senang';
+                                const match = comment.match(/\[(.*?)\]/);
+                                if (match && match[1]) {
+                                    detectedEmotion = match[1].toLowerCase().trim();
+                                    comment = comment.replace(/\[.*?\]/g, '').trim();
+                                }
+                                this.setEmotionWithTimeout(detectedEmotion);
+                                this.startTypingEffect(comment, detectedEmotion);
                                 await this.saveChatToSupabase('ai', comment);
                             }
                         }
@@ -717,12 +724,21 @@
                     if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
                     this.inactivityTimer = setTimeout(() => {
                         if (!this.loadingAI && this.isUnlocked) {
-                            this.startTypingEffect("Woy Bos, kok ngelamun aja? Sibuk banget ya?", 'bosan');
+                            this.setEmotionWithTimeout('perhatian');
+                            this.startTypingEffect("Apakah ada dokumen atau instruksi lanjutan yang Tuan perlukan?", 'perhatian');
                         }
-                    }, 90000);
+                    }, 120000);
                 },
 
-                startTypingEffect(text, emotion = 'normal') {
+                setEmotionWithTimeout(emotion) {
+                    if (this.emotionTimeout) clearTimeout(this.emotionTimeout);
+                    this.currentEmotion = emotion;
+                    if (emotion !== 'normal' && emotion !== 'perhatian') {
+                        this.emotionTimeout = setTimeout(() => { this.currentEmotion = 'senang'; }, 8000);
+                    }
+                },
+
+                startTypingEffect(text, emotion = 'senang') {
                     if (activeTypingInterval) clearInterval(activeTypingInterval);
                     this.currentEmotion = emotion;
                     let i = 0;
@@ -736,7 +752,7 @@
                             clearInterval(activeTypingInterval);
                             this.isTyping = false;
                         }
-                    }, 25);
+                    }, 22);
                 },
 
                 handleImageUpload(event) {
@@ -770,10 +786,10 @@
                 },
 
                 async clearChatHistory() {
-                    if (confirm('Hapus seluruh riwayat percakapan?')) {
+                    if (confirm('Bersihkan seluruh riwayat percakapan sistem?')) {
                         await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
                         this.allChatHistory = [];
-                        this.startTypingEffect("Memori bersih!", 'senang');
+                        this.startTypingEffect("Riwayat sistem telah dibersihkan.", 'senang');
                     }
                 },
 
@@ -801,7 +817,7 @@
                         key_name: 'user_profile_wawasan',
                         key_value: JSON.stringify(this.profile)
                     }, { onConflict: 'key_name' });
-                    alert('Pengaturan berhasil diperbarui!');
+                    alert('Konfigurasi sistem berhasil diperbarui.');
                 },
 
                 toggleDarkMode() {
@@ -811,21 +827,8 @@
 
                 handleEyeTouch() {
                     playRobotSound('beep');
-                    this.startTypingEffect("Eh, malah dicolok matanya!", 'kesal');
-                },
-
-                initEyeTracker() {
-                    window.addEventListener('mousemove', (e) => {
-                        const container = document.getElementById('robot-eyes-container');
-                        if (!container) return;
-                        const rect = container.getBoundingClientRect();
-                        const dx = e.clientX - (rect.left + rect.width / 2);
-                        const dy = e.clientY - (rect.top + rect.height / 2);
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        const scale = Math.min(dist, 10) / (dist || 1);
-                        this.pupilX = dx * scale;
-                        this.pupilY = dy * scale;
-                    });
+                    this.setEmotionWithTimeout('perhatian');
+                    this.startTypingEffect("Sistem berfungsi optimal, Tuan. Ada instruksi khusus?", 'perhatian');
                 },
 
                 async callGeminiAPI(modelName, payload) {
@@ -839,7 +842,7 @@
                 async submitToAI() {
                     if ((!this.userQuery.trim() && !this.attachedImage) || this.loadingAI) return;
                     if (!cachedApiKey) {
-                        this.startTypingEffect('API Key belum dipasang di database nih Bos.', 'serius');
+                        this.startTypingEffect('Kesalahan: Kunci API belum dikonfigurasi dalam sistem.', 'pusing');
                         return;
                     }
 
@@ -848,7 +851,7 @@
                     await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
 
-                    let partsArray = [{ text: `${this.profile.customInstructions}\n\n[MEMORI]\n${this.dynamicMemoriesText}\nPertanyaan: ${prompt}` }];
+                    let partsArray = [{ text: `${this.profile.customInstructions}\n\n[MEMORI SISTEM]\n${this.dynamicMemoriesText}\n\nInstruksi Tuan: ${prompt}\n\n(Sertakan tag emosi seperti [senang], [kagum], [kesal], [bosan], atau [pusing] di akhir respons).` }];
                     
                     if (this.isVisionActive) {
                         try {
@@ -869,18 +872,29 @@
                         
                         if (res.ok) {
                             const data = await res.json();
-                            let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Aman bos.";
-                            reply = reply.replace(/\[.*?\]/g, '').trim();
-                            this.startTypingEffect(reply, 'senang');
+                            let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah sedang diproses, Tuan [senang].";
+                            
+                            let detectedEmotion = 'senang';
+                            const match = reply.match(/\[(.*?)\]/);
+                            if (match && match[1]) {
+                                detectedEmotion = match[1].toLowerCase().trim();
+                                reply = reply.replace(/\[.*?\]/g, '').trim();
+                            }
+
+                            this.setEmulatorEmotion(detectedEmotion);
+                            this.startTypingEffect(reply, detectedEmotion);
                             await this.saveChatToSupabase('ai', reply);
                         }
                     } catch (e) {
-                        this.startTypingEffect("Waduh, koneksi error bos.", 'serius');
+                        this.setEmotionWithTimeout('pusing');
+                        this.startTypingEffect("Gangguan koneksi terdeteksi pada server pusat [pusing].", 'pusing');
                     } finally {
                         this.loadingAI = false;
-                        this.pupilX = 0;
-                        this.pupilY = 0;
                     }
+                },
+
+                setEmulatorEmotion(emo) {
+                    this.setEmotionWithTimeout(emo);
                 }
             }));
         });
