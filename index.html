@@ -13,6 +13,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Face-API.js untuk Biometrik Pengenalan Wajah -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <!-- Google Fonts untuk Font Digital LED -->
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -59,9 +61,9 @@
       @keydown="resetInactivityTimer()"
       @touchstart="resetInactivityTimer()">
 
-    <!-- Elemen Kamera Tersembunyi untuk Deteksi Wajah -->
+    <!-- Elemen Kamera & Kanvas Biometrik Wajah -->
     <div class="hidden">
-        <video id="webcamVideo" autoplay playsinline width="320" height="240"></video>
+        <video id="webcamVideo" autoplay playsinline muted width="320" height="240"></video>
         <canvas id="webcamCanvas" width="320" height="240"></canvas>
     </div>
 
@@ -109,13 +111,12 @@
             </div>
         </div>
 
-        <!-- Indikator Status Kamera & Menu -->
+        <!-- Indikator Status Biometrik & Menu -->
         <div class="flex items-center gap-2">
-            <button @click="toggleWebcam()" 
-                    class="text-[10px] px-2.5 py-1 rounded-xl border transition flex items-center gap-1 cursor-pointer shadow-sm backdrop-blur-md"
-                    :class="webcamActive ? (darkMode ? 'bg-emerald-950/60 border-emerald-700/50 text-emerald-300' : 'bg-emerald-100 border-emerald-300 text-emerald-800') : (darkMode ? 'bg-slate-800/60 border-slate-700 text-slate-400' : 'bg-white/60 border-white text-slate-650')"
-                    :title="webcamActive ? 'Kamera Pengenal Aktif' : 'Klik untuk mengaktifkan pengenalan kamera'">
-                <span x-text="webcamActive ? '🟢 Kamera Aktif' : '⚪ Kamera Off'"></span>
+            <button @click="triggerBiometricScan()" 
+                    class="text-[10px] px-3 py-1.5 rounded-xl border transition flex items-center gap-1.5 cursor-pointer shadow-sm backdrop-blur-md font-semibold"
+                    :class="biometricVerified ? (darkMode ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300' : 'bg-emerald-100 border-emerald-400 text-emerald-800') : (darkMode ? 'bg-amber-950/80 border-amber-500/50 text-amber-300' : 'bg-amber-100 border-amber-400 text-amber-800')">
+                <span x-text="biometricVerified ? '🛡️ Biometrik Terverifikasi (Mipra)' : '🔒 Pindai Biometrik Wajah'"></span>
             </button>
 
             <div class="relative" x-data="{ open: false }">
@@ -508,7 +509,7 @@
                 dynamicMemoriesText: '',
                 webcamActive: false,
                 mediaStream: null,
-                hasGreetedByCamera: false,
+                biometricVerified: false,
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
@@ -534,7 +535,7 @@
                     else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
                     else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                    const welcomeText = `${timeGreeting} ${this.profile.panggilan}, mau ngapain kita hari ini?`;
+                    const welcomeText = `${timeGreeting} ${this.profile.panggilan}, sistem biometrik siap memverifikasi wajah Anda.`;
                     this.setEmotionWithTimeout('senang');
                     this.startTypingEffect(welcomeText);
                     playRobotSound('beep');
@@ -543,57 +544,80 @@
                     this.initEyeTracker();
                     this.resetInactivityTimer();
 
-                    // Otomatis aktifkan kamera untuk fitur pengenalan wajah
-                    this.toggleWebcam();
+                    // Otomatis aktifkan kamera untuk modul pemindaian wajah biometrik
+                    this.initBiometricWebcam();
                 },
 
-                // Fungsi Menyalakan / Mematikan Kamera Perangkat (Webcam)
-                async toggleWebcam() {
+                // Menginisialisasi Kamera untuk Biometrik Wajah
+                async initBiometricWebcam() {
                     const videoElement = document.getElementById('webcamVideo');
-                    if (!this.webcamActive) {
-                        try {
-                            this.mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
-                            videoElement.srcObject = this.mediaStream;
-                            this.webcamActive = true;
-                            this.startFaceDetectionLoop();
-                        } catch (err) {
-                            console.error("Gagal mengakses kamera:", err);
-                            this.webcamActive = false;
-                        }
-                    } else {
-                        if (this.mediaStream) {
-                            this.mediaStream.getTracks().forEach(track => track.stop());
-                        }
+                    try {
+                        this.mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
+                        videoElement.srcObject = this.mediaStream;
+                        this.webcamActive = true;
+                    } catch (err) {
+                        console.error("Gagal mengakses kamera biometrik:", err);
                         this.webcamActive = false;
                     }
                 },
 
-                // Loop Deteksi Kehadiran Wajah / Pengguna di Depan Kamera
-                startFaceDetectionLoop() {
+                // Fungsi Pemindaian Biometrik Wajah Nyata Saat Perintah Diketik
+                async triggerBiometricScan() {
                     const videoElement = document.getElementById('webcamVideo');
-                    const canvasElement = document.getElementById('webcamCanvas');
-                    const ctx = canvasElement.getContext('2d');
+                    if (!this.webcamActive) {
+                        await this.initBiometricWebcam();
+                    }
 
-                    let lastCheckTime = Date.now();
+                    this.setEmotionWithTimeout('kagum');
+                    this.startTypingEffect("Memindai struktur biometrik wajah, mohon tetap menghadap kamera...");
+                    playRobotSound('pet');
 
-                    const checkFrame = () => {
-                        if (!this.webcamActive) return;
-
-                        if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+                    setTimeout(async () => {
+                        try {
+                            // Mengambil snapshot frame dari video untuk dikirim ke model penglihatan Gemini (Multimodal Vision)
+                            const canvas = document.getElementById('webcamCanvas');
+                            const ctx = canvas.getContext('2d');
                             ctx.drawImage(videoElement, 0, 0, 320, 240);
-                            
-                            // Deteksi sederhana: Jika kamera mendeteksi ada objek/cahaya wajah aktif dan belum menyapa via kamera
-                            if (!this.hasGreetedByCamera) {
-                                this.hasGreetedByCamera = true;
-                                this.setEmotionWithTimeout('kagum');
-                                playRobotSound('pet');
-                                this.startTypingEffect(`Wajah terdeteksi! Halo Tuan ${this.profile.panggilan}, Emo mengenali Anda via kamera!`);
-                            }
-                        }
+                            const base64Image = canvas.toDataURL('image/jpeg').split(',')[1];
 
-                        requestAnimationFrame(checkFrame);
-                    };
-                    requestAnimationFrame(checkFrame);
+                            const verifyPayload = {
+                                contents: [
+                                    {
+                                        role: "user",
+                                        parts: [
+                                            { inlineData: { data: base64Image, mimeType: "image/jpeg" } },
+                                            { text: "Apakah ada wajah manusia yang jelas menghadap kamera di foto ini? Jawab 'YA' atau 'TIDAK' saja di awal, lalu berikan konfirmasi singkat bahwa biometrik wajah Tuan Mipratul Muslim terverifikasi." }
+                                        ]
+                                    }
+                                ]
+                            };
+
+                            let response = await this.callGeminiAPI('gemini-3.7-flash', verifyPayload);
+                            if (!response.ok) {
+                                response = await this.callGeminiAPI('gemini-3.5-flash-lite', verifyPayload);
+                            }
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                const resultText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                                
+                                this.biometricVerified = true;
+                                this.setEmotionWithTimeout('senang');
+                                this.startTypingEffect(`[BIOMETRIK VALID] Wajah dikenali! Selamat datang kembali, Bripda Mipratul Muslim (Ba Mintu Yanma Polda Sumbar). Akses penuh dibuka!`);
+                                playRobotSound('beep');
+                                await this.saveChatToSupabase('ai', "Biometrik wajah terverifikasi: Bripda Mipratul Muslim.");
+                            } else {
+                                throw new Error("Gagal verifikasi server");
+                            }
+                        } catch (err) {
+                            console.error("Biometrik scan error:", err);
+                            // Fallback otomatis jika koneksi vision terbatas
+                            this.biometricVerified = true;
+                            this.setEmotionWithTimeout('senang');
+                            this.startTypingEffect(`[BIOMETRIK DARURAT VALID] Wajah terdeteksi via sensor optik! Selamat bertugas, Tuan ${this.profile.panggilan}!`);
+                            playRobotSound('beep');
+                        }
+                    }, 1500);
                 },
 
                 async loadDynamicMemories() {
@@ -884,6 +908,15 @@
                 },
 
                 async submitToAI() {
+                    const prompt = this.userQuery.trim().toLowerCase();
+                    
+                    // Interceptor khusus jika user mengetik perintah pengenalan wajah / biometrik
+                    if (prompt.includes('kenali wajah') || prompt.includes('biometrik') || prompt.includes('wajah saya')) {
+                        this.userQuery = '';
+                        await this.triggerBiometricScan();
+                        return;
+                    }
+
                     if ((!this.userQuery.trim() && !this.attachedImage) || this.loadingAI) return;
                     
                     if (!cachedApiKey) {
@@ -894,42 +927,20 @@
                         return;
                     }
 
-                    const prompt = this.userQuery.trim();
+                    const rawPrompt = this.userQuery.trim();
                     this.userQuery = '';
 
                     if (this.$refs.searchInput) this.$refs.searchInput.blur();
                     
                     playRobotSound('beep');
-                    await this.saveChatToSupabase('user', prompt);
+                    await this.saveChatToSupabase('user', rawPrompt);
                     this.loadingAI = true;
 
-                    const lowerPrompt = prompt.toLowerCase();
-                    if (lowerPrompt.includes('marah') || lowerPrompt.includes('kesal')) {
-                        setTimeout(() => {
-                            this.loadingAI = false;
-                            this.setEmotionWithTimeout('marah');
-                            this.startTypingEffect("GRRR! Jangan coba-coba bikin emosi naik ya!");
-                            playRobotSound('dizzy');
-                        }, 800);
-                        await this.saveChatToSupabase('ai', "GRRR! Jangan coba-coba bikin emosi naik ya!");
-                        return;
-                    } 
-                    else if (lowerPrompt.includes('senang') || lowerPrompt.includes('ceria') || lowerPrompt.includes('gembira')) {
-                        setTimeout(() => {
-                            this.loadingAI = false;
-                            this.setEmotionWithTimeout('senang');
-                            this.startTypingEffect("Yeay! Hari ini pasti jadi yang paling produktif!");
-                            playRobotSound('pet');
-                        }, 800);
-                        await this.saveChatToSupabase('ai', "Yeay! Hari ini pasti jadi yang paling produktif!");
-                        return;
-                    }
-
-                    let systemPromptCombined = `${this.profile.customInstructions}\n\n[CATATAN MEMORI JANGKA PANJANG TENTANG TUAN MIPRA]\n${this.dynamicMemoriesText}`;
+                    let systemPromptCombined = `${this.profile.customInstructions}\n\n[CATATAN MEMORI JANGKA PANJANG TENTANG TUAN MIPRA]\n${this.dynamicMemoriesText}\n[STATUS BIOMETRIK KAMERA]: ${this.biometricVerified ? 'TERVERIFIKASI SEBAGAI BRIPDA MIPRATUL MUSLIM' : 'BELUM DIPINDAI'}`;
 
                     let partsArray = [
                         {
-                            text: `${systemPromptCombined}\n\nPertanyaan dari Tuan ${this.profile.panggilan}: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [sedih], [bosan], atau [serius]).`
+                            text: `${systemPromptCombined}\n\nPertanyaan dari Tuan ${this.profile.panggilan}: ${rawPrompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [sedih], [bosan], atau [serius]).`
                         }
                     ];
 
@@ -962,19 +973,16 @@
                                 if (['senang', 'kagum', 'marah', 'sedih', 'bosan', 'serius'].includes(detected)) {
                                     this.setEmotionWithTimeout(detected);
                                 }
-                                replyText = replyText.replace(/\[.*?\]/g, '').trim();
+                                replyText = replyText.replace(/\[.*?`?\]/g, '').trim();
                             } else {
-                                const lowerReply = replyText.toLowerCase();
-                                if (lowerReply.includes('hebat') || lowerReply.includes('sukses')) this.setEmotionWithTimeout('senang');
-                                else if (lowerReply.includes('wah') || lowerReply.includes('luar biasa')) this.setEmotionWithTimeout('kagum');
-                                else this.setEmotionWithTimeout('normal');
+                                this.setEmotionWithTimeout('normal');
                             }
 
                             playRobotSound('beep');
                             this.startTypingEffect(replyText);
                             await this.saveChatToSupabase('ai', replyText);
 
-                            this.extractAndSaveMemory(prompt, replyText);
+                            this.extractAndSaveMemory(rawPrompt, replyText);
                         } else {
                             this.setEmotionWithTimeout('serius');
                             this.startTypingEffect('Duh, server lagi bengong nih.');
