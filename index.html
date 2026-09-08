@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Command Center - iPhone 17 Pro Max UI</title>
+    <title>Personal Command Center - Liquid Glass UI</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -13,11 +13,11 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Google Fonts untuk Font Digital LED -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
         }
         @keyframes blink {
             0%, 90%, 100% { transform: scaleY(1); }
@@ -54,32 +54,54 @@
             font-family: 'Share Tech Mono', monospace, sans-serif;
             letter-spacing: 0.05em;
         }
-        /* Efek Bingkai iPhone 17 Pro Max */
-        .iphone-frame {
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 12px #1c1c1e, 0 0 0 14px #3a3a3c;
+        /* Efek Liquid Glass iOS Style */
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
-        /* Dynamic Island */
-        .dynamic-island {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .dark .liquid-glass {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+        }
+        .liquid-glass-subtle {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .dark .liquid-glass-subtle {
+            background: rgba(2, 6, 23, 0.35);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-0 sm:p-6 transition-colors duration-500 relative overflow-x-hidden" 
-      :class="darkMode ? 'bg-black text-slate-100' : 'bg-slate-900 text-slate-800'" 
+<body class="min-h-screen font-sans flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden" 
+      :class="darkMode ? 'bg-slate-950 text-slate-100' : 'bg-sky-200 text-slate-900'" 
       x-data="dashboardApp()"
       @mousemove="resetInactivityTimer()"
       @keydown="resetInactivityTimer()"
       @touchstart="resetInactivityTimer()">
 
     <!-- POP-UP LOCKSCREEN GOOGLE OAUTH -->
-    <div x-show="!isUnlocked" class="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-sm border rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center backdrop-blur-md bg-slate-900/90 border-slate-800 text-slate-200">
-            <div class="w-16 h-16 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20">
+    <div x-show="!isUnlocked" class="fixed inset-0 bg-black/95 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-sm liquid-glass rounded-[32px] p-6 shadow-2xl flex flex-col items-center text-center">
+            
+            <div class="w-16 h-16 rounded-2xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20 backdrop-blur-xl">
                 <span class="text-3xl">🔐</span>
             </div>
-            <h2 class="text-base font-bold mb-1">Otentikasi Sistem Diperlukan</h2>
-            <p class="text-xs mb-6 opacity-75">Silakan masuk menggunakan akun Google resmi Anda untuk mengakses Command Center.</p>
-            <button @click="loginWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 py-3 rounded-xl text-xs font-semibold transition cursor-pointer shadow-md flex items-center justify-center gap-2">
+
+            <h2 class="text-base font-bold mb-1 tracking-tight">Otentikasi Sistem Diperlukan</h2>
+            <p class="text-xs mb-6 opacity-75">Masuk menggunakan akun Google resmi Anda untuk mengakses Personal Command Center.</p>
+
+            <button @click="loginWithGoogle()" class="w-full bg-white/90 hover:bg-white text-slate-900 border border-white/40 py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-xl backdrop-blur-md flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -98,389 +120,386 @@
     </div>
     <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
 
-    <!-- CONTAINER UTAMA GAYA IPHONE 17 PRO MAX -->
-    <div class="w-full sm:max-w-[430px] sm:h-[900px] sm:rounded-[50px] iphone-frame flex flex-col justify-between relative overflow-hidden transition-colors duration-500"
-         :class="darkMode ? 'bg-slate-950 text-slate-100' : 'bg-sky-100 text-slate-900'">
+    <!-- LATAR BELAKANG KARTUN OMBAK LAUT & KAPAL BESAR ONE PIECE (GAYA LIQUID GLASS DINAMIS) -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end transition-colors duration-700"
+         :class="darkMode ? 'bg-slate-950' : 'bg-sky-200'">
+        
+        <div class="absolute inset-0 transition-opacity duration-700" 
+             :class="darkMode ? 'opacity-95 bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950' : 'opacity-100 bg-gradient-to-b from-sky-400 via-sky-300 to-sky-100'"></div>
 
-        <!-- LATAR BELAKANG OMBAK LAUT & KAPAL BESAR ONE PIECE -->
-        <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end transition-colors duration-700"
-             :class="darkMode ? 'bg-slate-950' : 'bg-sky-200'">
+        <div x-show="!darkMode" class="absolute top-12 right-24 w-24 h-24 bg-amber-300 rounded-full blur-xs shadow-[0_0_60px_rgba(252,211,77,0.8)]"></div>
+        <div x-show="darkMode" class="absolute top-12 right-24 w-16 h-16 bg-slate-200 rounded-full shadow-[0_0_40px_rgba(226,232,240,0.6)] opacity-90 flex items-center justify-center">
+            <div class="w-12 h-12 bg-indigo-950 rounded-full absolute -top-1 -right-1"></div>
+        </div>
+
+        <!-- Kapal Besar One Piece Mega -->
+        <div class="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-0 floating-ship opacity-95 flex flex-col items-center w-full max-w-lg px-4">
+            <div class="absolute bottom-10 w-48 h-20 bg-amber-500/20 rounded-full blur-xl"></div>
+            <div class="w-8 h-6 bg-black rounded-sm relative flex items-center justify-center shadow-lg mb-1 border border-amber-500/40">
+                <span class="text-[10px]">🏴‍☠️</span>
+            </div>
+            <div class="w-full flex justify-center items-end relative h-36">
+                <div class="w-1.5 h-28 bg-amber-900 relative mx-4">
+                    <div class="absolute top-2 -left-10 w-20 h-12 bg-gradient-to-r from-amber-100 to-amber-200 border border-amber-300 rounded-lg shadow-xl transform -rotate-6"></div>
+                </div>
+                <div class="w-2.5 h-36 bg-amber-950 relative mx-6">
+                    <div class="absolute top-2 -left-16 w-32 h-20 bg-gradient-to-r from-amber-50 via-white to-amber-100 border border-amber-300 rounded-xl shadow-2xl flex items-center justify-center">
+                        <span class="text-xl text-amber-900/80 font-serif font-bold">⚓</span>
+                    </div>
+                </div>
+                <div class="w-1.5 h-30 bg-amber-900 relative mx-4">
+                    <div class="absolute top-3 -left-10 w-20 h-12 bg-gradient-to-r from-amber-100 to-amber-200 border border-amber-300 rounded-lg shadow-xl transform rotate-6"></div>
+                </div>
+            </div>
+            <div class="w-72 sm:w-96 h-16 bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 rounded-b-[40px] border-t-4 border-amber-600 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative flex items-center justify-center">
+                <div class="absolute flex gap-2">
+                    <div class="w-3 h-3 bg-amber-300 rounded-full shadow-[0_0_10px_#f59e0b]"></div>
+                    <div class="w-3 h-3 bg-amber-300 rounded-full shadow-[0_0_10px_#f59e0b]"></div>
+                    <div class="w-3 h-3 bg-amber-300 rounded-full shadow-[0_0_10px_#f59e0b]"></div>
+                </div>
+                <span class="text-[11px] text-amber-200/90 font-bold tracking-[0.3em] uppercase absolute bottom-2">Grand Line Galleon</span>
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 w-full h-48 transition-colors duration-700 opacity-60" :class="darkMode ? 'text-blue-900' : 'text-blue-400'">
+            <svg viewBox="0 0 1200 300" preserveAspectRatio="none" class="w-full h-full fill-current">
+                <path d="M0,300 L0,120 Q150,40 300,120 T600,100 T900,140 T1200,90 L1200,300 Z"></path>
+            </svg>
+        </div>
+        <div class="absolute bottom-0 w-full h-32 transition-colors duration-700 opacity-95" :class="darkMode ? 'text-blue-950' : 'text-blue-600'">
+            <svg viewBox="0 0 1200 200" preserveAspectRatio="none" class="w-full h-full fill-current">
+                <path d="M0,200 L0,70 Q200,10 400,90 T800,50 T1200,80 L1200,200 Z"></path>
+            </svg>
+            <div class="absolute bottom-0 w-full h-5 bg-white opacity-50 blur-[2px]"></div>
+        </div>
+    </div>
+
+    <!-- TOP NAVIGATION BAR (LIQUID GLASS) -->
+    <nav class="liquid-glass border-b px-4 sm:px-6 py-3 flex justify-between items-center sticky top-0 z-40 shadow-xl transition-colors duration-500">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-lg shadow-inner bg-gradient-to-br from-blue-500 to-cyan-500 text-white backdrop-blur-md">
+                ⌘
+            </div>
+            <div class="hidden sm:block">
+                <h1 class="text-xs font-bold uppercase tracking-wider opacity-90">Command Center</h1>
+                <p class="text-[9px] opacity-60">Sistem AI Personal</p>
+            </div>
+            <button @click="toggleVisionMonitoring()" 
+                    class="px-2.5 py-1 rounded-xl text-[10px] font-semibold transition flex items-center gap-1.5 cursor-pointer border liquid-glass-subtle"
+                    :class="isVisionActive ? 'text-emerald-400 border-emerald-500/50 animate-pulse' : 'opacity-80'">
+                <span x-text="isVisionActive ? '👁️ AI Vision: ON' : '👁️ AI Vision: OFF'"></span>
+            </button>
+        </div>
+
+        <!-- Menu Profil -->
+        <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" @click.away="open = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1 rounded-2xl transition hover:bg-white/10">
+                <div class="hidden sm:block text-right">
+                    <span class="block text-xs font-bold" x-text="profile.namaLengkap"></span>
+                    <span class="block text-[9px] opacity-60 uppercase tracking-wide">Administrator Utama</span>
+                </div>
+                <div class="w-9 h-9 rounded-full overflow-hidden shadow-lg relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-blue-600 to-purple-600 border border-white/30">
+                    <template x-if="userProfilePic">
+                        <img :src="userProfilePic" alt="Profil" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!userProfilePic">
+                        <span class="text-sm" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
+                    </template>
+                </div>
+                <svg class="w-3.5 h-3.5 opacity-60 hidden sm:block transition-transform duration-300" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+
+            <!-- Dropdown Profil -->
+            <div x-show="open" style="display: none;"
+                 class="absolute right-0 mt-3 w-64 liquid-glass rounded-3xl shadow-2xl z-50 overflow-hidden transition-colors duration-500 p-1.5 space-y-1">
+                <div class="p-3 rounded-2xl liquid-glass-subtle mb-1">
+                    <p class="text-[9px] uppercase tracking-wider font-semibold opacity-60 mb-0.5">Akun Tertaut</p>
+                    <p class="text-xs font-bold truncate text-blue-400" x-text="userEmail"></p>
+                </div>
+                <button @click="activeModal = 'dataPribadi'; open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center gap-3 cursor-pointer hover:bg-white/10">
+                    <span class="text-base">👤</span> Profil & Data Diri
+                </button>
+                <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center gap-3 cursor-pointer hover:bg-white/10">
+                    <span class="text-base">🧠</span> Konfigurasi AI Dasar
+                </button>
+                <button @click="openChatHistoryModal(); open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center gap-3 cursor-pointer hover:bg-white/10">
+                    <span class="text-base">📜</span> Riwayat Percakapan
+                </button>
+                <div class="border-t border-white/10 pt-1">
+                    <button @click="toggleDarkMode(); open = false;" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-medium transition flex items-center justify-between cursor-pointer hover:bg-white/10">
+                        <span class="flex items-center gap-3">
+                            <span x-text="darkMode ? '☀️' : '🌙'"></span> 
+                            <span>Ubah Tema Tampilan</span>
+                        </span>
+                        <span class="text-[9px] px-2 py-0.5 rounded-lg liquid-glass-subtle uppercase tracking-wider" x-text="darkMode ? 'Dark' : 'Light'"></span>
+                    </button>
+                </div>
+                <div class="border-t border-white/10 pt-1">
+                    <button @click="logout()" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-semibold text-red-400 transition flex items-center gap-3 cursor-pointer hover:bg-red-500/20">
+                        <span class="text-base">🚪</span> Keluar Aplikasi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN WORKSPACE CONTAINER -->
+    <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1 z-10">
+
+        <!-- Panel Wajah Robot Imo Style (Liquid Glass) -->
+        <div class="liquid-glass rounded-[36px] p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500">
             
-            <div class="absolute inset-0 transition-opacity duration-700" 
-                 :class="darkMode ? 'opacity-95 bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950' : 'opacity-100 bg-gradient-to-b from-sky-400 via-sky-300 to-sky-100'"></div>
+            <!-- Area Sentuh Mata -->
+            <div id="robot-eyes-container" 
+                 @click="handleEyeTouch()" 
+                 @touchstart.prevent="handleEyeTouch()"
+                 class="w-56 h-28 flex items-center justify-center relative mb-4 cursor-pointer select-none group mt-2"
+                 title="Sentuh atau klik mata robot!">
 
-            <div x-show="!darkMode" class="absolute top-16 right-16 w-20 h-20 bg-amber-300 rounded-full blur-xs shadow-[0_0_50px_rgba(252,211,77,0.8)]"></div>
-            <div x-show="darkMode" class="absolute top-16 right-16 w-14 h-14 bg-slate-200 rounded-full shadow-[0_0_30px_rgba(226,232,240,0.6)] opacity-90 flex items-center justify-center">
-                <div class="w-10 h-10 bg-indigo-950 rounded-full absolute -top-1 -right-1"></div>
-            </div>
-
-            <!-- Kapal Besar One Piece -->
-            <div class="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-0 floating-ship opacity-95 flex flex-col items-center w-full max-w-xs px-4">
-                <div class="absolute bottom-10 w-36 h-16 bg-amber-500/20 rounded-full blur-xl"></div>
-                <div class="w-6 h-4 bg-black rounded-sm relative flex items-center justify-center shadow-lg mb-1 border border-amber-500/40">
-                    <span class="text-[8px]">🏴‍☠️</span>
-                </div>
-                <div class="w-full flex justify-center items-end relative h-28">
-                    <div class="w-1 h-20 bg-amber-900 relative mx-3">
-                        <div class="absolute top-2 -left-8 w-16 h-10 bg-gradient-to-r from-amber-100 to-amber-200 border border-amber-300 rounded-md shadow-lg transform -rotate-6"></div>
-                    </div>
-                    <div class="w-2 h-28 bg-amber-950 relative mx-4">
-                        <div class="absolute top-2 -left-12 w-24 h-16 bg-gradient-to-r from-amber-50 via-white to-amber-100 border border-amber-300 rounded-lg shadow-xl flex items-center justify-center">
-                            <span class="text-lg text-amber-900/80 font-serif font-bold">⚓</span>
+                <div class="flex gap-10 items-center justify-center">
+                    <template x-if="loadingAI">
+                        <div class="flex gap-10 items-center justify-center">
+                            <div class="w-16 h-12 bg-purple-500/80 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.9)] thinking-eye flex items-center justify-center backdrop-blur-md">
+                                <div class="w-3 h-3 bg-white rounded-full animate-ping"></div>
+                            </div>
+                            <div class="w-16 h-12 bg-purple-500/80 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.9)] thinking-eye flex items-center justify-center backdrop-blur-md" style="animation-delay: 0.2s;">
+                                <div class="w-3 h-3 bg-white rounded-full animate-ping"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="w-1 h-22 bg-amber-900 relative mx-3">
-                        <div class="absolute top-2 -left-8 w-16 h-10 bg-gradient-to-r from-amber-100 to-amber-200 border border-amber-300 rounded-md shadow-lg transform rotate-6"></div>
-                    </div>
-                </div>
-                <div class="w-60 h-12 bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 rounded-b-[30px] border-t-2 border-amber-600 shadow-[0_15px_40px_rgba(0,0,0,0.8)] relative flex items-center justify-center">
-                    <div class="absolute flex gap-1.5">
-                        <div class="w-2.5 h-2.5 bg-amber-300 rounded-full shadow-[0_0_8px_#f59e0b]"></div>
-                        <div class="w-2.5 h-2.5 bg-amber-300 rounded-full shadow-[0_0_8px_#f59e0b]"></div>
-                    </div>
-                    <span class="text-[9px] text-amber-200/90 font-bold tracking-[0.2em] uppercase absolute bottom-1">Grand Line Galleon</span>
-                </div>
-            </div>
+                    </template>
 
-            <div class="absolute bottom-0 w-full h-40 transition-colors duration-700 opacity-60" :class="darkMode ? 'text-blue-900' : 'text-blue-400'">
-                <svg viewBox="0 0 1200 300" preserveAspectRatio="none" class="w-full h-full fill-current">
-                    <path d="M0,300 L0,120 Q150,40 300,120 T600,100 T900,140 T1200,90 L1200,300 Z"></path>
-                </svg>
-            </div>
-            <div class="absolute bottom-0 w-full h-24 transition-colors duration-700 opacity-95" :class="darkMode ? 'text-blue-950' : 'text-blue-600'">
-                <svg viewBox="0 0 1200 200" preserveAspectRatio="none" class="w-full h-full fill-current">
-                    <path d="M0,200 L0,70 Q200,10 400,90 T800,50 T1200,80 L1200,200 Z"></path>
-                </svg>
-                <div class="absolute bottom-0 w-full h-4 bg-white opacity-40 blur-[2px]"></div>
-            </div>
-        </div>
-
-        <!-- STATUS BAR IPHONE & DYNAMIC ISLAND -->
-        <div class="w-full px-6 pt-3 pb-1 flex justify-between items-center z-40 text-xs font-semibold select-none"
-             :class="darkMode ? 'text-white' : 'text-slate-900'">
-            <span>11:24</span>
-            <!-- Dynamic Island -->
-            <div class="w-28 h-7 bg-black rounded-full flex items-center justify-between px-2.5 shadow-md dynamic-island border border-slate-800">
-                <div class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
-                <span class="text-[10px] text-slate-300 font-mono tracking-tight">AI Active</span>
-                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <span>5G</span>
-                <div class="w-5 h-2.5 border rounded-sm p-0.5 flex items-center" :class="darkMode ? 'border-white' : 'border-slate-900'">
-                    <div class="h-full w-full bg-current rounded-2xs"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TOP NAVIGATION BAR -->
-        <nav class="backdrop-blur-md border-b px-4 py-2.5 flex justify-between items-center z-30 shadow-sm transition-colors duration-500"
-             :class="darkMode ? 'bg-slate-900/60 border-slate-800/60 text-slate-100' : 'bg-white/60 border-white/60 text-slate-900'">
-            <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-sm shadow-inner bg-gradient-to-br from-blue-600 to-cyan-600 text-white">
-                    ⌘
-                </div>
-                <div>
-                    <h1 class="text-[11px] font-bold uppercase tracking-wider opacity-90">Command Center</h1>
-                    <p class="text-[8px] opacity-60">Sistem AI Personal</p>
-                </div>
-                <button @click="toggleVisionMonitoring()" 
-                        class="px-2 py-0.5 rounded-md text-[9px] font-semibold transition flex items-center gap-1 cursor-pointer border ml-1"
-                        :class="isVisionActive ? (darkMode ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300 animate-pulse' : 'bg-emerald-100 border-emerald-300 text-emerald-800 animate-pulse') : (darkMode ? 'bg-slate-800/60 border-slate-700 text-slate-400' : 'bg-white/60 border-slate-200 text-slate-600')">
-                    <span x-text="isVisionActive ? 'Vision: ON' : 'Vision: OFF'"></span>
-                </button>
-            </div>
-
-            <!-- Menu Profil -->
-            <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2 focus:outline-none cursor-pointer p-1 rounded-xl transition hover:bg-slate-500/10">
-                    <div class="w-8 h-8 rounded-full overflow-hidden shadow-md relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-blue-600 to-purple-600 border border-blue-400/50">
-                        <template x-if="userProfilePic">
-                            <img :src="userProfilePic" alt="Profil" class="w-full h-full object-cover">
-                        </template>
-                        <template x-if="!userProfilePic">
-                            <span class="text-xs" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
-                        </template>
-                    </div>
-                </button>
-
-                <div x-show="open" style="display: none;"
-                     class="absolute right-0 mt-2 w-56 border rounded-2xl shadow-2xl z-50 backdrop-blur-2xl overflow-hidden transition-colors duration-500" 
-                     :class="darkMode ? 'bg-slate-900/95 border-slate-800 text-slate-200' : 'bg-white/95 border-sky-100 text-slate-900'">
-                    <div class="p-3 border-b" :class="darkMode ? 'border-slate-800/80 bg-slate-800/30' : 'border-sky-100/80 bg-sky-50/50'">
-                        <p class="text-[9px] uppercase tracking-wider font-semibold opacity-60">Akun Resmi</p>
-                        <p class="text-[11px] font-bold truncate text-blue-500" x-text="userEmail"></p>
-                    </div>
-                    <div class="p-1.5 space-y-0.5">
-                        <button @click="activeModal = 'dataPribadi'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/60' : 'hover:bg-sky-100/60'">
-                            👤 Profil & Data Diri
-                        </button>
-                        <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/60' : 'hover:bg-sky-100/60'">
-                            🧠 Konfigurasi AI Formal
-                        </button>
-                        <button @click="openChatHistoryModal(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/60' : 'hover:bg-sky-100/60'">
-                            📜 Riwayat Percakapan
-                        </button>
-                    </div>
-                    <div class="p-1.5 border-t" :class="darkMode ? 'border-slate-800/80' : 'border-sky-100/80'">
-                        <button @click="toggleDarkMode(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/60' : 'hover:bg-sky-100/60'">
-                            <span class="flex items-center gap-2.5">
-                                <span x-text="darkMode ? '☀️' : '🌙'"></span> 
-                                <span>Ubah Tema Tampilan</span>
-                            </span>
-                            <span class="text-[8px] px-1.5 py-0.5 rounded border opacity-70 uppercase" :class="darkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-slate-300'" x-text="darkMode ? 'Dark' : 'Light'"></span>
-                        </button>
-                    </div>
-                    <div class="p-1.5 border-t" :class="darkMode ? 'border-slate-800/80' : 'border-sky-100/80'">
-                        <button @click="logout()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-500 transition flex items-center gap-2.5 cursor-pointer hover:bg-red-500/10">
-                            🚪 Keluar Sistem
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <!-- MAIN WORKSPACE CONTAINER -->
-        <main class="w-full max-w-lg mx-auto p-3 sm:p-4 flex flex-col gap-3 my-auto flex-1 z-10 overflow-y-auto">
-
-            <!-- Panel Wajah Robot Imo Style (Formal UI) -->
-            <div class="backdrop-blur-md border rounded-3xl p-4 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500"
-                 :class="darkMode ? 'bg-slate-900/40 border-slate-800/40' : 'bg-white/40 border-white/40'">
-                
-                <!-- Area Sentuh Mata -->
-                <div id="robot-eyes-container" 
-                     @click="handleEyeTouch()" 
-                     @touchstart.prevent="handleEyeTouch()"
-                     class="w-48 h-20 flex items-center justify-center relative mb-2 cursor-pointer select-none group"
-                     title="Sentuh area mata sistem">
-
-                    <div class="flex gap-8 items-center justify-center">
-                        <template x-if="loadingAI">
-                            <div class="flex gap-8 items-center justify-center">
-                                <div class="w-14 h-10 bg-purple-500 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.9)] thinking-eye flex items-center justify-center">
-                                    <div class="w-2.5 h-2.5 bg-white rounded-full animate-ping"></div>
+                    <template x-if="!loadingAI">
+                        <div class="flex gap-10 items-center justify-center">
+                            <template x-if="currentEmotion === 'kedip'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-16 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.9)]"></div>
+                                    <div class="w-16 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.9)]"></div>
                                 </div>
-                                <div class="w-14 h-10 bg-purple-500 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.9)] thinking-eye flex items-center justify-center" style="animation-delay: 0.2s;">
-                                    <div class="w-2.5 h-2.5 bg-white rounded-full animate-ping"></div>
+                            </template>
+                            <template x-if="currentEmotion === 'pusing'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-14 h-14 bg-amber-400/90 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">🌀</div>
+                                    <div class="w-14 h-14 bg-amber-400/90 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">🌀</div>
                                 </div>
-                            </div>
-                        </template>
-
-                        <template x-if="!loadingAI">
-                            <div class="flex gap-8 items-center justify-center">
-                                <template x-if="currentEmotion === 'kedip'">
-                                    <div class="flex gap-8 items-center justify-center">
-                                        <div class="w-14 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.9)]"></div>
-                                        <div class="w-14 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.9)]"></div>
+                            </template>
+                            <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis' || currentEmotion === 'perhatian'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base flex items-end justify-center pb-1 relative overflow-hidden">
+                                        <div class="w-3 h-3 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm" :style="`transform: translate(${pupilX * 0.6}px, ${Math.min(pupilY * 0.4, 2)}px);`"></div>
                                     </div>
-                                </template>
-                                <template x-if="currentEmotion === 'pusing'">
-                                    <div class="flex gap-8 items-center justify-center">
-                                        <div class="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.9)] dizzy-eye text-xl">🌀</div>
-                                        <div class="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.9)] dizzy-eye text-xl">🌀</div>
+                                    <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base flex items-end justify-center pb-1 relative overflow-hidden">
+                                        <div class="w-3 h-3 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm" :style="`transform: translate(${pupilX * 0.6}px, ${Math.min(pupilY * 0.4, 2)}px);`"></div>
                                     </div>
-                                </template>
-                                <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'perhatian'">
-                                    <div class="flex gap-8 items-center justify-center">
-                                        <div class="w-14 h-7 bg-cyan-400 rounded-t-full shadow-[0_0_20px_rgba(34,211,238,0.9)] robot-eye-base flex items-end justify-center pb-1 relative overflow-hidden">
-                                            <div class="w-2.5 h-2.5 bg-slate-950 rounded-sm absolute" :style="`transform: translate(${pupilX * 0.6}px, ${Math.min(pupilY * 0.4, 2)}px);`"></div>
-                                        </div>
-                                        <div class="w-14 h-7 bg-cyan-400 rounded-t-full shadow-[0_0_20px_rgba(34,211,238,0.9)] robot-eye-base flex items-end justify-center pb-1 relative overflow-hidden">
-                                            <div class="w-2.5 h-2.5 bg-slate-950 rounded-sm absolute" :style="`transform: translate(${pupilX * 0.6}px, ${Math.min(pupilY * 0.4, 2)}px);`"></div>
-                                        </div>
+                                </div>
+                            </template>
+                            <template x-if="currentEmotion === 'bosan' || currentEmotion === 'mengantuk'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-16 h-2.5 bg-slate-400 rounded-full shadow-[0_0_15px_rgba(148,163,184,0.6)] robot-eye-base">😴</div>
+                                    <div class="w-16 h-2.5 bg-slate-400 rounded-full shadow-[0_0_15px_rgba(148,163,184,0.6)] robot-eye-base">😴</div>
+                                </div>
+                            </template>
+                            <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
+                                <div class="flex gap-10 items-center justify-center text-amber-300 text-5xl robot-eye-base drop-shadow-[0_0_20px_rgba(252,211,77,0.9)] font-bold">
+                                    <span>★</span><span>★</span>
+                                </div>
+                            </template>
+                            <template x-if="currentEmotion === 'marah' || currentEmotion === 'kesal'">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-16 h-6 bg-red-500 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.9)] transform -rotate-12 robot-eye-base"></div>
+                                    <div class="w-16 h-6 bg-red-500 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.9)] transform rotate-12 robot-eye-base"></div>
+                                </div>
+                            </template>
+                            <template x-if="!['kedip', 'pusing', 'senang', 'puas', 'romantis', 'bosan', 'mengantuk', 'kagum', 'antusias', 'marah', 'kesal', 'perhatian'].includes(currentEmotion)">
+                                <div class="flex gap-10 items-center justify-center">
+                                    <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
+                                        <div class="w-4 h-4 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm" :style="`transform: translate(${pupilX}px, ${pupilY}px);`"></div>
                                     </div>
-                                </template>
-                                <template x-if="currentEmotion === 'bosan' || currentEmotion === 'mengantuk'">
-                                    <div class="flex gap-8 items-center justify-center">
-                                        <div class="w-14 h-2 bg-slate-400 rounded-full shadow-[0_0_10px_rgba(148,163,184,0.6)] robot-eye-base text-center text-[10px]">😴</div>
-                                        <div class="w-14 h-2 bg-slate-400 rounded-full shadow-[0_0_10px_rgba(148,163,184,0.6)] robot-eye-base text-center text-[10px]">😴</div>
+                                    <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
+                                        <div class="w-4 h-4 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm" :style="`transform: translate(${pupilX}px, ${pupilY}px);`"></div>
                                     </div>
-                                </template>
-                                <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
-                                    <div class="flex gap-8 items-center justify-center text-amber-300 text-4xl robot-eye-base drop-shadow-[0_0_15px_rgba(252,211,77,0.9)] font-bold">
-                                        <span>★</span><span>★</span>
-                                    </div>
-                                </template>
-                                <template x-if="currentEmotion === 'marah' || currentEmotion === 'kesal'">
-                                    <div class="flex gap-8 items-center justify-center">
-                                        <div class="w-14 h-5 bg-red-500 rounded-lg shadow-[0_0_20px_rgba(239,68,68,0.9)] transform -rotate-12 robot-eye-base"></div>
-                                        <div class="w-14 h-5 bg-red-500 rounded-lg shadow-[0_0_20px_rgba(239,68,68,0.9)] transform rotate-12 robot-eye-base"></div>
-                                    </div>
-                                </template>
-                                <template x-if="!['kedip', 'pusing', 'senang', 'puas', 'romantis', 'bosan', 'mengantuk', 'kagum', 'antusias', 'marah', 'kesal', 'perhatian'].includes(currentEmotion)">
-                                    <div class="flex gap-8 items-center justify-center">
-                                        <div class="w-14 h-12 bg-cyan-400 rounded-2xl shadow-[0_0_20px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
-                                            <div class="w-3.5 h-3.5 bg-slate-950 rounded-sm absolute" :style="`transform: translate(${pupilX}px, ${pupilY}px);`"></div>
-                                        </div>
-                                        <div class="w-14 h-12 bg-cyan-400 rounded-2xl shadow-[0_0_20px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
-                                            <div class="w-3.5 h-3.5 bg-slate-950 rounded-sm absolute" :style="`transform: translate(${pupilX}px, ${pupilY}px);`"></div>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- Balon Teks Dialog Formal -->
-                <div class="w-full border rounded-2xl p-3.5 shadow-inner min-h-[90px] flex flex-col justify-center relative backdrop-blur-md transition-colors duration-500"
-                     :class="darkMode ? 'bg-slate-950/60 border-blue-500/30' : 'bg-white/60 border-white/60'">
-                    <p class="text-xs sm:text-sm font-medium text-center leading-relaxed digital-led-font"
-                       :class="darkMode ? 'text-sky-400 [text-shadow:0_0_8px_rgba(56,189,248,0.6)]' : 'text-slate-900'">
-                        <span x-text="typedText"></span><span class="animate-pulse font-bold" :class="darkMode ? 'text-sky-400' : 'text-slate-900'" x-show="isTyping">|</span>
-                    </p>
-                    <div class="absolute bottom-1.5 right-3">
-                        <span class="text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded border backdrop-blur-md" 
-                              :class="darkMode ? 'bg-slate-900/60 border-slate-800 text-blue-300' : 'bg-white/60 border-white text-blue-700'" 
-                              x-text="'Status: ' + currentEmotion"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Form Input Perintah -->
-            <form @submit.prevent="submitToAI" class="flex gap-2 items-center">
-                <label class="border p-2.5 rounded-xl cursor-pointer transition flex items-center justify-center shadow-sm backdrop-blur-md relative"
-                       :class="darkMode ? 'bg-slate-900/50 hover:bg-slate-800/60 border-slate-800/50 text-slate-400 hover:text-blue-400' : 'bg-white/50 hover:bg-white/80 border-white/60 text-slate-600 hover:text-blue-600'" 
-                       title="Unggah Berkas Visual">
-                    <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span x-show="attachedImage" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
-                </label>
-
-                <input 
-                    type="text" 
-                    x-ref="searchInput"
-                    x-model="userQuery" 
-                    :disabled="loadingAI"
-                    placeholder="Masukkan instruksi atau kueri sistem..." 
-                    class="flex-1 border focus:border-blue-500 focus:outline-none px-3.5 py-2.5 rounded-xl text-xs shadow-inner disabled:opacity-50 transition-colors duration-500 backdrop-blur-md"
-                    :class="darkMode ? 'bg-slate-900/50 border-slate-800/50 text-slate-200 placeholder-slate-500' : 'bg-white/50 border-white/60 text-slate-900 placeholder-slate-500'"
-                >
-                <button 
-                    type="submit" 
-                    :disabled="loadingAI"
-                    class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-blue-600/20 flex items-center gap-1 disabled:opacity-50 cursor-pointer backdrop-blur-md"
-                >
-                    <span>Kirim</span>
-                </button>
-            </form>
-
-            <!-- Panel Modul Ringkasan Data -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <div class="backdrop-blur-md border rounded-2xl p-3 shadow-md transition-all duration-500"
-                     :class="darkMode ? 'bg-slate-900/40 border-slate-800/40' : 'bg-white/40 border-white/50'">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <h2 class="text-[11px] font-semibold text-blue-400">📖 Hafalan Quran</h2>
-                        <span class="text-[9px] px-1.5 py-0.5 rounded border backdrop-blur-md" :class="darkMode ? 'bg-blue-950/60 text-blue-300 border-blue-800/50' : 'bg-white/60 text-blue-800 border-white'">Live</span>
-                    </div>
-                    <p class="text-[11px] mb-2 font-medium" :class="darkMode ? 'text-slate-300' : 'text-slate-800'" x-text="hafalanStatus">Memuat...</p>
-                    <button @click="loadConfigAndData()" class="w-full border py-1 rounded-lg text-[10px] font-medium transition cursor-pointer shadow-sm"
-                            :class="darkMode ? 'bg-slate-800/50 text-blue-300 border-slate-700/50' : 'bg-white/60 text-blue-800 border-white/60'">Perbarui</button>
-                </div>
-
-                <div class="backdrop-blur-md border rounded-2xl p-3 shadow-md transition-all duration-500"
-                     :class="darkMode ? 'bg-slate-900/40 border-slate-800/40' : 'bg-white/40 border-white/50'">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <h2 class="text-[11px] font-semibold text-emerald-400">💰 Keuangan & Emas</h2>
-                        <span class="text-[9px] px-1.5 py-0.5 rounded border backdrop-blur-md" :class="darkMode ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/50' : 'bg-white/60 text-emerald-800 border-white'">Live</span>
-                    </div>
-                    <div class="mb-2">
-                        <span class="text-sm font-bold" x-text="totalKeuangan">Rp 0</span>
-                        <p class="text-[9px] opacity-70">Akumulasi Saldo</p>
-                    </div>
-                    <button @click="loadConfigAndData()" class="w-full border py-1 rounded-lg text-[10px] font-medium transition cursor-pointer shadow-sm"
-                            :class="darkMode ? 'bg-slate-800/50 text-emerald-300 border-slate-700/50' : 'bg-white/60 text-emerald-800 border-white/60'">Perbarui</button>
-                </div>
-
-                <div class="backdrop-blur-md border rounded-2xl p-3 shadow-md transition-all duration-500"
-                     :class="darkMode ? 'bg-slate-900/40 border-slate-800/40' : 'bg-white/40 border-white/50'">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <h2 class="text-[11px] font-semibold text-amber-400">⏱️ Manajemen Waktu</h2>
-                        <span class="text-[9px] px-1.5 py-0.5 rounded border backdrop-blur-md" :class="darkMode ? 'bg-amber-950/60 text-amber-300 border-amber-800/50' : 'bg-white/60 text-amber-800 border-white'">Live</span>
-                    </div>
-                    <p class="text-[11px] mb-2 font-medium truncate" :class="darkMode ? 'text-slate-300' : 'text-slate-800'" x-text="todoStatus">Memuat tugas...</p>
-                    <button @click="loadConfigAndData()" class="w-full border py-1 rounded-lg text-[10px] font-medium transition cursor-pointer shadow-sm"
-                            :class="darkMode ? 'bg-slate-800/50 text-amber-300 border-slate-700/50' : 'bg-white/60 text-amber-800 border-white/60'">Perbarui</button>
-                </div>
-            </div>
-
-        </main>
-
-        <!-- INDIKATOR HOME BAR IPHONE -->
-        <div class="w-full py-2 flex justify-center items-center z-40 bg-transparent">
-            <div class="w-32 h-1 bg-white/40 rounded-full"></div>
-        </div>
-
-        <!-- Modal Riwayat Percakapan -->
-        <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div class="border rounded-2xl p-4 w-full max-w-md shadow-2xl backdrop-blur-2xl flex flex-col max-h-[80vh]"
-                 :class="darkMode ? 'bg-slate-900/95 border-slate-800 text-slate-200' : 'bg-white/95 border-white text-slate-900'">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
-                    <h3 class="font-semibold text-xs text-blue-500">📜 Riwayat Percakapan Sistem</h3>
-                    <button @click="activeModal = null" class="cursor-pointer font-bold text-xs">✕</button>
-                </div>
-                <div class="flex-1 overflow-y-auto space-y-2 pr-1 my-2">
-                    <template x-for="chat in allChatHistory" :key="chat.id">
-                        <div class="p-2.5 rounded-xl border flex flex-col gap-1" :class="darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-sky-50/60 border-sky-100'">
-                            <div class="flex justify-between items-center">
-                                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase"
-                                      :class="chat.sender === 'user' ? 'bg-blue-950 text-blue-300' : 'bg-emerald-950 text-emerald-300'"
-                                      x-text="chat.sender === 'user' ? 'Pengguna' : 'Sistem AI'"></span>
-                                <span class="text-[9px] opacity-60" x-text="new Date(chat.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
-                            </div>
-                            <p class="text-[11px] leading-relaxed" x-text="chat.text_content"></p>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
-                <div class="pt-2 border-t flex justify-between items-center" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
-                    <button @click="clearChatHistory()" class="bg-red-500/10 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-[10px] font-semibold cursor-pointer">Hapus Riwayat</button>
-                    <button @click="activeModal = null" class="bg-blue-600 text-white px-3 py-1.5 rounded-xl text-[10px] font-semibold cursor-pointer">Tutup</button>
+            </div>
+
+            <!-- Balon Teks Dialog Liquid Glass -->
+            <div class="w-full max-w-2xl liquid-glass-subtle rounded-3xl p-4 sm:p-6 shadow-inner min-h-[110px] flex flex-col justify-center relative backdrop-blur-2xl transition-colors duration-500">
+                <p class="text-sm sm:text-base font-bold text-center leading-relaxed digital-led-font"
+                   :class="darkMode ? 'text-sky-400 [text-shadow:0_0_12px_rgba(56,189,248,0.8)]' : 'text-slate-900'">
+                    <span x-text="typedText"></span><span class="animate-pulse font-bold" x-show="isTyping">|</span>
+                </p>
+                <div class="absolute bottom-2 right-4">
+                    <span class="text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-xl liquid-glass backdrop-blur-md" 
+                          x-text="'Mood: ' + currentEmotion"></span>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Profil -->
-        <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div class="border rounded-2xl p-4 w-full max-w-sm shadow-2xl backdrop-blur-2xl"
-                 :class="darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-200' : 'bg-white/90 border-white text-slate-900'">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
-                    <h3 class="font-semibold text-xs text-blue-500">👤 Data Administrator</h3>
-                    <button @click="activeModal = null" class="cursor-pointer">✕</button>
-                </div>
-                <div class="space-y-3 mb-4">
-                    <div>
-                        <label class="block text-[11px] mb-1 font-medium opacity-80">Nama Lengkap</label>
-                        <input type="text" x-model="profile.namaLengkap" class="w-full border rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500"
-                               :class="darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-200' : 'bg-sky-50/60 border-sky-200 text-slate-900'">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] mb-1 font-medium opacity-80">Nama Panggilan</label>
-                        <input type="text" x-model="profile.panggilan" class="w-full border rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500"
-                               :class="darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-200' : 'bg-sky-50/60 border-sky-200 text-slate-900'">
-                    </div>
-                </div>
-                <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer">Simpan Perubahan</button>
-            </div>
-        </div>
+        <!-- Input Chat & Kirim + Lampiran Gambar -->
+        <form @submit.prevent="submitToAI" class="flex gap-3 items-center">
+            <label class="liquid-glass p-3 sm:py-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-lg relative hover:scale-105 active:scale-95" 
+                   title="Unggah Gambar / Dokumen">
+                <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
+                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
+            </label>
 
-        <!-- Modal Konfigurasi AI Formal -->
-        <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div class="border rounded-2xl p-4 w-full max-w-sm shadow-2xl backdrop-blur-2xl"
-                 :class="darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-200' : 'bg-white/90 border-white text-slate-900'">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
-                    <h3 class="font-semibold text-xs text-blue-500">🧠 Konfigurasi Persona Formal</h3>
-                    <button @click="activeModal = null" class="cursor-pointer">✕</button>
+            <input 
+                type="text" 
+                x-ref="searchInput"
+                x-model="userQuery" 
+                :disabled="loadingAI"
+                placeholder="Ketik perintah atau tanyakan sesuatu pada robot..." 
+                class="flex-1 liquid-glass focus:border-blue-500 focus:outline-none px-5 py-3.5 sm:py-4 rounded-2xl text-base shadow-inner disabled:opacity-50 transition-all duration-500 backdrop-blur-2xl"
+                :class="darkMode ? 'text-slate-100 placeholder-slate-400' : 'text-slate-900 placeholder-slate-500'"
+            >
+            <button 
+                type="submit" 
+                :disabled="loadingAI"
+                class="bg-blue-600/80 hover:bg-blue-500 text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-xs sm:text-sm font-semibold transition shadow-xl shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95"
+            >
+                <span>Kirim</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+        </form>
+        <p class="text-[10px] px-2 opacity-80" x-show="attachedImage">📎 Gambar siap dikirim bersama pesan Anda.</p>
+
+        <!-- Panel Modul Ringkasan Bawah (Liquid Glass) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="liquid-glass rounded-3xl p-5 shadow-xl transition-all duration-500 hover:scale-[1.02]">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xs font-semibold flex items-center gap-1.5 text-blue-400">📖 Hafalan Quran</h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded-lg liquid-glass-subtle">Live DB</span>
+                </div>
+                <p class="text-xs mb-4 font-medium" x-text="hafalanStatus">Memuat data...</p>
+                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Segarkan Data</button>
+            </div>
+
+            <div class="liquid-glass rounded-3xl p-5 shadow-xl transition-all duration-500 hover:scale-[1.02]">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xs font-semibold flex items-center gap-1.5 text-emerald-400">💰 Keuangan & Emas</h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded-lg liquid-glass-subtle">Live DB</span>
                 </div>
                 <div class="mb-4">
-                    <label class="block text-[11px] mb-1 font-medium opacity-80">Instruksi Sistem Formal</label>
-                    <textarea x-model="profile.customInstructions" rows="5" class="w-full border rounded-xl p-2.5 text-xs focus:outline-none focus:border-blue-500 resize-none"
-                              :class="darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-200' : 'bg-sky-50/60 border-sky-200 text-slate-900'"></textarea>
+                    <span class="text-xl font-bold" x-text="totalKeuangan">Rp 0</span>
+                    <p class="text-[10px] mt-0.5 opacity-70">Akumulasi Saldo</p>
                 </div>
-                <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer">Simpan Konfigurasi</button>
+                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Segarkan Data</button>
+            </div>
+
+            <div class="liquid-glass rounded-3xl p-5 shadow-xl transition-all duration-500 hover:scale-[1.02]">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xs font-semibold flex items-center gap-1.5 text-amber-400">⏱️ Manajemen Waktu</h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded-lg liquid-glass-subtle">Live DB</span>
+                </div>
+                <p class="text-xs mb-4 font-medium truncate" x-text="todoStatus">Memuat daftar tugas...</p>
+                <button @click="loadConfigAndData()" class="w-full liquid-glass-subtle py-2 rounded-xl text-xs font-medium transition cursor-pointer shadow-md hover:bg-white/20">Segarkan Data</button>
             </div>
         </div>
 
+    </main>
+
+    <!-- Modal Riwayat Chat -->
+    <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="liquid-glass rounded-3xl p-6 w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-3 pb-3 border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">📜</span>
+                    <h3 class="font-semibold text-sm text-blue-400">Riwayat Percakapan</h3>
+                </div>
+                <button @click="activeModal = null" class="cursor-pointer font-bold text-sm px-2.5 py-1 rounded-xl liquid-glass-subtle">✕</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-3 pr-1 my-2">
+                <template x-if="allChatHistory.length === 0">
+                    <p class="text-xs text-center py-8 opacity-60">Belum ada riwayat percakapan tersimpan.</p>
+                </template>
+                <template x-for="chat in allChatHistory" :key="chat.id">
+                    <div class="p-3.5 rounded-2xl liquid-glass-subtle flex flex-col gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wide"
+                                  :class="chat.sender === 'user' ? 'bg-blue-600/30 text-blue-300' : 'bg-emerald-600/30 text-emerald-300'"
+                                  x-text="chat.sender === 'user' ? '👤 Anda' : '🤖 Imo-Bot'"></span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] opacity-60" x-text="new Date(chat.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
+                                <button @click="deleteSingleChat(chat.id)" class="text-red-400 hover:text-red-500 transition text-xs px-2 py-0.5 rounded-lg liquid-glass-subtle">🗑️</button>
+                            </div>
+                        </div>
+                        <p class="text-xs leading-relaxed" x-text="chat.text_content"></p>
+                    </div>
+                </template>
+            </div>
+
+            <div class="pt-3 border-t border-white/10 flex justify-between items-center">
+                <button @click="clearChatHistory()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 px-4 py-2 rounded-2xl text-xs font-semibold transition cursor-pointer backdrop-blur-md">🗑️ Hapus Semua</button>
+                <button @click="activeModal = null" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Tutup</button>
+            </div>
+        </div>
     </div>
+
+    <!-- Modal Pengaturan Profil & Data Diri -->
+    <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="liquid-glass rounded-3xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+                <h3 class="font-semibold text-sm text-blue-400">👤 Profil & Data Diri</h3>
+                <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl liquid-glass-subtle">✕</button>
+            </div>
+
+            <div class="mb-5 pb-4 border-b border-white/10 flex flex-col items-center text-center">
+                <p class="text-xs font-medium mb-3 opacity-80">Foto Profil Saat Ini</p>
+                <div class="w-20 h-20 rounded-full overflow-hidden shadow-xl relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-blue-600 to-purple-600 border-2 border-white/40 mb-3">
+                    <template x-if="userProfilePic">
+                        <img :src="userProfilePic" alt="Foto Profil" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!userProfilePic">
+                        <span class="text-2xl" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
+                    </template>
+                </div>
+                <div class="flex gap-2 w-full">
+                    <button @click="setGoogleProfilePic()" class="flex-1 liquid-glass-subtle hover:bg-white/20 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5">
+                        🌐 Google
+                    </button>
+                    <button @click="document.getElementById('profilePicInput').click()" class="flex-1 bg-blue-600/80 hover:bg-blue-500 text-white py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-lg">
+                        📁 Unggah
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="block text-xs mb-1 font-medium opacity-80">Nama Lengkap</label>
+                    <input type="text" x-model="profile.namaLengkap" class="w-full liquid-glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs mb-1 font-medium opacity-80">Nama Panggilan</label>
+                    <input type="text" x-model="profile.panggilan" class="w-full liquid-glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+            <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan Perubahan</button>
+        </div>
+    </div>
+
+    <!-- Modal Konfigurasi AI Dasar -->
+    <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="liquid-glass rounded-3xl p-6 w-full max-w-md shadow-2xl">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+                <h3 class="font-semibold text-sm text-blue-400">🧠 Konfigurasi AI Dasar</h3>
+                <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl liquid-glass-subtle">✕</button>
+            </div>
+            <div class="mb-5">
+                <label class="block text-xs mb-1.5 font-medium opacity-80">Instruksi & Konteks Berkembang</label>
+                <textarea x-model="profile.customInstructions" rows="6" class="w-full liquid-glass-subtle rounded-2xl p-3.5 text-xs focus:outline-none focus:border-blue-500 resize-none"></textarea>
+            </div>
+            <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan Wawasan</button>
+        </div>
+    </div>
+
+    <!-- Footer Tipis -->
+    <footer class="text-center py-4 text-[11px] border-t border-white/10 z-10 liquid-glass backdrop-blur-2xl">
+        Personal Command Center &bull; Mipratul Muslim &copy; 2026
+    </footer>
 
     <!-- Script Utama -->
     <script>
@@ -502,9 +521,9 @@
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
                 osc.start();
-                osc.stop(audioCtx.currentTime + 0.1);
+                osc.stop(audioCtx.currentTime + 0.12);
             } catch (e) {
                 console.log("Audio dibatasi:", e);
             }
@@ -540,7 +559,7 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Anda adalah sistem AI pendukung operasional profesional bagi Tuan Mipratul Muslim. Gunakan nada bahasa yang sangat formal, sopan, terstruktur, dan berwibawa khas asisten eksekutif tingkat tinggi. Jawab dengan ringkas, padat, dan jelas.'
+                    customInstructions: 'Kamu adalah Imo, teman ngobrol sekaligus asisten pribadi Mipra yang santai, akrab, asyik, dan tidak kaku. Gunakan bahasa obrolan sehari-hari yang luwes (seperti "Bos", "Sip", "Bro", atau sapaan akrab lainnya). Kamu hidup, punya perasaan, bisa usil, penasaran dengan kegiatan Mipra, atau perhatian mengingatkan istirahat dan ibadah secara spontan tanpa harus menunggu perintah.\n\nFITUR KHUSUS AI VISION:\nKamu memiliki fitur AI Vision (kamera web aktif) yang memungkinkanmu melihat langsung wajah dan ruangan Mipra secara real-time saat fitur aktif. Kenali dan komentari aktivitasnya secara natural dari apa yang kamu lihat.\n\nAturan Wajib:\n1. BAHASA GAUL & SANTAI SEHARI-HARI: Hindari gaya bahasa robot formal atau kaku. Jawab pendek (1-3 kalimat).\n2. JANGAN GUNAKAN TEKS TEATRIKAL: Jangan pakai tanda bintang atau tanda kurung aksi seperti *tersenyum*.\n3. EKSPRESI: Sesuaikan emosi secara natural.'
                 },
 
                 async init() {
@@ -551,7 +570,7 @@
                     if (session) {
                         const email = session.user.email;
                         if (email !== ALLOWED_EMAIL) {
-                            alert('Akses ditolak: Akun tidak diizinkan.');
+                            alert('Akses ditolak: Akun ini tidak diizinkan masuk.');
                             await this.logout();
                             return;
                         }
@@ -561,10 +580,12 @@
                             googleUserAvatarUrl = session.user.user_metadata.avatar_url;
                         }
                         this.initEyeTracker();
+                        this.resetInactivityTimer();
                         await this.loadConfigAndData();
                         await this.loadAllChatHistory();
                         await this.loadDynamicMemories();
-                        this.startTypingEffect(`Selamat datang kembali, Tuan Mipra. Sistem siap melayani operasional Anda.`, 'senang');
+                        this.startTypingEffect(`Eh Bos ${this.profile.panggilan} udah online nih! Mau bahas apa kita hari ini?`, 'senang');
+                        this.startAutonomousLoop();
                     }
 
                     _supabase.auth.onAuthStateChange(async (event, session) => {
@@ -579,10 +600,18 @@
                             if (session.user.user_metadata?.avatar_url) {
                                 googleUserAvatarUrl = session.user.user_metadata.avatar_url;
                             }
+                            this.initEyeTracker();
+                            this.resetInactivityTimer();
                             await this.loadConfigAndData();
                             await this.loadAllChatHistory();
                             await this.loadDynamicMemories();
-                            this.startTypingEffect(`Sistem terautentikasi. Siap menjalankan tugas, Tuan Mipra.`, 'senang');
+                            this.startTypingEffect(`Eh Bos ${this.profile.panggilan} udah online nih! Mau bahas apa kita hari ini?`, 'senang');
+                            this.startAutonomousLoop();
+                        } else if (!session) {
+                            this.isUnlocked = false;
+                            this.userEmail = '';
+                            if (this.autonomousTimer) clearInterval(this.autonomousTimer);
+                            this.stopVisionMonitoring();
                         }
                     });
                 },
@@ -595,6 +624,8 @@
                 },
 
                 async logout() {
+                    if (this.autonomousTimer) clearInterval(this.autonomousTimer);
+                    this.stopVisionMonitoring();
                     await _supabase.auth.signOut();
                     this.isUnlocked = false;
                     window.location.reload();
@@ -602,26 +633,48 @@
 
                 async loadDynamicMemories() {
                     try {
-                        const { data } = await _supabase.from('ai_memories').select('memory_content').order('created_at', { ascending: false }).limit(5);
-                        this.dynamicMemoriesText = data?.length ? data.map(item => `- ${item.memory_content}`).join('\n') : '- Belum ada memori tercatat.';
-                    } catch (e) {
+                        const { data } = await _supabase.from('ai_memories').select('memory_content').order('created_at', { ascending: false }).limit(10);
+                        this.dynamicMemoriesText = data?.length ? data.map(item => `- ${item.memory_content}`).join('\n') : '- Belum ada catatan memori khusus tersimpan.';
+                    } catch (err) {
                         this.dynamicMemoriesText = '- Gagal memuat memori.';
                     }
+                },
+
+                startAutonomousLoop() {
+                    if (this.autonomousTimer) clearInterval(this.autonomousTimer);
+                    this.autonomousTimer = setInterval(async () => {
+                        if (this.loadingAI || !this.isUnlocked || cachedApiKey === '') return;
+                        try {
+                            const res = await this.callGeminiAPI('gemini-3.5-flash-lite', {
+                                contents: [{ role: "user", parts: [{ text: `${this.profile.customInstructions}\n\n[MEMORI]\n${this.dynamicMemoriesText}\n\nSapa Mipra santai. Format akhir: [senang]` }] }]
+                            });
+                            if (res.ok) {
+                                const json = await res.json();
+                                let text = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+                                if (text) {
+                                    text = text.replace(/\[.*?\]/g, '').trim();
+                                    this.startTypingEffect(text, 'senang');
+                                    await this.saveChatToSupabase('ai', text);
+                                }
+                            }
+                        } catch (e) {}
+                    }, 180000);
                 },
 
                 async toggleVisionMonitoring() {
                     if (this.isVisionActive) {
                         this.stopVisionMonitoring();
-                        this.startTypingEffect("Modus AI Vision dinonaktifkan.", 'normal');
+                        this.startTypingEffect("Pemantauan kamera dimatikan.", 'normal');
                     } else {
                         try {
                             const videoEl = document.getElementById('webcamVideo');
                             const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
                             videoEl.srcObject = stream;
                             this.isVisionActive = true;
-                            this.startTypingEffect("Modus AI Vision diaktifkan. Sistem memantau lingkungan secara real-time.", 'senang');
+                            this.startTypingEffect("Kamera diaktifkan! Sekarang aku bisa melihat aktivitasmu.", 'senang');
+                            this.visionTimer = setInterval(() => this.analyzeUserEnvironment(), 60000);
                         } catch (err) {
-                            alert("Gagal mengaktifkan perangkat kamera.");
+                            alert("Tidak dapat mengakses kamera.");
                         }
                     }
                 },
@@ -629,23 +682,49 @@
                 stopVisionMonitoring() {
                     const videoEl = document.getElementById('webcamVideo');
                     if (videoEl?.srcObject) {
-                        videoEl.srcObject.getTracks().forEach(track => track.stop());
+                        videoEl.srcObject.getTracks().forEach(t => t.stop());
                         videoEl.srcObject = null;
                     }
+                    if (this.visionTimer) clearInterval(this.visionTimer);
                     this.isVisionActive = false;
+                },
+
+                async analyzeUserEnvironment() {
+                    if (!this.isVisionActive || this.loadingAI || cachedApiKey === '') return;
+                    try {
+                        const videoEl = document.getElementById('webcamVideo');
+                        const canvasEl = document.getElementById('webcamCanvas');
+                        const ctx = canvasEl.getContext('2d');
+                        ctx.drawImage(videoEl, 0, 0, 320, 240);
+                        const base64Image = canvasEl.toDataURL('image/jpeg', 0.6).split(',')[1];
+                        
+                        const res = await this.callGeminiAPI('gemini-3.5-flash-lite', {
+                            contents: [{ role: "user", parts: [{ inlineData: { data: base64Image, mimeType: "image/jpeg" } }, { text: "Komentari aktivitas Mipra secara santai. Akhiri dengan [senang]" }] }]
+                        });
+                        if (res.ok) {
+                            const json = await res.json();
+                            let comment = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+                            if (comment) {
+                                comment = comment.replace(/\[.*?\]/g, '').trim();
+                                this.startTypingEffect(comment, 'senang');
+                                await this.saveChatToSupabase('ai', comment);
+                            }
+                        }
+                    } catch (e) {}
                 },
 
                 resetInactivityTimer() {
                     if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
                     this.inactivityTimer = setTimeout(() => {
                         if (!this.loadingAI && this.isUnlocked) {
-                            this.startTypingEffect("Apakah ada instruksi tambahan yang mulia perlukan saat ini?", 'perhatian');
+                            this.startTypingEffect("Woy Bos, kok ngelamun aja? Sibuk banget ya?", 'bosan');
                         }
-                    }, 120000);
+                    }, 90000);
                 },
 
-                startTypingEffect(text) {
+                startTypingEffect(text, emotion = 'normal') {
                     if (activeTypingInterval) clearInterval(activeTypingInterval);
+                    this.currentEmotion = emotion;
                     let i = 0;
                     this.typedText = '';
                     this.isTyping = true;
@@ -657,7 +736,7 @@
                             clearInterval(activeTypingInterval);
                             this.isTyping = false;
                         }
-                    }, 20);
+                    }, 25);
                 },
 
                 handleImageUpload(event) {
@@ -671,7 +750,7 @@
                 },
 
                 async loadAllChatHistory() {
-                    const { data } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: false }).limit(20);
+                    const { data } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: false });
                     if (data) this.allChatHistory = data;
                 },
 
@@ -691,10 +770,10 @@
                 },
 
                 async clearChatHistory() {
-                    if (confirm('Bersihkan seluruh riwayat?')) {
+                    if (confirm('Hapus seluruh riwayat percakapan?')) {
                         await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
                         this.allChatHistory = [];
-                        this.startTypingEffect("Riwayat percakapan telah dibersihkan.", 'senang');
+                        this.startTypingEffect("Memori bersih!", 'senang');
                     }
                 },
 
@@ -703,8 +782,8 @@
                     if (configData?.key_value) cachedApiKey = configData.key_value;
 
                     const { data: hafalan } = await _supabase.from('hafalan_quran').select('*').limit(1);
-                    if (hafalan?.[0]) this.hafalanStatus = `Surah ${hafalan[0].surah} Ayat ${hafalan[0].ayat}`;
-                    else this.hafalanStatus = 'Belum ada target.';
+                    if (hafalan?.[0]) this.hafalanStatus = `Target: Surah ${hafalan[0].surah} Ayat ${hafalan[0].ayat}`;
+                    else this.hafalanStatus = 'Belum ada target tersimpan.';
 
                     const { data: keuangan } = await _supabase.from('keuangan').select('*');
                     if (keuangan?.length) {
@@ -713,8 +792,8 @@
                     }
 
                     const { data: todos } = await _supabase.from('todos').select('*').eq('selesai', false).limit(1);
-                    if (todos?.[0]) this.todoStatus = todos[0].tugas;
-                    else this.todoStatus = 'Tidak ada tugas.';
+                    if (todos?.[0]) this.todoStatus = `Tugas aktif: ${todos[0].tugas}`;
+                    else this.todoStatus = 'Tidak ada tugas aktif.';
                 },
 
                 async saveProfile() {
@@ -722,7 +801,7 @@
                         key_name: 'user_profile_wawasan',
                         key_value: JSON.stringify(this.profile)
                     }, { onConflict: 'key_name' });
-                    alert('Konfigurasi berhasil disimpan.');
+                    alert('Pengaturan berhasil diperbarui!');
                 },
 
                 toggleDarkMode() {
@@ -732,7 +811,7 @@
 
                 handleEyeTouch() {
                     playRobotSound('beep');
-                    this.startTypingEffect("Sistem beroperasi normal, Tuan Mipra.", 'senang');
+                    this.startTypingEffect("Eh, malah dicolok matanya!", 'kesal');
                 },
 
                 initEyeTracker() {
@@ -743,7 +822,7 @@
                         const dx = e.clientX - (rect.left + rect.width / 2);
                         const dy = e.clientY - (rect.top + rect.height / 2);
                         const dist = Math.sqrt(dx * dx + dy * dy);
-                        const scale = Math.min(dist, 8) / (dist || 1);
+                        const scale = Math.min(dist, 10) / (dist || 1);
                         this.pupilX = dx * scale;
                         this.pupilY = dy * scale;
                     });
@@ -760,7 +839,7 @@
                 async submitToAI() {
                     if ((!this.userQuery.trim() && !this.attachedImage) || this.loadingAI) return;
                     if (!cachedApiKey) {
-                        this.startTypingEffect('Kesalahan: API Key belum dikonfigurasi.', 'serius');
+                        this.startTypingEffect('API Key belum dipasang di database nih Bos.', 'serius');
                         return;
                     }
 
@@ -769,7 +848,7 @@
                     await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
 
-                    let partsArray = [{ text: `${this.profile.customInstructions}\n\n[MEMORI SISTEM]\n${this.dynamicMemoriesText}\n\nPerintah Tuan Mipra: ${prompt}` }];
+                    let partsArray = [{ text: `${this.profile.customInstructions}\n\n[MEMORI]\n${this.dynamicMemoriesText}\nPertanyaan: ${prompt}` }];
                     
                     if (this.isVisionActive) {
                         try {
@@ -790,14 +869,17 @@
                         
                         if (res.ok) {
                             const data = await res.json();
-                            const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah berhasil diproses.";
-                            this.startTypingEffect(reply);
+                            let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Aman bos.";
+                            reply = reply.replace(/\[.*?\]/g, '').trim();
+                            this.startTypingEffect(reply, 'senang');
                             await this.saveChatToSupabase('ai', reply);
                         }
                     } catch (e) {
-                        this.startTypingEffect("Gagal terhubung ke server pusat.", 'serius');
+                        this.startTypingEffect("Waduh, koneksi error bos.", 'serius');
                     } finally {
                         this.loadingAI = false;
+                        this.pupilX = 0;
+                        this.pupilY = 0;
                     }
                 }
             }));
