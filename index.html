@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Command Center - 3D Curved Pixel Robot</title>
+    <title>Personal Command Center - Executive AI Assistant</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -108,7 +108,7 @@
     </div>
     <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
 
-    <!-- LATAR BELAKANG OMBARK & KAPAL BESAR ONE PIECE -->
+    <!-- LATAR BELAKANG OMBAK & KAPAL BESAR ONE PIECE -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end transition-colors duration-700"
          :class="darkMode ? 'bg-slate-950' : 'bg-sky-200'">
         
@@ -500,7 +500,7 @@
         Personal Command Center &bull; Mipratul Muslim &copy; 2026
     </footer>
 
-    <!-- Script Utama (Gaya Bahasa Formal Eksekutif & 3D Curved Pixel Screen) -->
+    <!-- Script Utama -->
     <script>
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
@@ -881,7 +881,7 @@
                                 reply = reply.replace(/\[.*?\]/g, '').trim();
                             }
 
-                            this.setEmulatorEmotion(detectedEmotion);
+                            this.setEmotionWithTimeout(detectedEmotion);
                             this.startTypingEffect(reply, detectedEmotion);
                             await this.saveChatToSupabase('ai', reply);
                         }
@@ -891,10 +891,6 @@
                     } finally {
                         this.loadingAI = false;
                     }
-                },
-
-                setEmulatorEmotion(emo) {
-                    this.setEmotionWithTimeout(emo);
                 }
             }));
         });
