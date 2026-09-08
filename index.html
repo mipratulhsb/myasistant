@@ -83,7 +83,7 @@
         </div>
     </div>
 
-    <!-- Input File Tersembunyi untuk Foto Profil -->
+    <!-- Input File Tersembunyi untuk Pilih Foto Sendiri -->
     <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
 
     <!-- Latar Belakang Pemandangan Minimalis -->
@@ -153,11 +153,8 @@
                     <p class="text-xs font-bold truncate text-indigo-500" x-text="userEmail"></p>
                 </div>
 
-                <!-- Opsi Menu Utama -->
+                <!-- Opsi Menu Utama (Ganti Foto Profil dipindah ke Profil & Data Diri) -->
                 <div class="p-2 space-y-0.5">
-                    <button @click="document.getElementById('profilePicInput').click(); open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-3 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/60' : 'hover:bg-sky-100/60'">
-                        <span class="text-base opacity-80">📸</span> Ganti Foto Profil
-                    </button>
                     <button @click="activeModal = 'dataPribadi'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-3 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/60' : 'hover:bg-sky-100/60'">
                         <span class="text-base opacity-80">👤</span> Profil & Data Diri
                     </button>
@@ -399,7 +396,7 @@
             <div class="flex justify-between items-center mb-3 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
                 <div class="flex items-center gap-2">
                     <span class="text-base">📜</span>
-                    <h3 class="font-semibold text-sm text-indigo-500">Riwayat Percakapan (Gemini History)</h3>
+                    <h3 class="font-semibold text-sm text-indigo-500">Riwayat Percakapan</h3>
                 </div>
                 <button @click="activeModal = null" class="cursor-pointer font-bold text-sm px-2 py-1 rounded-lg" :class="darkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-sky-100'">✕</button>
             </div>
@@ -433,14 +430,40 @@
         </div>
     </div>
 
-    <!-- Modal Pengaturan Data Pribadi -->
+    <!-- Modal Pengaturan Profil & Data Diri (Termasuk Pengaturan Foto Profil) -->
     <div x-show="activeModal === 'dataPribadi'" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl backdrop-blur-2xl transition-colors duration-500"
+        <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl backdrop-blur-2xl transition-colors duration-500 max-h-[90vh] overflow-y-auto"
              :class="darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-200' : 'bg-white/90 border-white text-slate-800'">
             <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
-                <h3 class="font-semibold text-sm text-indigo-500">👤 Pengaturan Data Pribadi</h3>
+                <h3 class="font-semibold text-sm text-indigo-500">👤 Profil & Data Diri</h3>
                 <button @click="activeModal = null" class="cursor-pointer" :class="darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'">✕</button>
             </div>
+
+            <!-- Bagian Pengaturan Foto Profil -->
+            <div class="mb-5 pb-4 border-b flex flex-col items-center text-center" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
+                <p class="text-xs font-medium mb-3 opacity-80">Foto Profil Saat Ini</p>
+                <div class="w-20 h-20 rounded-full overflow-hidden shadow-md relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-indigo-600 to-purple-600 border-2 border-indigo-500/50 mb-3">
+                    <template x-if="userProfilePic">
+                        <img :src="userProfilePic" alt="Foto Profil" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!userProfilePic">
+                        <span class="text-2xl" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
+                    </template>
+                </div>
+
+                <p class="text-[10px] opacity-60 mb-3">Pilih opsi di bawah untuk mengubah foto profil Anda:</p>
+
+                <div class="flex gap-2 w-full">
+                    <button @click="setGoogleProfilePic()" class="flex-1 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 py-2 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <span>🌐</span> Ambil dari Akun Google
+                    </button>
+                    <button @click="document.getElementById('profilePicInput').click()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-md">
+                        <span>📁</span> Pilih Foto Sendiri
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Data Diri -->
             <div class="space-y-3 mb-4">
                 <div>
                     <label class="block text-xs mb-1 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">Nama Lengkap</label>
@@ -457,19 +480,19 @@
         </div>
     </div>
 
-    <!-- Modal Wawasan AI -->
+    <!-- Modal Konfigurasi AI Dasar -->
     <div x-show="activeModal === 'wawasanAI'" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl backdrop-blur-2xl transition-colors duration-500"
              :class="darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-200' : 'bg-white/90 border-white text-slate-800'">
             <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
-                <h3 class="font-semibold text-sm text-indigo-500">🧠 Wawasan & Instruksi Dasar AI</h3>
+                <h3 class="font-semibold text-sm text-indigo-500">🧠 Konfigurasi AI Dasar</h3>
                 <button @click="activeModal = null" class="cursor-pointer" :class="darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'">✕</button>
             </div>
             <div class="mb-4">
                 <label class="block text-xs mb-1 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">Instruksi & Konteks Berkembang</label>
                 <textarea x-model="profile.customInstructions" rows="6" class="w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-indigo-500 resize-none transition-colors duration-500"
                           :class="darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-200' : 'bg-sky-50/60 border-sky-200 text-slate-800'"></textarea>
-                <p class="text-[10px] mt-1 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">AI membaca wawasan ini untuk menyesuaikan rekomendasi dengan Anda.</p>
+                <p class="text-[10px] mt-1 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">Sistem membaca wawasan ini untuk menyesuaikan rekomendasi dengan Anda.</p>
             </div>
             <button @click="saveProfile(); activeModal = null;" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer">Simpan Wawasan</button>
         </div>
@@ -491,6 +514,7 @@
         let cachedApiKey = '';
         let audioCtx = null;
         let activeTypingInterval = null;
+        let googleUserAvatarUrl = ''; // Menyimpan URL avatar dari akun Google
 
         function playRobotSound(type = 'beep') {
             try {
@@ -577,6 +601,12 @@
                         }
                         this.isUnlocked = true;
                         this.userEmail = email;
+                        
+                        // Ambil avatar google dari session
+                        if (session.user.user_metadata && session.user.user_metadata.avatar_url) {
+                            googleUserAvatarUrl = session.user.user_metadata.avatar_url;
+                        }
+
                         this.initEyeTracker();
                         this.resetInactivityTimer();
                         await this.loadConfigAndData();
@@ -599,6 +629,11 @@
                             }
                             this.isUnlocked = true;
                             this.userEmail = email;
+
+                            if (session.user.user_metadata && session.user.user_metadata.avatar_url) {
+                                googleUserAvatarUrl = session.user.user_metadata.avatar_url;
+                            }
+
                             this.initEyeTracker();
                             this.resetInactivityTimer();
                             await this.loadConfigAndData();
@@ -670,11 +705,9 @@
                     }
                 },
 
-                // KESADARAN OTONOM YANG NATURAL & TIDAK KAKU
                 startAutonomousLoop() {
                     if (this.autonomousTimer) clearInterval(this.autonomousTimer);
 
-                    // Berjalan setiap 3 menit secara otonom
                     this.autonomousTimer = setInterval(async () => {
                         if (this.loadingAI || !this.isUnlocked || cachedApiKey === '') return;
 
@@ -740,6 +773,26 @@
                     this.startTypingEffect(petPhrases[Math.floor(Math.random() * petPhrases.length)], 'senang');
                 },
 
+                // Opsi 1: Mengambil foto profil dari akun Google
+                async setGoogleProfilePic() {
+                    if (googleUserAvatarUrl) {
+                        this.userProfilePic = googleUserAvatarUrl;
+                        localStorage.setItem('user_profile_pic', this.userProfilePic);
+                        try {
+                            await _supabase.from('user_config').upsert({
+                                key_name: 'user_profile_pic_base64',
+                                key_value: this.userProfilePic
+                            }, { onConflict: 'key_name' });
+                            alert('Foto profil berhasil disinkronkan dari akun Google!');
+                        } catch (err) {
+                            console.error("Gagal menyimpan foto profil Google:", err);
+                        }
+                    } else {
+                        alert('Foto profil dari akun Google tidak ditemukan.');
+                    }
+                },
+
+                // Opsi 2: Memilih dan menyimpan foto sendiri dari perangkat ke database
                 handleProfilePicChange(event) {
                     const file = event.target.files[0];
                     if (!file) return;
@@ -752,8 +805,9 @@
                                 key_name: 'user_profile_pic_base64',
                                 key_value: this.userProfilePic
                             }, { onConflict: 'key_name' });
+                            alert('Foto profil berhasil diubah dan disimpan!');
                         } catch (err) {
-                            console.error("Gagal menyimpan foto profil ke Supabase:", err);
+                            console.error("Gagal menyimpan foto profil:", err);
                         }
                     };
                     reader.readAsDataURL(file);
@@ -763,7 +817,6 @@
                     if (this.loadingAI) return;
                     playRobotSound('beep');
                     this.setEmotionWithTimeout('kedip');
-                    // Respons sentuhan mata natural tanpa kata "Kedip!"
                     const eyePhrases = [
                         `Eh, malah colok-colok mata! Iseng banget sih Bos Mipra haha.`,
                         `Kedap-kedip gini dikira lampu sen kendaraan dinas apa?`,
@@ -938,7 +991,7 @@
                         if (todos && todos.length > 0) this.todoStatus = `Tugas aktif: ${todos[0].tugas}`;
                         else this.todoStatus = 'Tidak ada tugas aktif.';
                     } catch (err) {
-                        console.error('Gagal memuat data dari Supabase:', err);
+                        console.error('Gagal memuat data dari database:', err);
                     }
                 },
 
@@ -951,7 +1004,7 @@
                         }, { onConflict: 'key_name' });
 
                         if (error) throw error;
-                        alert('Pengaturan berhasil diperbarui dan disimpan ke Supabase!');
+                        alert('Pengaturan berhasil diperbarui dan disimpan!');
                     } catch (err) {
                         console.error("Gagal menyimpan profil:", err);
                     }
@@ -978,7 +1031,7 @@
                         this.setEmotionWithTimeout('serius');
                         this.pupilX = 0;
                         this.pupilY = 0;
-                        this.startTypingEffect('API Key belum dipasang di database Supabase nih Bos.', 'serius');
+                        this.startTypingEffect('API Key belum dipasang di database nih Bos.', 'serius');
                         return;
                     }
 
@@ -1070,7 +1123,7 @@
                             this.startTypingEffect('Duh, otaknya lagi agak ngadat nih.', 'serius');
                         }
                     } catch (error) {
-                        console.error("Error koneksi Gemini API:", error);
+                        console.error("Error koneksi:", error);
                         this.setEmotionWithTimeout('serius');
                         this.startTypingEffect('Waduh, koneksi error bos.', 'serius');
                     } finally {
