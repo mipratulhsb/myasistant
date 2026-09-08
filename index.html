@@ -235,8 +235,14 @@
 
                             <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis'">
                                 <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base"></div>
-                                    <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base"></div>
+                                    <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base flex items-end justify-center pb-1 relative overflow-hidden">
+                                        <div class="w-3 h-3 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm"
+                                             :style="`transform: translate(${pupilX * 0.6}px, ${Math.min(pupilY * 0.4, 2)}px);`"></div>
+                                    </div>
+                                    <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base flex items-end justify-center pb-1 relative overflow-hidden">
+                                        <div class="w-3 h-3 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm"
+                                             :style="`transform: translate(${pupilX * 0.6}px, ${Math.min(pupilY * 0.4, 2)}px);`"></div>
+                                    </div>
                                 </div>
                             </template>
 
@@ -476,6 +482,7 @@
 
         let cachedApiKey = '';
         let audioCtx = null;
+        let activeTypingInterval = null; // Variabel global untuk mencegah tumpang tindih teks
 
         function playRobotSound(type = 'beep') {
             try {
@@ -754,18 +761,20 @@
                 },
 
                 startTypingEffect(text) {
+                    if (activeTypingInterval) clearInterval(activeTypingInterval);
                     this.fullReplyText = text;
                     let i = 0;
                     this.typedText = '';
                     this.isTyping = true;
                     let speed = 25;
                     
-                    let typingInterval = setInterval(() => {
+                    activeTypingInterval = setInterval(() => {
                         if (i < text.length) {
                             this.typedText += text.charAt(i);
                             i++;
                         } else {
-                            clearInterval(typingInterval);
+                            clearInterval(activeTypingInterval);
+                            activeTypingInterval = null;
                             this.isTyping = false;
                         }
                     }, speed);
