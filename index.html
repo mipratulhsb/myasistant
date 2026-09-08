@@ -158,7 +158,49 @@
     <!-- MAIN WORKSPACE CONTAINER -->
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
-        <!-- WIDGETS GRID ATAS -->
+        <!-- PANEL AI UTAMA (Diletakkan di Paling Atas sesuai Permintaan, Font 2x Lipat) -->
+        <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
+            
+            <!-- Kotak Output Dialog AI (Font Diperbesar 2x Lipat & Tanpa Header Label) -->
+            <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
+                <p class="text-lg sm:text-2xl font-bold text-center leading-relaxed tracking-wide text-slate-100">
+                    <span x-text="typedText"></span><span class="animate-pulse font-bold text-blue-400" x-show="isTyping">|</span>
+                </p>
+            </div>
+
+            <!-- Input Pencarian / Perintah -->
+            <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
+                <label class="macos-glass-dark p-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-md hover:scale-105 active:scale-95" 
+                       title="Unggah Berkas Visual">
+                    <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
+                    <svg class="w-5 h-5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
+                </label>
+
+                <div class="flex-1 relative flex items-center">
+                    <span class="absolute left-4 text-lg opacity-50">🔍</span>
+                    <input 
+                        type="text" 
+                        x-ref="searchInput"
+                        x-model="userQuery" 
+                        :disabled="loadingAI"
+                        placeholder="Ketik perintah atau tanyakan sesuatu pada Spotlight AI..." 
+                        class="w-full macos-glass-dark focus:border-blue-500 focus:outline-none pl-12 pr-5 py-3.5 rounded-2xl text-sm shadow-inner disabled:opacity-50 transition-all backdrop-blur-2xl font-medium text-slate-100 placeholder-slate-400"
+                    >
+                </div>
+
+                <button 
+                    type="submit" 
+                    :disabled="loadingAI"
+                    class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-xs font-semibold transition shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95"
+                >
+                    <span>Kirim</span>
+                </button>
+            </form>
+            <p class="text-[10px] px-2 opacity-75 font-medium text-slate-300" x-show="attachedImage">📎 Berkas gambar terlampir untuk analisis sistem.</p>
+        </div>
+
+        <!-- WIDGETS GRID DI BAWAH PANEL AI -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
             
             <!-- Widget Kalender -->
@@ -202,48 +244,6 @@
                 <button @click="loadConfigAndData()" class="w-full macos-glass-subtle-dark py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer shadow-sm hover:bg-white/20 mt-2 border border-white/10 text-slate-200">Segarkan Data</button>
             </div>
 
-        </div>
-
-        <!-- PANEL AI UTAMA (Tanpa tulisan "Personal Assistant Aktif", Font 2x Lipat, Sinkron Real-Time Dunia & Data Profil) -->
-        <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
-            
-            <!-- Kotak Output Dialog AI (Font Diperbesar 2x Lipat & Tanpa Header Label) -->
-            <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
-                <p class="text-lg sm:text-2xl font-bold text-center leading-relaxed tracking-wide text-slate-100">
-                    <span x-text="typedText"></span><span class="animate-pulse font-bold text-blue-400" x-show="isTyping">|</span>
-                </p>
-            </div>
-
-            <!-- Input Pencarian / Perintah -->
-            <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
-                <label class="macos-glass-dark p-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-md hover:scale-105 active:scale-95" 
-                       title="Unggah Berkas Visual">
-                    <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
-                    <svg class="w-5 h-5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
-                </label>
-
-                <div class="flex-1 relative flex items-center">
-                    <span class="absolute left-4 text-lg opacity-50">🔍</span>
-                    <input 
-                        type="text" 
-                        x-ref="searchInput"
-                        x-model="userQuery" 
-                        :disabled="loadingAI"
-                        placeholder="Ketik perintah atau tanyakan sesuatu pada Spotlight AI..." 
-                        class="w-full macos-glass-dark focus:border-blue-500 focus:outline-none pl-12 pr-5 py-3.5 rounded-2xl text-sm shadow-inner disabled:opacity-50 transition-all backdrop-blur-2xl font-medium text-slate-100 placeholder-slate-400"
-                    >
-                </div>
-
-                <button 
-                    type="submit" 
-                    :disabled="loadingAI"
-                    class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-xs font-semibold transition shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95"
-                >
-                    <span>Kirim</span>
-                </button>
-            </form>
-            <p class="text-[10px] px-2 opacity-75 font-medium text-slate-300" x-show="attachedImage">📎 Berkas gambar terlampir untuk analisis sistem.</p>
         </div>
 
     </main>
@@ -708,7 +708,6 @@
                     await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
 
-                    // Mengintegrasikan sinkronisasi data profil dan wawasan real-time global (2026) secara dinamis
                     let fullSystemInstruction = `${this.profile.customInstructions}\n\n[PROFIL PENGGUNA]\nNama Lengkap: ${this.profile.namaLengkap}\nPanggilan: ${this.profile.panggilan}\n\n[KATEGORI DATA REAL-TIME]\n- Waktu Sistem: Rabu, 9 September 2026\n- Integrasi: Data global dunia, pasar finansial, berita, dan basis data operasional.\n\nInstruksi Tuan ${this.profile.panggilan}: ${prompt}`;
 
                     let partsArray = [{ text: fullSystemInstruction }];
