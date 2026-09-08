@@ -258,23 +258,10 @@
                                 </div>
                             </template>
 
-                            <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas'">
+                            <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base"></div>
                                     <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base"></div>
-                                </div>
-                            </template>
-
-                            <template x-if="currentEmotion === 'romantis'">
-                                <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(236,72,153,0.9)] robot-eye-base transform rotate-45 relative">
-                                        <div class="absolute -top-3.5 w-8 h-8 bg-pink-500 rounded-full"></div>
-                                        <div class="absolute -left-3.5 w-8 h-8 bg-pink-500 rounded-full"></div>
-                                    </div>
-                                    <div class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(236,72,153,0.9)] robot-eye-base transform rotate-45 relative">
-                                        <div class="absolute -top-3.5 w-8 h-8 bg-pink-500 rounded-full"></div>
-                                        <div class="absolute -left-3.5 w-8 h-8 bg-pink-500 rounded-full"></div>
-                                    </div>
                                 </div>
                             </template>
 
@@ -426,7 +413,6 @@
             </div>
 
             <div class="space-y-4 mb-4">
-                <!-- Status Data Face ID di Cloud -->
                 <div class="p-3 rounded-xl border" :class="darkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-sky-50 border-sky-200'">
                     <p class="text-xs font-semibold mb-1 text-indigo-400">Status Data Face ID (Cloud Supabase)</p>
                     <p class="text-[11px] opacity-80 mb-2" x-text="faceIdStatusInfo">Memeriksa status data wajah...</p>
@@ -435,7 +421,6 @@
                     </button>
                 </div>
 
-                <!-- Ubah Kata Sandi Master Supabase -->
                 <div class="p-3 rounded-xl border" :class="darkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-sky-50 border-sky-200'">
                     <p class="text-xs font-semibold mb-1 text-indigo-400">Ubah Kata Sandi Supabase</p>
                     <p class="text-[11px] opacity-80 mb-2">Ganti sandi master darurat untuk membuka kunci aplikasi.</p>
@@ -615,8 +600,6 @@
                 inputPassword: '',          
                 scanStatusText: 'Memuat model Face-API...',
                 modelLoaded: false,
-                
-                // Variabel baru untuk pengaturan keamanan
                 faceIdStatusInfo: 'Memeriksa data wajah di Supabase...',
                 newMasterPassword: '',
                 
@@ -915,7 +898,7 @@
                 handleHeadPet() {
                     if (this.loadingAI) return;
                     playRobotSound('pet');
-                    this.setEmotionWithTimeout('romantis');
+                    this.setEmotionWithTimeout('senang');
                     const petPhrases = [
                         `Duh, dielus-elus kepalanya.. Makasih ya Tuan ${this.profile.panggilan}! Jadi semangat lagi nih!`,
                         `Senangnya dielus! Emo siap sedia bantu tugas apa saja hari ini, Bos!`,
