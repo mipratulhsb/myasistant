@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Command Center - Executive AI Assistant v2</title>
+    <title>Personal Command Center - Executive AI Assistant v3</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -14,14 +14,10 @@
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-        }
-        .pixel-font {
-            font-family: 'Press Start 2P', monospace;
-            image-rendering: pixelated;
         }
         @keyframes floatShip {
             0%, 100% { transform: translateY(0px) rotate(-1deg) scale(1); }
@@ -34,54 +30,40 @@
             font-family: 'Share Tech Mono', monospace, sans-serif;
             letter-spacing: 0.05em;
         }
-        /* Efek Liquid Glass iOS Style yang Konsisten & Blur Sempurna */
+        /* Efek Liquid Glass iOS Style dengan Blur Sempurna (Tidak Bening) */
         .liquid-glass {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(35px) saturate(200%);
+            -webkit-backdrop-filter: blur(35px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         .dark .liquid-glass {
-            background: rgba(15, 23, 42, 0.55);
-            backdrop-filter: blur(30px) saturate(200%);
-            -webkit-backdrop-filter: blur(30px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(40px) saturate(220%);
+            -webkit-backdrop-filter: blur(40px) saturate(220%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
         }
         .liquid-glass-subtle {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         .dark .liquid-glass-subtle {
-            background: rgba(2, 6, 23, 0.4);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        /* Layar Robot 3D dengan Sudut Melengkung & Efek Cekung */
-        .robot-screen-3d {
-            background: radial-gradient(circle at center, #020617 0%, #000000 100%);
-            box-shadow: 
-                inset 0 10px 20px rgba(0, 0, 0, 0.9), 
-                inset 0 -10px 20px rgba(0, 0, 0, 0.9),
-                0 15px 35px rgba(0, 0, 0, 0.5),
-                0 0 15px rgba(56, 189, 248, 0.2);
-            border: 3px solid rgba(255, 255, 255, 0.15);
-            perspective: 1000px;
+            background: rgba(2, 6, 23, 0.55);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
 <body class="min-h-screen font-sans flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden" 
       :class="darkMode ? 'bg-slate-950 text-slate-100' : 'bg-sky-200 text-slate-900'" 
-      x-data="dashboardApp()"
-      @mousemove="resetInactivityTimer()"
-      @keydown="resetInactivityTimer()"
-      @touchstart="resetInactivityTimer()">
+      x-data="dashboardApp()">
 
-    <!-- POP-UP LOCKSCREEN GOOGLE OAUTH / API KEY SETUP -->
+    <!-- POP-UP LOCKSCREEN GOOGLE OAUTH -->
     <div x-show="!isUnlocked" class="fixed inset-0 bg-black/95 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm liquid-glass rounded-[32px] p-6 shadow-2xl flex flex-col items-center text-center">
             <div class="w-16 h-16 rounded-2xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20 backdrop-blur-xl">
@@ -189,7 +171,7 @@
             </button>
         </div>
 
-        <!-- Menu Profil -->
+        <!-- Menu Profil (Bilah Menu di Kanan Atas dengan Liquid Glass Ber-blur Solid) -->
         <div class="relative" x-data="{ open: false }">
             <button @click="open = !open" @click.away="open = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1 rounded-2xl transition hover:bg-white/10">
                 <div class="hidden sm:block text-right">
@@ -207,7 +189,7 @@
                 <svg class="w-3.5 h-3.5 opacity-60 hidden sm:block transition-transform duration-300" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
 
-            <!-- Dropdown Profil dengan Efek Blur Sempurna (Liquid Glass Solid) -->
+            <!-- Dropdown Menu Kanan Atas (Blur Solid, Tidak Bening) -->
             <div x-show="open" style="display: none;"
                  class="absolute right-0 mt-3 w-64 liquid-glass rounded-3xl shadow-2xl z-50 overflow-hidden transition-colors duration-500 p-1.5 space-y-1 backdrop-blur-3xl">
                 <div class="p-3 rounded-2xl liquid-glass-subtle mb-1">
@@ -244,104 +226,15 @@
     <!-- MAIN WORKSPACE CONTAINER -->
     <main class="w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 my-auto flex-1 z-10">
 
-        <!-- PANEL WAJAH ROBOT (LAYAR 3D CURVED PIXEL) -->
-        <div class="liquid-glass rounded-[40px] p-6 sm:p-10 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500">
-            
-            <!-- Layar Robot 3D Curved -->
-            <div @click="handleEyeTouch()" 
-                 @touchstart.prevent="handleEyeTouch()"
-                 class="w-72 sm:w-96 h-40 robot-screen-3d rounded-[45px] flex flex-col items-center justify-center relative mb-4 cursor-pointer select-none group transition-transform duration-300 hover:scale-[1.01]"
-                 title="Ketuk layar sistem untuk berinteraksi!">
-
-                <!-- Indikator Animasi Berpikir -->
-                <template x-if="loadingAI">
-                    <div class="flex flex-col items-center gap-2">
-                        <div class="flex gap-12 text-cyan-400 text-3xl pixel-font animate-bounce">
-                            <span>^</span><span>^</span>
-                        </div>
-                        <div class="text-cyan-400 text-[10px] pixel-font animate-pulse">MENPROSES...</div>
-                    </div>
-                </template>
-
-                <!-- Ekspresi Wajah Pixel 3D Curved -->
-                <template x-if="!loadingAI">
-                    <div class="flex flex-col items-center justify-center w-full px-10">
-                        
-                        <!-- 1. SENANG / HAPPY -->
-                        <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis' || currentEmotion === 'perhatian'">
-                            <div class="flex flex-col items-center gap-5 w-full">
-                                <div class="flex justify-between w-full px-4 text-cyan-400 text-3xl pixel-font font-bold">
-                                    <span>╭∩╮</span><span>╭∩╮</span>
-                                </div>
-                                <div class="w-12 h-7 border-2 border-cyan-400 rounded-b-xl bg-cyan-950/50 flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.5)]">
-                                    <div class="w-5 h-2 bg-cyan-400 rounded-sm"></div>
-                                </div>
-                            </div>
-                        </template>
-
-                        <!-- 2. KAGUM / ANTUSIAS -->
-                        <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
-                            <div class="flex flex-col items-center gap-5 w-full">
-                                <div class="flex justify-between w-full px-4 text-amber-300 text-3xl pixel-font">
-                                    <span>★_★</span><span>★_★</span>
-                                </div>
-                                <div class="w-14 h-6 border-2 border-amber-300 rounded-full bg-amber-950/40 animate-pulse shadow-[0_0_10px_rgba(252,211,77,0.5)]"></div>
-                            </div>
-                        </template>
-
-                        <!-- 3. KESAL / MARAH -->
-                        <template x-if="currentEmotion === 'marah' || currentEmotion === 'kesal'">
-                            <div class="flex flex-col items-center gap-5 w-full">
-                                <div class="flex justify-between w-full px-4 text-red-500 text-2xl pixel-font font-bold">
-                                    <span>&gt;_&lt;</span><span>&gt;_&lt;</span>
-                                </div>
-                                <div class="w-12 h-3.5 bg-red-500 rounded-sm transform rotate-3 shadow-[0_0_10px_rgba(239,68,68,0.6)]"></div>
-                            </div>
-                        </template>
-
-                        <!-- 4. BOSAN / MENGANTUK -->
-                        <template x-if="currentEmotion === 'bosan' || currentEmotion === 'mengantuk'">
-                            <div class="flex flex-col items-center gap-5 w-full">
-                                <div class="flex justify-between w-full px-4 text-slate-400 text-2xl pixel-font">
-                                    <span>- _ -</span><span>- _ -</span>
-                                </div>
-                                <div class="w-8 h-2.5 bg-slate-400 rounded-full"></div>
-                            </div>
-                        </template>
-
-                        <!-- 5. PUSING / BINGUNG -->
-                        <template x-if="currentEmotion === 'pusing'">
-                            <div class="flex flex-col items-center gap-5 w-full">
-                                <div class="flex justify-between w-full px-4 text-amber-400 text-2xl pixel-font">
-                                    <span>X_X</span><span>X_X</span>
-                                </div>
-                                <div class="w-10 h-3.5 border-2 border-amber-400 rounded-full animate-spin"></div>
-                            </div>
-                        </template>
-
-                        <!-- 6. NORMAL / DEFAULT -->
-                        <template x-if="!['senang', 'puas', 'romantis', 'perhatian', 'kagum', 'antusias', 'marah', 'kesal', 'bosan', 'mengantuk', 'pusing'].includes(currentEmotion)">
-                            <div class="flex flex-col items-center gap-5 w-full">
-                                <div class="flex justify-between w-full px-4 text-cyan-400 text-3xl pixel-font font-bold">
-                                    <span>[•]</span><span>[•]</span>
-                                </div>
-                                <div class="w-10 h-2 bg-cyan-400 rounded-sm shadow-[0_0_10px_rgba(34,211,238,0.6)]"></div>
-                            </div>
-                        </template>
-
-                    </div>
-                </template>
-            </div>
-
-            <!-- Balon Teks Dialog Liquid Glass -->
-            <div class="w-full max-w-2xl liquid-glass-subtle rounded-3xl p-4 sm:p-6 shadow-inner min-h-[110px] flex flex-col justify-center relative backdrop-blur-2xl transition-colors duration-500">
+        <!-- PANEL BALON DIALOG UTAMA (Layar Robot dan Status Mood Dihilangkan) -->
+        <div class="liquid-glass rounded-[40px] p-6 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500">
+            <div class="w-full max-w-3xl liquid-glass-subtle rounded-3xl p-5 sm:p-7 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl transition-colors duration-500">
                 <p class="text-sm sm:text-base font-bold text-center leading-relaxed digital-led-font"
                    :class="darkMode ? 'text-sky-400 [text-shadow:0_0_12px_rgba(56,189,248,0.8)]' : 'text-slate-900'">
                     <span x-text="typedText"></span><span class="animate-pulse font-bold" x-show="isTyping">|</span>
                 </p>
-                <div class="absolute bottom-2 right-4">
-                    <span class="text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-xl liquid-glass backdrop-blur-md" 
-                          x-text="'Status: ' + currentEmotion"></span>
+                <div class="absolute top-3 left-4">
+                    <span class="text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-xl liquid-glass backdrop-blur-md opacity-75">Sistem Eksekutif Aktif</span>
                 </div>
             </div>
         </div>
@@ -516,7 +409,7 @@
         Personal Command Center &bull; Mipratul Muslim &copy; 2026
     </footer>
 
-    <!-- Script Utama (Perbaikan Lengkap: Blur Dropdown, Tombol Samaratakan, Web Audio, & API Key Modal) -->
+    <!-- Script Utama -->
     <script>
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
@@ -528,7 +421,7 @@
         let activeTypingInterval = null;
         let googleUserAvatarUrl = '';
 
-        function playRobotSound(type = 'beep') {
+        function playRobotSound() {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = audioCtx.createOscillator();
@@ -539,9 +432,7 @@
                 gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.08);
-            } catch (e) {
-                console.log("Audio dibatasi:", e);
-            }
+            } catch (e) {}
         }
 
         document.addEventListener('alpine:init', () => {
@@ -558,10 +449,6 @@
                 userEmail: '',
                 typedText: '',
                 isTyping: false,
-                fullReplyText: '',
-                currentEmotion: 'senang',
-                emotionTimeout: null,
-                inactivityTimer: null,
                 autonomousTimer: null,
                 visionTimer: null,
                 isVisionActive: false,
@@ -574,7 +461,7 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Tuan',
-                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Tuan Mipratul Muslim. Gunakan gaya bahasa yang sangat formal, sopan, berwibawa, dan profesional (misalnya: "Selamat pagi Tuan", "Ada yang bisa saya bantu, Tuan?"). Jawab secara terstruktur, jelas, dan lugas.\n\nAturan Wajib:\n1. Di akhir kalimat, wajib sertakan tag emosi dalam kurung siku sesuai suasana hati sistem, contoh: [senang], [kagum], [kesal], [bosan], [pusing].'
+                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Tuan Mipratul Muslim. Gunakan gaya bahasa yang sangat formal, sopan, berwibawa, dan profesional (misalnya: "Selamat pagi Tuan", "Ada yang bisa saya bantu, Tuan?"). Jawab secara terstruktur, jelas, dan lugas.'
                 },
 
                 async init() {
@@ -594,7 +481,6 @@
                         if (session.user.user_metadata?.avatar_url) {
                             googleUserAvatarUrl = session.user.user_metadata.avatar_url;
                         }
-                        this.resetInactivityTimer();
                         await this.loadConfigAndData();
                         await this.loadAllChatHistory();
                         await this.loadDynamicMemories();
@@ -602,7 +488,7 @@
                         if (!cachedApiKey) {
                             this.showApiKeyModal = true;
                         } else {
-                            this.startTypingEffect(`Selamat pagi Tuan Mipra, ada yang bisa saya bantu?`, 'senang');
+                            this.startTypingEffect(`Selamat pagi Tuan Mipra, ada yang bisa saya bantu?`);
                             this.startAutonomousLoop();
                         }
                     }
@@ -619,7 +505,6 @@
                             if (session.user.user_metadata?.avatar_url) {
                                 googleUserAvatarUrl = session.user.user_metadata.avatar_url;
                             }
-                            this.resetInactivityTimer();
                             await this.loadConfigAndData();
                             await this.loadAllChatHistory();
                             await this.loadDynamicMemories();
@@ -627,7 +512,7 @@
                             if (!cachedApiKey) {
                                 this.showApiKeyModal = true;
                             } else {
-                                this.startTypingEffect(`Selamat pagi Tuan Mipra, ada yang bisa saya bantu?`, 'senang');
+                                this.startTypingEffect(`Selamat pagi Tuan Mipra, ada yang bisa saya bantu?`);
                                 this.startAutonomousLoop();
                             }
                         } else if (!session) {
@@ -651,7 +536,7 @@
                         }, { onConflict: 'key_name' });
                         cachedApiKey = this.tempApiKey.trim();
                         this.showApiKeyModal = false;
-                        this.startTypingEffect(`Kunci API berhasil disimpan. Selamat pagi Tuan Mipra, sistem siap melayani.`, 'senang');
+                        this.startTypingEffect(`Kunci API berhasil disimpan. Selamat pagi Tuan Mipra, sistem siap melayani.`);
                         this.startAutonomousLoop();
                     } catch (e) {
                         alert('Gagal menyimpan kunci API.');
@@ -688,20 +573,13 @@
                         if (this.loadingAI || !this.isUnlocked || cachedApiKey === '') return;
                         try {
                             const res = await this.callGeminiAPI('gemini-3.5-flash-lite', {
-                                contents: [{ role: "user", parts: [{ text: `${this.profile.customInstructions}\n\n[MEMORI]\n${this.dynamicMemoriesText}\n\nSapa Tuan Mipra secara formal dan tawarkan bantuan. Akhiri dengan [senang].` }] }]
+                                contents: [{ role: "user", parts: [{ text: `${this.profile.customInstructions}\n\n[MEMORI]\n${this.dynamicMemoriesText}\n\nSapa Tuan Mipra secara formal dan tawarkan bantuan.` }] }]
                             });
                             if (res.ok) {
                                 const json = await res.json();
                                 let text = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                                 if (text) {
-                                    let detectedEmotion = 'senang';
-                                    const match = text.match(/\[(.*?)\]/);
-                                    if (match && match[1]) {
-                                        detectedEmotion = match[1].toLowerCase().trim();
-                                        text = text.replace(/\[.*?\]/g, '').trim();
-                                    }
-                                    this.setEmotionWithTimeout(detectedEmotion);
-                                    this.startTypingEffect(text, detectedEmotion);
+                                    this.startTypingEffect(text);
                                     await this.saveChatToSupabase('ai', text);
                                 }
                             }
@@ -712,14 +590,14 @@
                 async toggleVisionMonitoring() {
                     if (this.isVisionActive) {
                         this.stopVisionMonitoring();
-                        this.startTypingEffect("Sistem pemantauan AI Vision telah dinonaktifkan.", 'normal');
+                        this.startTypingEffect("Sistem pemantauan AI Vision telah dinonaktifkan.");
                     } else {
                         try {
                             const videoEl = document.getElementById('webcamVideo');
                             const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
                             videoEl.srcObject = stream;
                             this.isVisionActive = true;
-                            this.startTypingEffect("AI Vision aktif. Sistem siap menganalisis lingkungan secara real-time.", 'senang');
+                            this.startTypingEffect("AI Vision aktif. Sistem siap menganalisis lingkungan secara real-time.");
                             this.visionTimer = setInterval(() => this.analyzeUserEnvironment(), 60000);
                         } catch (err) {
                             alert("Akses kamera ditolak atau tidak tersedia pada perangkat.");
@@ -747,47 +625,21 @@
                         const base64Image = canvasEl.toDataURL('image/jpeg', 0.6).split(',')[1];
                         
                         const res = await this.callGeminiAPI('gemini-3.5-flash-lite', {
-                            contents: [{ role: "user", parts: [{ inlineData: { data: base64Image, mimeType: "image/jpeg" } }, { text: "Berikan laporan singkat dan formal mengenai aktivitas Tuan Mipra. Akhiri dengan [senang]" }] }]
+                            contents: [{ role: "user", parts: [{ inlineData: { data: base64Image, mimeType: "image/jpeg" } }, { text: "Berikan laporan singkat dan formal mengenai aktivitas Tuan Mipra." }] }]
                         });
                         if (res.ok) {
                             const json = await res.json();
                             let comment = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                             if (comment) {
-                                let detectedEmotion = 'senang';
-                                const match = comment.match(/\[(.*?)\]/);
-                                if (match && match[1]) {
-                                    detectedEmotion = match[1].toLowerCase().trim();
-                                    comment = comment.replace(/\[.*?\]/g, '').trim();
-                                }
-                                this.setEmotionWithTimeout(detectedEmotion);
-                                this.startTypingEffect(comment, detectedEmotion);
+                                this.startTypingEffect(comment);
                                 await this.saveChatToSupabase('ai', comment);
                             }
                         }
                     } catch (e) {}
                 },
 
-                resetInactivityTimer() {
-                    if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
-                    this.inactivityTimer = setTimeout(() => {
-                        if (!this.loadingAI && this.isUnlocked) {
-                            this.setEmotionWithTimeout('perhatian');
-                            this.startTypingEffect("Apakah ada dokumen atau instruksi lanjutan yang Tuan perlukan?", 'perhatian');
-                        }
-                    }, 120000);
-                },
-
-                setEmotionWithTimeout(emotion) {
-                    if (this.emotionTimeout) clearTimeout(this.emotionTimeout);
-                    this.currentEmotion = emotion;
-                    if (emotion !== 'normal' && emotion !== 'perhatian') {
-                        this.emotionTimeout = setTimeout(() => { this.currentEmotion = 'senang'; }, 8000);
-                    }
-                },
-
-                startTypingEffect(text, emotion = 'senang') {
+                startTypingEffect(text) {
                     if (activeTypingInterval) clearInterval(activeTypingInterval);
-                    this.currentEmotion = emotion;
                     let i = 0;
                     this.typedText = '';
                     this.isTyping = true;
@@ -836,7 +688,7 @@
                     if (confirm('Bersihkan seluruh riwayat percakapan sistem?')) {
                         await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
                         this.allChatHistory = [];
-                        this.startTypingEffect("Riwayat sistem telah dibersihkan.", 'senang');
+                        this.startTypingEffect("Riwayat sistem telah dibersihkan.");
                     }
                 },
 
@@ -872,12 +724,6 @@
                     localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
                 },
 
-                handleEyeTouch() {
-                    playRobotSound('beep');
-                    this.setEmotionWithTimeout('perhatian');
-                    this.startTypingEffect("Sistem berfungsi optimal, Tuan. Ada instruksi khusus?", 'perhatian');
-                },
-
                 async callGeminiAPI(modelName, payload) {
                     return await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cachedApiKey}`, {
                         method: 'POST',
@@ -898,7 +744,7 @@
                     await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
 
-                    let partsArray = [{ text: `${this.profile.customInstructions}\n\n[MEMORI SISTEM]\n${this.dynamicMemoriesText}\n\nInstruksi Tuan: ${prompt}\n\n(Sertakan tag emosi seperti [senang], [kagum], [kesal], [bosan], atau [pusing] di akhir respons).` }];
+                    let partsArray = [{ text: `${this.profile.customInstructions}\n\n[MEMORI SISTEM]\n${this.dynamicMemoriesText}\n\nInstruksi Tuan: ${prompt}` }];
                     
                     if (this.isVisionActive) {
                         try {
@@ -919,22 +765,12 @@
                         
                         if (res.ok) {
                             const data = await res.json();
-                            let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah sedang diproses, Tuan [senang].";
-                            
-                            let detectedEmotion = 'senang';
-                            const match = reply.match(/\[(.*?)\]/);
-                            if (match && match[1]) {
-                                detectedEmotion = match[1].toLowerCase().trim();
-                                reply = reply.replace(/\[.*?\]/g, '').trim();
-                            }
-
-                            this.setEmotionWithTimeout(detectedEmotion);
-                            this.startTypingEffect(reply, detectedEmotion);
+                            let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah sedang diproses, Tuan.";
+                            this.startTypingEffect(reply);
                             await this.saveChatToSupabase('ai', reply);
                         }
                     } catch (e) {
-                        this.setEmotionWithTimeout('pusing');
-                        this.startTypingEffect("Gangguan koneksi terdeteksi pada server pusat [pusing].", 'pusing');
+                        this.startTypingEffect("Gangguan koneksi terdeteksi pada server pusat.");
                     } finally {
                         this.loadingAI = false;
                     }
