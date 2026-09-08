@@ -472,6 +472,7 @@
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const ALLOWED_EMAIL = 'muslimmipratul7@gmail.com';
 
         let cachedApiKey = '';
         let audioCtx = null;
@@ -552,8 +553,14 @@
 
                     const { data: { session } } = await _supabase.auth.getSession();
                     if (session) {
+                        const email = session.user.email;
+                        if (email !== ALLOWED_EMAIL) {
+                            alert('Akses ditolak: Akun ini tidak diizinkan masuk.');
+                            await this.logout();
+                            return;
+                        }
                         this.isUnlocked = true;
-                        this.userEmail = session.user.email;
+                        this.userEmail = email;
                         this.initEyeTracker();
                         this.resetInactivityTimer();
                         await this.loadConfigAndData();
@@ -565,8 +572,14 @@
 
                     _supabase.auth.onAuthStateChange(async (event, session) => {
                         if (session) {
+                            const email = session.user.email;
+                            if (email !== ALLOWED_EMAIL) {
+                                alert('Akses ditolak: Akun ini tidak diizinkan masuk.');
+                                await this.logout();
+                                return;
+                            }
                             this.isUnlocked = true;
-                            this.userEmail = session.user.email;
+                            this.userEmail = email;
                             this.initEyeTracker();
                             this.resetInactivityTimer();
                             await this.loadConfigAndData();
