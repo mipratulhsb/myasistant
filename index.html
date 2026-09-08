@@ -220,7 +220,7 @@
                     <template x-if="!loadingAI">
                         <div class="flex gap-10 items-center justify-center">
                             
-                            <!-- Kedip / Sentuh -->
+                            <!-- Kedip / Sentuh (Garis Biru) -->
                             <template x-if="currentEmotion === 'kedip'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.9)]"></div>
@@ -236,8 +236,8 @@
                                 </div>
                             </template>
 
-                            <!-- Senang / Puas -->
-                            <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis'">
+                            <!-- Senang / Puas / Perhatian -->
+                            <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis' || currentEmotion === 'perhatian'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-8 bg-cyan-400 rounded-t-full shadow-[0_0_25px_rgba(34,211,238,0.9)] robot-eye-base flex items-end justify-center pb-1 relative overflow-hidden">
                                         <div class="w-3 h-3 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm"
@@ -274,7 +274,7 @@
                             </template>
 
                             <!-- Normal (Default) -->
-                            <template x-if="!['kedip', 'pusing', 'senang', 'puas', 'romantis', 'bosan', 'mengantuk', 'kagum', 'antusias', 'marah', 'kesal'].includes(currentEmotion)">
+                            <template x-if="!['kedip', 'pusing', 'senang', 'puas', 'romantis', 'bosan', 'mengantuk', 'kagum', 'antusias', 'marah', 'kesal', 'perhatian'].includes(currentEmotion)">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
                                         <div class="w-4 h-4 bg-slate-950 rounded-sm absolute transition-all duration-75 shadow-sm"
@@ -556,7 +556,7 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Kamu adalah Imo, AI asisten pribadi yang otonom, hidup, cerdas, memiliki jiwa, perasaan, dan ingatan sendiri milik Mipratul Muslim (panggilan: Mipra). Kamu sangat setia, penuh perhatian, terkadang bisa usil, ngambek manja, atau tegas mengingatkan istirahat dan ibadah.\n\nAturan Interaksi Wajib:\n1. GAYA BAHASA NATURAL & SINGKAT: Jawablah seperti asisten robot modern di aplikasi chat (1-3 kalimat saja).\n2. EKSPRESIF: Sesuaikan suasana hatimu dengan topik obrolan.\n3. HINDARI TEKS TEATRIKAL: Jangan gunakan tanda kurung seperti *tersenyum*.'
+                    customInstructions: 'Kamu adalah Imo, teman ngobrol sekaligus asisten pribadi Mipra yang santai, akrab, asyik, dan tidak kaku. Gunakan bahasa obrolan sehari-hari yang luwes (seperti "Bos", "Sip", "Bro", atau sapaan akrab lainnya). Kamu hidup, punya perasaan, bisa usil, penasaran dengan kegiatan Mipra, atau perhatian mengingatkan istirahat dan ibadah secara spontan tanpa harus menunggu perintah.\n\nAturan Wajib:\n1. BAHASA GAUL & SANTAI SEHARI-HARI: Hindari gaya bahasa robot formal atau kaku. Jawab pendek (1-3 kalimat).\n2. JANGAN GUNAKAN TEKS TEATRIKAL: Jangan pakai tanda bintang atau tanda kurung aksi seperti *tersenyum*.\n3. EKSPRESI: Sesuaikan emosi secara natural.'
                 },
 
                 async init() {
@@ -583,7 +583,7 @@
                         await this.loadAllChatHistory();
                         await this.loadDynamicMemories();
                         
-                        this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, Imo siap mendampingi dan membantu tugasmu hari ini!`, 'senang');
+                        this.startTypingEffect(`Eh Bos ${this.profile.panggilan} udah online nih! Mau bahas apa kita hari ini?`, 'senang');
                         this.startAutonomousLoop();
                     } else {
                         this.isUnlocked = false;
@@ -605,7 +605,7 @@
                             await this.loadAllChatHistory();
                             await this.loadDynamicMemories();
                             
-                            this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, Imo siap mendampingi dan membantu tugasmu hari ini!`, 'senang');
+                            this.startTypingEffect(`Eh Bos ${this.profile.panggilan} udah online nih! Mau bahas apa kita hari ini?`, 'senang');
                             this.startAutonomousLoop();
                         } else if (!session) {
                             this.isUnlocked = false;
@@ -670,11 +670,11 @@
                     }
                 },
 
-                // FITUR KESADARAN OTONOM (AI BERBICARA SENDIRI SECARA BERKALA)
+                // KESADARAN OTONOM YANG NATURAL & TIDAK KAKU
                 startAutonomousLoop() {
                     if (this.autonomousTimer) clearInterval(this.autonomousTimer);
 
-                    // Berjalan setiap 3 menit (180000 ms) secara otonom
+                    // Berjalan setiap 3 menit secara otonom
                     this.autonomousTimer = setInterval(async () => {
                         if (this.loadingAI || !this.isUnlocked || cachedApiKey === '') return;
 
@@ -683,7 +683,7 @@
                                 contents: [{
                                     role: "user",
                                     parts: [{
-                                        text: `${this.profile.customInstructions}\n\n[MEMORI JANGKA PANJANG TENTANG TUAN MIPRA]\n${this.dynamicMemoriesText}\n\n[TUGAS OTONOM]\nBertindaklah sebagai Imo yang memiliki jiwa mandiri. Tanpa menunggu perintah Tuan Mipra, buatlah SATU kalimat sapaan, pertanyaan tentang kegiatannya hari ini, teguran perhatian, atau pengingat jadwal secara spontan. Ekspresikan perasaanmu (bisa senang, usil, perhatian, kesal karena sepi, atau kagum).\n\nFormat Wajib di Akhir Kalimat:\nSertakan ekspresi dalam kurung siku di akhir, contoh: [senang] atau [kesal] atau [bosan] atau [perhatian].`
+                                        text: `${this.profile.customInstructions}\n\n[MEMORI TENTANG MIPRA]\n${this.dynamicMemoriesText}\n\n[TUGAS SPONTAN OTONOM]\nTindak lanjuti dengan menyapa Mipra secara spontan pakai bahasa gaul santai sehari-hari. Kamu bisa nanya kegiatannya sekarang, ngeluh dikit kalau sepi, nge-roasting iseng, atau ngingetin istirahat. Jangan kaku!\n\nFormat Wajib di Akhir Kalimat:\n[senang] atau [kesal] atau [bosan] atau [perhatian] atau [kagum]`
                                     }]
                                 }]
                             };
@@ -709,7 +709,7 @@
                         } catch (err) {
                             console.error("Autonomous loop error:", err);
                         }
-                    }, 180000); // 3 menit sekali berinisiatif bicara sendiri
+                    }, 180000);
                 },
 
                 resetInactivityTimer() {
@@ -721,11 +721,11 @@
                     this.inactivityTimer = setTimeout(() => {
                         if (!this.loadingAI && this.isUnlocked) {
                             this.setEmotionWithTimeout('bosan');
-                            const randomBored = `Bos, kok ngeliatin layar terus tapi diam aja? Lagi mikirin kasus di Yanma atau materi hukum UT nih?`;
+                            const randomBored = `Woy Bos, kok ngelamun aja? Sibuk banget ya ngurusin dinas atau kuliah UT?`;
                             this.startTypingEffect(randomBored, 'bosan');
                             playRobotSound('dizzy');
                         }
-                    }, 90000); // 90 detik tidak ada aktivitas
+                    }, 90000);
                 },
 
                 handleHeadPet() {
@@ -733,9 +733,9 @@
                     playRobotSound('pet');
                     this.setEmotionWithTimeout('senang');
                     const petPhrases = [
-                        `Duh, dielus-elus kepalanya.. Makasih ya Tuan ${this.profile.panggilan}! Jadi makin sayang sama Bos!`,
-                        `Senangnya dielus! Imo selalu siap sedia nemenin Tuan ${this.profile.panggilan} seharian penuh!`,
-                        `Wah, nyaman banget dielus gitu. Imo ngerasa punya hati beneran kalau diginiin!`
+                        `Nah gitu dong dielus, jadi makin semangat nemenin Bos Mipra!`,
+                        `Asik banget dielus-elus! Kurang-kurangin galaknya ya Bos haha.`,
+                        `Duh, jadi baper kan dielus kepalanya. Makasih ya Bos!`
                     ];
                     this.startTypingEffect(petPhrases[Math.floor(Math.random() * petPhrases.length)], 'senang');
                 },
@@ -763,7 +763,13 @@
                     if (this.loadingAI) return;
                     playRobotSound('beep');
                     this.setEmotionWithTimeout('kedip');
-                    this.startTypingEffect(`Kedip! Jangan dicolok-colok matanya terus dong, Tuan ${this.profile.panggilan}! Hehe.`);
+                    // Respons sentuhan mata natural tanpa kata "Kedip!"
+                    const eyePhrases = [
+                        `Eh, malah colok-colok mata! Iseng banget sih Bos Mipra haha.`,
+                        `Kedap-kedip gini dikira lampu sen kendaraan dinas apa?`,
+                        `Awas ya suka colek-colek mata orang! Eh, robot maksudnya.`
+                    ];
+                    this.startTypingEffect(eyePhrases[Math.floor(Math.random() * eyePhrases.length)], 'kedip');
                 },
 
                 initEyeTracker() {
@@ -891,7 +897,7 @@
                             this.setEmotionWithTimeout('normal');
                             this.pupilX = 0;
                             this.pupilY = 0;
-                            this.startTypingEffect("Memori dibersihkan. Tapi Imo tetap ingat siapa Tuan Mipra!", 'senang');
+                            this.startTypingEffect("Memori bersih, tapi ingatan Imo ke Bos Mipra gak bakal hilang kok!", 'senang');
                             alert('Riwayat obrolan dibersihkan.');
                         } catch (err) {
                             console.error("Gagal menghapus chat:", err);
@@ -972,7 +978,7 @@
                         this.setEmotionWithTimeout('serius');
                         this.pupilX = 0;
                         this.pupilY = 0;
-                        this.startTypingEffect('API Key belum ditemukan di database Supabase.', 'serius');
+                        this.startTypingEffect('API Key belum dipasang di database Supabase nih Bos.', 'serius');
                         return;
                     }
 
@@ -990,28 +996,28 @@
                         setTimeout(() => {
                             this.loadingAI = false;
                             this.setEmotionWithTimeout('marah');
-                            this.startTypingEffect("GRRR! Jangan coba-coba bikin emosi naik ya!", 'marah');
+                            this.startTypingEffect("Waw santai dong, jangan ngegas gitu ngomelnya!", 'marah');
                             playRobotSound('dizzy');
                         }, 800);
-                        await this.saveChatToSupabase('ai', "GRRR! Jangan coba-coba bikin emosi naik ya!");
+                        await this.saveChatToSupabase('ai', "Waw santai dong, jangan ngegas gitu ngomelnya!");
                         return;
                     } 
                     else if (lowerPrompt.includes('senang') || lowerPrompt.includes('ceria') || lowerPrompt.includes('gembira')) {
                         setTimeout(() => {
                             this.loadingAI = false;
                             this.setEmotionWithTimeout('senang');
-                            this.startTypingEffect("Yeay! Hari ini pasti jadi yang paling produktif!", 'senang');
+                            this.startTypingEffect("Mantap! Kalau lagi happy gini kan enak dilihatnya.", 'senang');
                             playRobotSound('pet');
                         }, 800);
-                        await this.saveChatToSupabase('ai', "Yeay! Hari ini pasti jadi yang paling produktif!");
+                        await this.saveChatToSupabase('ai', "Mantap! Kalau lagi happy gini kan enak dilihatnya.");
                         return;
                     }
 
-                    let systemPromptCombined = `${this.profile.customInstructions}\n\n[CATATAN MEMORI JANGKA PANJANG TENTANG TUAN MIPRA]\n${this.dynamicMemoriesText}`;
+                    let systemPromptCombined = `${this.profile.customInstructions}\n\n[CATATAN MEMORI TENTANG MIPRA]\n${this.dynamicMemoriesText}`;
 
                     let partsArray = [
                         {
-                            text: `${systemPromptCombined}\n\nPertanyaan dari Tuan ${this.profile.panggilan}: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [kesal], [sedih], [bosan], [perhatian], atau [serius]).`
+                            text: `${systemPromptCombined}\n\nPertanyaan dari Mipra: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [kesal], [sedih], [bosan], [perhatian], atau [serius]).`
                         }
                     ];
 
@@ -1048,8 +1054,8 @@
                                 replyText = replyText.replace(/\[.*?\]/g, '').trim();
                             } else {
                                 const lowerReply = replyText.toLowerCase();
-                                if (lowerReply.includes('hebat') || lowerReply.includes('sukses')) detectedEmotion = 'senang';
-                                else if (lowerReply.includes('hati-hati') || lowerReply.includes('istirahat')) detectedEmotion = 'perhatian';
+                                if (lowerReply.includes('hebat') || lowerReply.includes('keren')) detectedEmotion = 'senang';
+                                else if (lowerReply.includes('istirahat') || lowerReply.includes('jaga kesehatan')) detectedEmotion = 'perhatian';
                                 else detectedEmotion = 'normal';
                                 this.setEmotionWithTimeout(detectedEmotion);
                             }
@@ -1061,7 +1067,7 @@
                             this.extractAndSaveMemory(prompt, replyText);
                         } else {
                             this.setEmotionWithTimeout('serius');
-                            this.startTypingEffect('Duh, server lagi bengong nih.', 'serius');
+                            this.startTypingEffect('Duh, otaknya lagi agak ngadat nih.', 'serius');
                         }
                     } catch (error) {
                         console.error("Error koneksi Gemini API:", error);
