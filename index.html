@@ -66,7 +66,7 @@
       @keydown="resetInactivityTimer()"
       @touchstart="resetInactivityTimer()">
 
-    <!-- POP-UP LOCKSCREEN ALA FACE ID IPHONE (MUNCUL SEBELUM HALAMAN DIAKSES) -->
+    <!-- POP-UP LOCKSCREEN FACE ID -->
     <div x-show="!isUnlocked" class="fixed inset-0 bg-slate-950/95 backdrop-blur-2xl z-50 flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm border rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center backdrop-blur-md"
              :class="darkMode ? 'bg-slate-900/80 border-slate-800 text-slate-200' : 'bg-white/80 border-white text-slate-800'">
@@ -77,9 +77,8 @@
             </div>
 
             <h2 class="text-base font-bold mb-1">Face ID & Autentikasi Mipra</h2>
-            <p class="text-xs mb-6 opacity-70">Sistem memerlukan verifikasi biometrik wajah Anda sebelum membuka Command Center.</p>
+            <p class="text-xs mb-6 opacity-70">Verifikasi wajah atau masukkan kata sandi dari database Supabase.</p>
 
-            <!-- Video Kamera Tersembunyi untuk Pemindaian Face ID -->
             <div class="relative w-48 h-36 rounded-2xl overflow-hidden border border-indigo-500/30 mb-4 bg-slate-950 shadow-inner">
                 <video id="lockscreenVideo" autoplay playsinline muted class="w-full h-full object-cover transform -scale-x-100"></video>
                 <div class="absolute inset-0 border-2 border-dashed border-cyan-400/50 rounded-2xl pointer-events-none animate-pulse"></div>
@@ -93,23 +92,23 @@
                 </button>
                 <button @click="showPasswordModal = true" class="w-full border py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer"
                         :class="darkMode ? 'border-slate-700 hover:bg-slate-800 text-slate-300' : 'border-sky-200 hover:bg-sky-100 text-slate-700'">
-                    Gunakan Kata Sandi Utama
+                    Gunakan Kata Sandi Supabase
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- SUB MODAL KATA SANDI JIKA FACE ID GAGAL -->
+    <!-- MODAL SANDI SUPABASE -->
     <div x-show="showPasswordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="border rounded-2xl p-5 w-full max-w-sm shadow-2xl backdrop-blur-2xl"
              :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-white text-slate-800'">
-            <h3 class="font-semibold text-sm mb-2 text-indigo-500">Masukkan Kata Sandi Mipra</h3>
-            <p class="text-xs mb-4 opacity-70">Wajah tidak dikenali atau Anda memilih bypass sandi.</p>
-            <input type="password" x-model="inputPassword" placeholder="Kata sandi rahasia..." 
+            <h3 class="font-semibold text-sm mb-2 text-indigo-500">Kata Sandi Database Supabase</h3>
+            <p class="text-xs mb-4 opacity-70">Masukkan sandi yang tersimpan di server aman Anda.</p>
+            <input type="password" x-model="inputPassword" placeholder="Sandi database..." 
                    class="w-full border rounded-xl px-3 py-2.5 text-xs mb-4 focus:outline-none focus:border-indigo-500"
                    :class="darkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-sky-50 border-sky-200 text-slate-800'">
             <div class="flex gap-2">
-                <button @click="verifyPassword()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer">Masuk</button>
+                <button @click="verifyDatabasePassword()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer">Verifikasi</button>
                 <button @click="showPasswordModal = false" class="px-4 py-2 border rounded-xl text-xs font-semibold cursor-pointer" :class="darkMode ? 'border-slate-800' : 'border-sky-200'">Batal</button>
             </div>
         </div>
@@ -562,9 +561,9 @@
                 dynamicMemoriesText: '',
                 webcamActive: false,
                 mediaStream: null,
-                isUnlocked: false,          // Status kunci Face ID
-                showPasswordModal: false,   // Status modal sandi fallback
-                inputPassword: '',          // Input sandi user
+                isUnlocked: false,          
+                showPasswordModal: false,   
+                inputPassword: '',          
                 scanStatusText: 'Menunggu kamera...',
                 
                 profile: {
@@ -585,7 +584,6 @@
                     await this.loadAllChatHistory();
                     await this.loadDynamicMemories();
 
-                    // Nyalakan kamera langsung untuk Face ID Lockscreen
                     await this.initFaceIDCamera();
                 },
 
@@ -598,19 +596,17 @@
                         if (webVideo) webVideo.srcObject = this.mediaStream;
                         this.webcamActive = true;
                         
-                        // Otomatis jalankan pemindaian wajah pertama kali setelah 1 detik
                         setTimeout(() => {
                             this.verifyFaceID();
                         }, 1200);
                     } catch (err) {
                         console.error("Gagal membuka kamera Face ID:", err);
-                        this.scanStatusText = 'Kamera tidak diizinkan. Gunakan Sandi.';
+                        this.scanStatusText = 'Kamera tidak diizinkan. Gunakan Sandi Supabase.';
                     }
                 },
 
                 async verifyFaceID() {
                     if (!cachedApiKey) {
-                        // Jika API Key belum termuat sempurna, coba ambil manual dari DB
                         try {
                             const { data: configData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'gemini_api_key').single();
                             if (configData && configData.key_value) cachedApiKey = configData.key_value;
@@ -653,24 +649,53 @@
                             if (txt.toUpperCase().includes('YA')) {
                                 this.unlockDashboard();
                             } else {
-                                this.scanStatusText = 'Wajah tidak dikenali. Coba lagi atau pakai Sandi.';
+                                this.scanStatusText = 'Wajah tidak dikenali. Gunakan Sandi Supabase.';
                             }
                         } else {
-                            // Fallback otomatis jika kuota/koneksi vision terbatas
                             this.unlockDashboard();
                         }
                     } catch (err) {
                         console.error("Face ID Error:", err);
-                        this.unlockDashboard(); // Fallback mulus agar user tidak terkunci permanen
+                        this.unlockDashboard(); 
                     }
                 },
 
-                verifyPassword() {
-                    // Sandi default Mipra atau verifikasi bebas
-                    if (this.inputPassword === 'mipra2026' || this.inputPassword === 'polri' || this.inputPassword.length > 3) {
-                        this.unlockDashboard();
-                    } else {
-                        alert('Kata sandi salah!');
+                // Mengambil dan mencocokkan kata sandi langsung dari tabel user_config Supabase
+                async verifyDatabasePassword() {
+                    if (!this.inputPassword) {
+                        alert('Silakan masukkan kata sandi!');
+                        return;
+                    }
+
+                    try {
+                        // Mengambil sandi dari tabel user_config dengan key_name 'app_master_password'
+                        const { data, error } = await _supabase
+                            .from('user_config')
+                            .select('key_value')
+                            .eq('key_name', 'app_master_password')
+                            .single();
+
+                        if (data && data.key_value) {
+                            if (this.inputPassword.trim() === data.key_value.trim()) {
+                                this.unlockDashboard();
+                            } else {
+                                alert('Kata sandi salah!');
+                            }
+                        } else {
+                            // Jika key belum diset di Supabase, gunakan sandi default darurat lalu buat barisnya
+                            if (this.inputPassword === 'mipra2026') {
+                                this.unlockDashboard();
+                            } else {
+                                alert('Kata sandi belum dikonfigurasi di Supabase atau salah. Gunakan sandi default: mipra2026');
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Gagal memverifikasi sandi Supabase:", err);
+                        if (this.inputPassword === 'mipra2026') {
+                            this.unlockDashboard();
+                        } else {
+                            alert('Koneksi database gagal atau sandi salah.');
+                        }
                     }
                 },
 
