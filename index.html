@@ -13,8 +13,6 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Face-API.js untuk Pengenalan Biometrik Lokal Akurat -->
-    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <!-- Google Fonts untuk Font Digital LED -->
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -52,13 +50,6 @@
             font-family: 'Share Tech Mono', monospace, sans-serif;
             letter-spacing: 0.05em;
         }
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(1000%); }
-        }
-        .scanner-line {
-            animation: scanline 2s infinite linear;
-        }
     </style>
 </head>
 <body class="min-h-screen font-sans flex flex-col justify-between transition-colors duration-500 relative overflow-x-hidden" 
@@ -68,58 +59,26 @@
       @keydown="resetInactivityTimer()"
       @touchstart="resetInactivityTimer()">
 
-    <!-- POP-UP LOCKSCREEN FACE ID PRESISI -->
+    <!-- POP-UP LOCKSCREEN KATA SANDI (SESI 10 MENIT) -->
     <div x-show="!isUnlocked" class="fixed inset-0 bg-slate-950/95 backdrop-blur-2xl z-50 flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm border rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center backdrop-blur-md"
-             :class="darkMode ? 'bg-slate-900/80 border-slate-800 text-slate-200' : 'bg-white/80 border-white text-slate-800'">
+             :class="darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-200' : 'bg-white/90 border-white text-slate-800'">
             
-            <div class="w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center mb-4 relative overflow-hidden shadow-lg shadow-indigo-500/20">
-                <span class="text-3xl">👤</span>
-                <div class="absolute inset-x-0 h-1 bg-cyan-400 scanner-line shadow-[0_0_10px_#22d3ee]"></div>
+            <div class="w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/20">
+                <span class="text-3xl">🔒</span>
             </div>
 
-            <h2 class="text-base font-bold mb-1">Face ID Biometrik Mipra</h2>
-            <p class="text-xs mb-6 opacity-70" x-text="modelLoaded ? 'Pindai wajah untuk mencocokkan matriks Cloud Supabase.' : 'Memuat model AI Face-API.js...'"></p>
+            <h2 class="text-base font-bold mb-1">Keamanan Sistem Mipra</h2>
+            <p class="text-xs mb-6 opacity-70">Masukkan Kata Sandi Master Supabase untuk membuka akses dashboard.</p>
 
-            <div class="relative w-48 h-36 rounded-2xl overflow-hidden border border-indigo-500/30 mb-4 bg-slate-950 shadow-inner">
-                <video id="lockscreenVideo" autoplay playsinline muted class="w-full h-full object-cover transform -scale-x-100"></video>
-                <div class="absolute inset-0 border-2 border-dashed border-cyan-400/50 rounded-2xl pointer-events-none animate-pulse"></div>
-            </div>
-
-            <p class="text-[11px] font-mono mb-4 text-cyan-400" x-text="scanStatusText">Menyiapkan kamera...</p>
-
-            <div class="w-full space-y-2">
-                <button @click="verifyFaceID()" :disabled="!modelLoaded" class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer shadow-lg shadow-indigo-600/30">
-                    Pindai Ulang Wajah
-                </button>
-                <button @click="showPasswordModal = true" class="w-full border py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer"
-                        :class="darkMode ? 'border-slate-700 hover:bg-slate-800 text-slate-300' : 'border-sky-200 hover:bg-sky-100 text-slate-700'">
-                    Gunakan Kata Sandi Supabase
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL SANDI SUPABASE -->
-    <div x-show="showPasswordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="border rounded-2xl p-5 w-full max-w-sm shadow-2xl backdrop-blur-2xl"
-             :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-white text-slate-800'">
-            <h3 class="font-semibold text-sm mb-2 text-indigo-500">Kata Sandi Database Supabase</h3>
-            <p class="text-xs mb-4 opacity-70">Masukkan sandi master untuk membuka kunci darurat.</p>
-            <input type="password" x-model="inputPassword" placeholder="Sandi database..." 
-                   class="w-full border rounded-xl px-3 py-2.5 text-xs mb-4 focus:outline-none focus:border-indigo-500"
+            <input type="password" x-model="inputPassword" @keyup.enter="verifyDatabasePassword()" placeholder="Kata sandi database..." 
+                   class="w-full border rounded-xl px-3.5 py-2.5 text-xs mb-4 focus:outline-none focus:border-indigo-500 shadow-inner"
                    :class="darkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-sky-50 border-sky-200 text-slate-800'">
-            <div class="flex gap-2">
-                <button @click="verifyDatabasePassword()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer">Verifikasi</button>
-                <button @click="showPasswordModal = false" class="px-4 py-2 border rounded-xl text-xs font-semibold cursor-pointer" :class="darkMode ? 'border-slate-800' : 'border-sky-200'">Batal</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Elemen Kamera Utama Dashboard -->
-    <div class="hidden">
-        <video id="webcamVideo" autoplay playsinline muted width="320" height="240"></video>
-        <canvas id="webcamCanvas" width="320" height="240"></canvas>
+            <button @click="verifyDatabasePassword()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer shadow-lg shadow-indigo-600/30">
+                Buka Kunci Dashboard
+            </button>
+        </div>
     </div>
 
     <!-- Latar Belakang Pemandangan Minimalis -->
@@ -167,12 +126,6 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <button @click="triggerBiometricScan()" 
-                    class="text-[10px] px-3 py-1.5 rounded-xl border transition flex items-center gap-1.5 cursor-pointer shadow-sm backdrop-blur-md font-semibold"
-                    :class="darkMode ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300' : 'bg-emerald-100 border-emerald-400 text-emerald-800'">
-                <span>🛡️ Face ID Terverifikasi</span>
-            </button>
-
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open" class="flex items-center justify-center w-10 h-10 border rounded-xl transition cursor-pointer shadow-sm backdrop-blur-md"
                         :class="darkMode ? 'bg-slate-800/60 hover:bg-slate-700/60 border-slate-700/50 text-slate-200' : 'bg-white/60 hover:bg-white/80 border-white/50 text-slate-700'">
@@ -181,7 +134,7 @@
                     </svg>
                 </button>
 
-                <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-64 border rounded-2xl shadow-2xl p-2 z-50 backdrop-blur-xl transition-colors duration-500"
+                <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 border rounded-2xl shadow-2xl p-2 z-50 backdrop-blur-xl transition-colors duration-500"
                      :class="darkMode ? 'bg-slate-900/80 border-slate-800/60 text-slate-200' : 'bg-white/80 border-white/60 text-slate-800'">
                     <div class="px-3 py-2 border-b mb-1" :class="darkMode ? 'border-slate-800/60' : 'border-sky-100/60'">
                         <p class="text-[10px]" :class="darkMode ? 'text-slate-500' : 'text-slate-400'">Masuk sebagai:</p>
@@ -191,8 +144,8 @@
                     <button @click="activeModal = 'dataPribadi'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
                         <span>👤</span> Pengaturan Data Pribadi
                     </button>
-                    <button @click="activeModal = 'faceIdSecurity'; open = false; loadSecuritySettings();" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
-                        <span>🛡️</span> Pengaturan Face ID & Sandi
+                    <button @click="activeModal = 'changePassword'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
+                        <span>🔑</span> Ubah Kata Sandi
                     </button>
                     <button @click="activeModal = 'wawasanAI'; open = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 cursor-pointer" :class="darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/50'">
                         <span>🧠</span> Wawasan AI
@@ -402,38 +355,26 @@
 
     </main>
 
-    <!-- Modal Pengaturan Face ID & Sandi -->
-    <div x-show="activeModal === 'faceIdSecurity'" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <!-- Modal Ubah Kata Sandi -->
+    <div x-show="activeModal === 'changePassword'" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="border rounded-2xl p-5 w-full max-w-md shadow-2xl backdrop-blur-2xl transition-colors duration-500"
              :class="darkMode ? 'bg-slate-900/95 border-slate-800 text-slate-200' : 'bg-white/95 border-white text-slate-800'">
             
             <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
-                <h3 class="font-semibold text-sm text-indigo-500">🛡️ Pengaturan Face ID & Kata Sandi</h3>
+                <h3 class="font-semibold text-sm text-indigo-500">🔑 Ubah Kata Sandi Master</h3>
                 <button @click="activeModal = null" class="cursor-pointer" :class="darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'">✕</button>
             </div>
 
-            <div class="space-y-4 mb-4">
-                <div class="p-3 rounded-xl border" :class="darkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-sky-50 border-sky-200'">
-                    <p class="text-xs font-semibold mb-1 text-indigo-400">Status Data Face ID (Cloud Supabase)</p>
-                    <p class="text-[11px] opacity-80 mb-2" x-text="faceIdStatusInfo">Memeriksa status data wajah...</p>
-                    <button @click="reregisterFaceID()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-xl text-xs font-semibold transition cursor-pointer">
-                        🔄 Perbarui/Daftarkan Ulang Wajah Ini
-                    </button>
-                </div>
-
-                <div class="p-3 rounded-xl border" :class="darkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-sky-50 border-sky-200'">
-                    <p class="text-xs font-semibold mb-1 text-indigo-400">Ubah Kata Sandi Supabase</p>
-                    <p class="text-[11px] opacity-80 mb-2">Ganti sandi master darurat untuk membuka kunci aplikasi.</p>
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label class="block text-xs mb-1 font-medium" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">Kata Sandi Baru</label>
                     <input type="password" x-model="newMasterPassword" placeholder="Masukkan kata sandi baru..." 
-                           class="w-full border rounded-xl px-3 py-2 text-xs mb-2 focus:outline-none focus:border-indigo-500"
-                           :class="darkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-sky-300 text-slate-800'">
-                    <button @click="updateMasterPassword()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-semibold transition cursor-pointer">
-                        Simpan Sandi Baru
-                    </button>
+                           class="w-full border rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 transition-colors duration-500"
+                           :class="darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-200' : 'bg-sky-50/60 border-sky-200 text-slate-800'">
                 </div>
             </div>
 
-            <button @click="activeModal = null" class="w-full border py-2 rounded-xl text-xs font-semibold transition cursor-pointer" :class="darkMode ? 'border-slate-800 hover:bg-slate-800' : 'border-sky-200 hover:bg-sky-100'">Tutup</button>
+            <button @click="updateMasterPassword()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer">Simpan Sandi Baru</button>
         </div>
     </div>
 
@@ -593,14 +534,8 @@
                 inactivityTimer: null,
                 allChatHistory: [],
                 dynamicMemoriesText: '',
-                webcamActive: false,
-                mediaStream: null,
                 isUnlocked: false,          
-                showPasswordModal: false,   
                 inputPassword: '',          
-                scanStatusText: 'Memuat model Face-API...',
-                modelLoaded: false,
-                faceIdStatusInfo: 'Memeriksa data wajah di Supabase...',
                 newMasterPassword: '',
                 
                 profile: {
@@ -617,147 +552,80 @@
                         this.darkMode = true;
                     }
 
+                    // Cek Sesi Login 10 Menit di sessionStorage
+                    const sessionExpiry = sessionStorage.getItem('dashboard_session_expiry');
+                    if (sessionExpiry && new Date().getTime() < Number(sessionExpiry)) {
+                        this.isUnlocked = true;
+                        this.initEyeTracker();
+                        this.resetInactivityTimer();
+                    } else {
+                        sessionStorage.removeItem('dashboard_session_expiry');
+                        this.isUnlocked = false;
+                    }
+
                     await this.loadConfigAndData();
                     await this.loadAllChatHistory();
                     await this.loadDynamicMemories();
-
-                    await this.loadFaceApiModels();
-                    await this.initFaceIDCamera();
                 },
 
-                async loadFaceApiModels() {
-                    try {
-                        const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
-                        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-                        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-                        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-                        this.modelLoaded = true;
-                        this.scanStatusText = 'Model Face-API siap dipindai.';
-                    } catch (err) {
-                        console.error("Gagal memuat model Face-API:", err);
-                        this.scanStatusText = 'Gagal memuat model. Gunakan Sandi Supabase.';
-                    }
-                },
-
-                async initFaceIDCamera() {
-                    const lockVideo = document.getElementById('lockscreenVideo');
-                    const webVideo = document.getElementById('webcamVideo');
-                    try {
-                        this.mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
-                        if (lockVideo) lockVideo.srcObject = this.mediaStream;
-                        if (webVideo) webVideo.srcObject = this.mediaStream;
-                        this.webcamActive = true;
-                        
-                        setTimeout(() => {
-                            if (this.modelLoaded) this.verifyFaceID();
-                        }, 1500);
-                    } catch (err) {
-                        console.error("Gagal membuka kamera Face ID:", err);
-                        this.scanStatusText = 'Kamera tidak diizinkan. Gunakan Sandi Supabase.';
-                    }
-                },
-
-                async verifyFaceID() {
-                    if (!this.modelLoaded) {
-                        this.scanStatusText = 'Model belum siap.';
+                async verifyDatabasePassword() {
+                    if (!this.inputPassword) {
+                        alert('Silakan masukkan kata sandi!');
                         return;
                     }
 
-                    this.scanStatusText = 'Menganalisis matriks biometrik wajah di Cloud Supabase...';
-                    const lockVideo = document.getElementById('lockscreenVideo') || document.getElementById('webcamVideo');
-                    
-                    if (!lockVideo || !lockVideo.videoWidth) {
-                        this.scanStatusText = 'Kamera belum siap, coba lagi.';
-                        return;
-                    }
-
-                    try {
-                        const detection = await faceapi.detectSingleFace(lockVideo, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-
-                        if (!detection) {
-                            this.scanStatusText = 'Wajah tidak terdeteksi. Posisikan wajah di tengah.';
-                            return;
-                        }
-
-                        const { data: dbData, error } = await _supabase
-                            .from('user_config')
-                            .select('key_value')
-                            .eq('key_name', 'mipra_face_descriptor')
-                            .single();
-
-                        if (!dbData || !dbData.key_value) {
-                            const descriptorArray = Array.from(detection.descriptor);
-                            await _supabase.from('user_config').upsert({
-                                key_name: 'mipra_face_descriptor',
-                                key_value: JSON.stringify(descriptorArray)
-                            }, { onConflict: 'key_name' });
-                            
-                            this.scanStatusText = 'Wajah berhasil didaftarkan ke Cloud Supabase!';
-                            this.unlockDashboard();
-                            return;
-                        }
-
-                        const referenceDescriptor = new Float32Array(JSON.parse(dbData.key_value));
-                        const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
-
-                        if (distance < 0.55) {
-                            this.scanStatusText = `Wajah cocok dengan database cloud!`;
-                            this.unlockDashboard();
-                        } else {
-                            this.scanStatusText = 'Wajah tidak dikenali! Akses ditolak. Gunakan Sandi.';
-                            playRobotSound('dizzy');
-                        }
-                    } catch (err) {
-                        console.error("Face-API Cloud Error:", err);
-                        this.scanStatusText = 'Gagal memindai biometrik cloud. Gunakan Sandi Supabase.';
-                    }
-                },
-
-                async loadSecuritySettings() {
                     try {
                         const { data, error } = await _supabase
                             .from('user_config')
                             .select('key_value')
-                            .eq('key_name', 'mipra_face_descriptor')
+                            .eq('key_name', 'app_master_password')
                             .single();
 
+                        let validPassword = 'mipra2026';
                         if (data && data.key_value) {
-                            this.faceIdStatusInfo = '✅ Data Face ID terdaftar aktif di Cloud Supabase (Matriks 128-dimensi tersimpan).';
-                        } else {
-                            this.faceIdStatusInfo = '⚠️ Belum ada data wajah yang tersimpan di database.';
+                            validPassword = data.key_value.trim();
                         }
-                    } catch (e) {
-                        this.faceIdStatusInfo = '⚠️ Gagal memeriksa database Supabase.';
+
+                        if (this.inputPassword.trim() === validPassword) {
+                            // Simpan sesi aktif selama 10 menit ke sessionStorage
+                            const expiryTime = new Date().getTime() + (10 * 60 * 1000);
+                            sessionStorage.setItem('dashboard_session_expiry', expiryTime);
+                            
+                            this.unlockDashboard();
+                        } else {
+                            alert('Kata sandi salah!');
+                            playRobotSound('dizzy');
+                        }
+                    } catch (err) {
+                        console.error("Gagal memverifikasi sandi Supabase:", err);
+                        if (this.inputPassword === 'mipra2026') {
+                            const expiryTime = new Date().getTime() + (10 * 60 * 1000);
+                            sessionStorage.setItem('dashboard_session_expiry', expiryTime);
+                            this.unlockDashboard();
+                        } else {
+                            alert('Koneksi database gagal atau sandi salah.');
+                        }
                     }
                 },
 
-                async reregisterFaceID() {
-                    const webVideo = document.getElementById('webcamVideo') || document.getElementById('lockscreenVideo');
-                    if (!this.modelLoaded || !webVideo || !webVideo.videoWidth) {
-                        alert('Kamera atau model AI belum siap!');
-                        return;
-                    }
+                unlockDashboard() {
+                    this.isUnlocked = true;
+                    this.inputPassword = '';
+                    playRobotSound('beep');
 
-                    try {
-                        const detection = await faceapi.detectSingleFace(webVideo, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-                        if (!detection) {
-                            alert('Wajah tidak terdeteksi di kamera! Posisikan wajah Anda di depan kamera.');
-                            return;
-                        }
+                    const hour = new Date().getHours();
+                    let timeGreeting = 'Selamat Pagi';
+                    if (hour >= 11 && hour < 15) timeGreeting = 'Selamat Siang';
+                    else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
+                    else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
 
-                        const descriptorArray = Array.from(detection.descriptor);
-                        const { error } = await _supabase.from('user_config').upsert({
-                            key_name: 'mipra_face_descriptor',
-                            key_value: JSON.stringify(descriptorArray)
-                        }, { onConflict: 'key_name' });
+                    const welcomeText = `${timeGreeting} ${this.profile.panggilan}, sandi Supabase terverifikasi. Sesi aktif 10 menit!`;
+                    this.setEmotionWithTimeout('senang');
+                    this.startTypingEffect(welcomeText);
+                    this.saveChatToSupabase('ai', welcomeText);
 
-                        if (error) throw error;
-                        this.faceIdStatusInfo = '✅ Wajah baru berhasil didaftarkan dan diperbarui ke Supabase!';
-                        alert('Data Face ID berhasil diperbarui di database!');
-                    } catch (err) {
-                        console.error(err);
-                        alert('Gagal mendaftarkan wajah.');
-                    }
+                    this.initEyeTracker();
+                    this.resetInactivityTimer();
                 },
 
                 async updateMasterPassword() {
@@ -775,72 +643,11 @@
                         if (error) throw error;
                         alert('Kata sandi Supabase berhasil diubah!');
                         this.newMasterPassword = '';
+                        this.activeModal = null;
                     } catch (err) {
                         console.error(err);
                         alert('Gagal mengubah kata sandi.');
                     }
-                },
-
-                async verifyDatabasePassword() {
-                    if (!this.inputPassword) {
-                        alert('Silakan masukkan kata sandi!');
-                        return;
-                    }
-
-                    try {
-                        const { data, error } = await _supabase
-                            .from('user_config')
-                            .select('key_value')
-                            .eq('key_name', 'app_master_password')
-                            .single();
-
-                        if (data && data.key_value) {
-                            if (this.inputPassword.trim() === data.key_value.trim()) {
-                                this.unlockDashboard();
-                            } else {
-                                alert('Kata sandi salah!');
-                            }
-                        } else {
-                            if (this.inputPassword === 'mipra2026') {
-                                this.unlockDashboard();
-                            } else {
-                                alert('Kata sandi salah. Gunakan sandi default: mipra2026');
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Gagal memverifikasi sandi Supabase:", err);
-                        if (this.inputPassword === 'mipra2026') {
-                            this.unlockDashboard();
-                        } else {
-                            alert('Koneksi database gagal atau sandi salah.');
-                        }
-                    }
-                },
-
-                unlockDashboard() {
-                    this.isUnlocked = true;
-                    this.showPasswordModal = false;
-                    playRobotSound('beep');
-
-                    const hour = new Date().getHours();
-                    let timeGreeting = 'Selamat Pagi';
-                    if (hour >= 11 && hour < 15) timeGreeting = 'Selamat Siang';
-                    else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat Sore';
-                    else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat Malam';
-
-                    const welcomeText = `${timeGreeting} ${this.profile.panggilan}, Face ID Cloud Supabase terverifikasi. Akses terbuka!`;
-                    this.setEmotionWithTimeout('senang');
-                    this.startTypingEffect(welcomeText);
-                    this.saveChatToSupabase('ai', welcomeText);
-
-                    this.initEyeTracker();
-                    this.resetInactivityTimer();
-                },
-
-                async triggerBiometricScan() {
-                    this.isUnlocked = false;
-                    this.scanStatusText = 'Memindai ulang Face-API Cloud...';
-                    await this.initFaceIDCamera();
                 },
 
                 async loadDynamicMemories() {
