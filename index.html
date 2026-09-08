@@ -46,7 +46,6 @@
         }
         .sun-glow { animation: glow 4s infinite ease-in-out; }
         
-        /* Gaya Font Digital LED Biru */
         .digital-led-font {
             font-family: 'Share Tech Mono', monospace, sans-serif;
             letter-spacing: 0.05em;
@@ -64,18 +63,15 @@
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-end">
         <div class="absolute inset-0 transition-colors duration-700" :class="darkMode ? 'bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950' : 'bg-gradient-to-b from-sky-400 via-sky-300 to-sky-200'"></div>
 
-        <!-- Matahari / Bulan -->
         <div x-show="!darkMode" class="absolute top-12 right-20 w-20 h-20 bg-amber-300 rounded-full blur-sm sun-glow shadow-[0_0_40px_rgba(252,211,77,0.8)]"></div>
         <div x-show="darkMode" class="absolute top-12 right-24 w-16 h-16 bg-slate-200 rounded-full shadow-[0_0_30px_rgba(226,232,240,0.4)] opacity-90"></div>
 
-        <!-- Siluet Gunung Belakang -->
         <div class="absolute bottom-0 w-full h-48 opacity-40 transition-colors duration-700" :class="darkMode ? 'text-indigo-900/60' : 'text-emerald-700/30'">
             <svg viewBox="0 0 1200 300" preserveAspectRatio="none" class="w-full h-full fill-current">
                 <path d="M0,300 L0,150 Q250,50 500,200 T1000,100 L1200,300 Z"></path>
             </svg>
         </div>
 
-        <!-- Siluet Gunung Depan -->
         <div class="absolute bottom-0 w-full h-32 transition-colors duration-700" :class="darkMode ? 'text-slate-900' : 'text-emerald-800/40'">
             <svg viewBox="0 0 1200 200" preserveAspectRatio="none" class="w-full h-full fill-current">
                 <path d="M0,200 L0,80 Q350,20 700,120 T1200,60 L1200,200 Z"></path>
@@ -87,7 +83,6 @@
     <nav class="backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-sm transition-colors duration-500"
          :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 text-slate-100' : 'bg-white/40 border-white/40 text-slate-800'">
         
-        <!-- Bagian Foto Profil Bulat ala IG & Sapaan Tuan -->
         <div class="flex items-center gap-3">
             <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
             
@@ -108,7 +103,6 @@
             </div>
         </div>
 
-        <!-- Menu Profil 3 Garis (Hamburger) -->
         <div class="relative" x-data="{ open: false }">
             <button @click="open = !open" class="flex items-center justify-center w-10 h-10 border rounded-xl transition cursor-pointer shadow-sm backdrop-blur-md"
                     :class="darkMode ? 'bg-slate-800/60 hover:bg-slate-700/60 border-slate-700/50 text-slate-200' : 'bg-white/60 hover:bg-white/80 border-white/50 text-slate-700'">
@@ -117,7 +111,6 @@
                 </svg>
             </button>
 
-            <!-- Dropdown Menu -->
             <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 border rounded-2xl shadow-2xl p-2 z-50 backdrop-blur-xl transition-colors duration-500"
                  :class="darkMode ? 'bg-slate-900/80 border-slate-800/60 text-slate-200' : 'bg-white/80 border-white/60 text-slate-800'">
                 <div class="px-3 py-2 border-b mb-1" :class="darkMode ? 'border-slate-800/60' : 'border-sky-100/60'">
@@ -155,7 +148,6 @@
         <div class="backdrop-blur-md border rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500"
              :class="darkMode ? 'bg-slate-900/40 border-slate-800/40' : 'bg-white/40 border-white/40'">
             
-            <!-- Zona Sensor Kepala (Bagian atas wajah untuk diusap ala Emo) -->
             <div @mouseenter="handleHeadPet()" 
                  @click="handleHeadPet()" 
                  class="absolute top-2 w-48 h-8 rounded-full cursor-pointer z-20 flex items-center justify-center transition"
@@ -163,7 +155,6 @@
                 <span class="text-[9px] tracking-widest uppercase opacity-40 font-bold" :class="darkMode ? 'text-indigo-300' : 'text-indigo-800'">⚡ Sensor Kepala Emo</span>
             </div>
 
-            <!-- Area Mata Kubus Biru Cyan & Interaksi Klik/Sentuh -->
             <div id="robot-eyes-container" 
                  @click="handleEyeTouch()" 
                  @touchstart.prevent="handleEyeTouch()"
@@ -172,7 +163,6 @@
 
                 <div class="flex gap-10 items-center justify-center">
 
-                    <!-- JIKA SEDANG BERFIKIR KERAS (SAAT SUBMIT / LOADING AI) -->
                     <template x-if="loadingAI">
                         <div class="flex gap-10 items-center justify-center">
                             <div class="w-16 h-12 bg-purple-500 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.9)] thinking-eye flex items-center justify-center">
@@ -184,23 +174,16 @@
                         </div>
                     </template>
 
-                    <!-- JIKA TIDAK LOADING: TAMPILKAN BERDASARKAN MOOD -->
                     <template x-if="!loadingAI">
                         <div class="flex gap-10 items-center justify-center">
                             
-                            <!-- 1. MOOD: PUSING (Saat Dicolok -> Emot 🌀 Berputar) -->
                             <template x-if="currentEmotion === 'pusing'">
                                 <div class="flex gap-10 items-center justify-center">
-                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">
-                                        🌀
-                                    </div>
-                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">
-                                        🌀
-                                    </div>
+                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">🌀</div>
+                                    <div class="w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(251,191,36,0.9)] dizzy-eye font-bold text-2xl">🌀</div>
                                 </div>
                             </template>
 
-                            <!-- 2. MOOD: SENANG / PUAS / ROMANTIS / DIUSAP -->
                             <template x-if="currentEmotion === 'senang' || currentEmotion === 'puas' || currentEmotion === 'romantis'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(236,72,153,0.9)] robot-eye-base transform rotate-45 relative">
@@ -214,7 +197,6 @@
                                 </div>
                             </template>
 
-                            <!-- 3. MOOD: BOSAN / MENGANTUK (Otonom) -->
                             <template x-if="currentEmotion === 'bosan' || currentEmotion === 'mengantuk'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-2.5 bg-slate-400 rounded-full shadow-[0_0_15px_rgba(148,163,184,0.6)] robot-eye-base">😴</div>
@@ -222,14 +204,12 @@
                                 </div>
                             </template>
 
-                            <!-- 4. MOOD: KAGUM / ANTUSIAS -->
                             <template x-if="currentEmotion === 'kagum' || currentEmotion === 'antusias'">
                                 <div class="flex gap-10 items-center justify-center text-amber-300 text-5xl robot-eye-base drop-shadow-[0_0_20px_rgba(252,211,77,0.9)] font-bold">
                                     <span>★</span><span>★</span>
                                 </div>
                             </template>
 
-                            <!-- 5. MOOD: MARAH -->
                             <template x-if="currentEmotion === 'marah'">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-6 bg-red-500 rounded-lg shadow-[0_0_25px_rgba(239,68,68,0.9)] transform -rotate-12 robot-eye-base"></div>
@@ -237,7 +217,6 @@
                                 </div>
                             </template>
 
-                            <!-- 6. DEFAULT NORMAL -->
                             <template x-if="!['pusing', 'senang', 'puas', 'romantis', 'bosan', 'mengantuk', 'kagum', 'antusias', 'marah'].includes(currentEmotion)">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
@@ -272,7 +251,7 @@
                 </div>
             </div>
 
-            <!-- Tombol Pintasan Cepat (Quick Pills) -->
+            <!-- Tombol Pintasan Cepat -->
             <div class="w-full pt-4 mt-4 border-t flex gap-2 overflow-x-auto justify-center transition-colors duration-500"
                  :class="darkMode ? 'border-slate-800/40' : 'border-white/40'">
                 <button @click="sendQuickPrompt('Bagaimana jadwal dinas dan tugasku di Yanma Polda Sumbar hari ini?')" class="border px-3 py-1 rounded-lg text-[11px] whitespace-nowrap transition cursor-pointer shadow-sm backdrop-blur-md"
@@ -316,7 +295,6 @@
 
         <!-- Panel Modul Ringkasan Bawah -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <!-- Panel 1 -->
             <div class="backdrop-blur-md border rounded-2xl p-4 shadow-md transition-all duration-500"
                  :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 hover:border-indigo-500/50' : 'bg-white/40 border-white/50 hover:border-indigo-400'">
                 <div class="flex justify-between items-center mb-2">
@@ -328,7 +306,6 @@
                         :class="darkMode ? 'bg-slate-800/50 hover:bg-slate-700/60 text-indigo-300 border-slate-700/50' : 'bg-white/60 hover:bg-white/90 text-indigo-800 border-white/60'">Segarkan Data</button>
             </div>
 
-            <!-- Panel 2 -->
             <div class="backdrop-blur-md border rounded-2xl p-4 shadow-md transition-all duration-500"
                  :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 hover:border-emerald-500/50' : 'bg-white/40 border-white/50 hover:border-emerald-400'">
                 <div class="flex justify-between items-center mb-2">
@@ -343,7 +320,6 @@
                         :class="darkMode ? 'bg-slate-800/50 hover:bg-slate-700/60 text-emerald-300 border-slate-700/50' : 'bg-white/60 hover:bg-white/90 text-emerald-800 border-white/60'">Segarkan Data</button>
             </div>
 
-            <!-- Panel 3 -->
             <div class="backdrop-blur-md border rounded-2xl p-4 shadow-md transition-all duration-500"
                  :class="darkMode ? 'bg-slate-900/40 border-slate-800/40 hover:border-amber-500/50' : 'bg-white/40 border-white/50 hover:border-amber-400'">
                 <div class="flex justify-between items-center mb-2">
@@ -371,7 +347,6 @@
                 <button @click="activeModal = null" class="cursor-pointer font-bold text-sm px-2 py-1 rounded-lg" :class="darkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-sky-100'">✕</button>
             </div>
 
-            <!-- Daftar Riwayat Chat -->
             <div class="flex-1 overflow-y-auto space-y-2.5 pr-1 my-2">
                 <template x-if="allChatHistory.length === 0">
                     <p class="text-xs text-center py-8" :class="darkMode ? 'text-slate-500' : 'text-slate-400'">Belum ada riwayat percakapan tersimpan.</p>
@@ -394,7 +369,6 @@
                 </template>
             </div>
 
-            <!-- Footer Modal Riwayat -->
             <div class="pt-3 border-t flex justify-between items-center" :class="darkMode ? 'border-slate-800' : 'border-sky-100'">
                 <button @click="clearChatHistory()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer">🗑️ Hapus Semua Riwayat</button>
                 <button @click="activeModal = null" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition cursor-pointer">Tutup</button>
@@ -459,7 +433,6 @@
         let cachedApiKey = '';
         let audioCtx = null;
 
-        // Fungsi Audio Sintetis Ala Robot Emo (Beep-Boop)
         function playRobotSound(type = 'beep') {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -475,7 +448,7 @@
                     gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.15);
-                } else if (type === 'pet') { // Suara dielus kepala (nada gembira naik turun)
+                } else if (type === 'pet') {
                     osc.frequency.setValueAtTime(400, audioCtx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
                     osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.2);
@@ -483,7 +456,7 @@
                     gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.25);
-                } else if (type === 'dizzy') { // Suara pusing dicolok
+                } else if (type === 'dizzy') {
                     osc.frequency.setValueAtTime(300, audioCtx.currentTime);
                     osc.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 0.3);
                     gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
@@ -516,6 +489,7 @@
                 emotionTimeout: null,
                 inactivityTimer: null,
                 allChatHistory: [],
+                dynamicMemoriesText: '',
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
@@ -533,6 +507,7 @@
 
                     await this.loadConfigAndData();
                     await this.loadAllChatHistory();
+                    await this.loadDynamicMemories(); // Memuat memori jangka panjang dari Supabase
 
                     const hour = new Date().getHours();
                     let timeGreeting = 'Selamat Pagi';
@@ -547,14 +522,50 @@
                     await this.saveChatToSupabase('ai', welcomeText);
 
                     this.initEyeTracker();
-                    this.resetInactivityTimer(); // Aktifkan Emotion Engine otonom (kebosanan)
+                    this.resetInactivityTimer();
                 },
 
-                // Emotion Engine Otonom: Jika 2 menit tidak ada interaksi, Emo merasa bosan/mengantuk
+                // Memuat memori dinamis dari tabel ai_memories di Supabase
+                async loadDynamicMemories() {
+                    try {
+                        const { data, error } = await _supabase.from('ai_memories').select('memory_content').order('created_at', { ascending: false }).limit(10);
+                        if (data && data.length > 0) {
+                            this.dynamicMemoriesText = data.map(item => `- ${item.memory_content}`).join('\n');
+                        } else {
+                            this.dynamicMemoriesText = '- Belum ada catatan memori khusus tersimpan.';
+                        }
+                    } catch (err) {
+                        console.error("Gagal memuat memori AI:", err);
+                        this.dynamicMemoriesText = '- Gagal memuat memori.';
+                    }
+                },
+
+                // Menyimpan ringkasan percakapan otomatis ke tabel ai_memories
+                async extractAndSaveMemory(recentUserPrompt, recentAiReply) {
+                    try {
+                        // Menggunakan Gemini Flash ringan untuk merangkum poin penting percakapan
+                        const memoryPayload = {
+                            contents: [{
+                                role: "user",
+                                parts: [{ text: `Buat satu kalimat ringkasan pendek (maksimal 15 kata) tentang informasi penting atau topik yang dibicarakan dari interaksi ini:\nUser: "${recentUserPrompt}"\nAI: "${recentAiReply}"\n\nLangsung tulis ringkasannya tanpa pengantar.` }]
+                            }]
+                        };
+                        const response = await this.callGeminiAPI('gemini-2.5-flash-lite', memoryPayload);
+                        if (response.ok) {
+                            const resJson = await response.json();
+                            const summary = resJson?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+                            if (summary) {
+                                await _supabase.from('ai_memories').insert([{ memory_content: summary, category: 'chat_summary' }]);
+                                await this.loadDynamicMemories(); // Refresh memori lokal
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Gagal mengekstrak memori otomatis:", e);
+                    }
+                },
+
                 resetInactivityTimer() {
                     if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
-                    
-                    // Jika sebelumnya sedang bosan, kembalikan ke normal saat user aktif kembali
                     if (this.currentEmotion === 'bosan' || this.currentEmotion === 'mengantuk') {
                         this.setEmotionWithTimeout('normal');
                     }
@@ -562,17 +573,13 @@
                     this.inactivityTimer = setTimeout(() => {
                         if (!this.loadingAI) {
                             this.setEmotionWithTimeout('bosan');
-                            const boredPhrases = [
-                                `Bos, kok sepi banget? Lagi sibuk dinas di Yanma atau kuliah UT nih?`,
-                            ];
-                            const randomBored = boredPhrases[Math.floor(Math.random() * boredPhrases.length)];
+                            const randomBored = `Bos, kok sepi banget? Lagi sibuk dinas di Yanma atau kuliah UT nih?`;
                             this.startTypingEffect(randomBored);
                             playRobotSound('dizzy');
                         }
-                    }, 120000); // 120 detik (2 menit) tidak aktif
+                    }, 120000);
                 },
 
-                // Sensor Sentuh Kepala Ala Emo (Diusap)
                 handleHeadPet() {
                     if (this.loadingAI) return;
                     playRobotSound('pet');
@@ -582,8 +589,7 @@
                         `Senangnya dielus! Emo siap sedia bantu tugas apa saja hari ini, Bos!`,
                         `Gubrak! Nyaman banget dielus gitu. Emo setia sama Tuan ${this.profile.panggilan}!`
                     ];
-                    const randomPet = petPhrases[Math.floor(Math.random() * petPhrases.length)];
-                    this.startTypingEffect(randomPet);
+                    this.startTypingEffect(petPhrases[Math.floor(Math.random() * petPhrases.length)]);
                 },
 
                 handleProfilePicChange(event) {
@@ -593,7 +599,6 @@
                     reader.onload = async (e) => {
                         this.userProfilePic = e.target.result;
                         localStorage.setItem('user_profile_pic', this.userProfilePic);
-                        
                         try {
                             await _supabase.from('user_config').upsert({
                                 key_name: 'user_profile_pic_base64',
@@ -616,7 +621,6 @@
                 initEyeTracker() {
                     const updatePupils = (clientX, clientY) => {
                         if (this.loadingAI || this.currentEmotion !== 'normal') return;
-                        
                         const eyeContainer = document.getElementById('robot-eyes-container');
                         if (!eyeContainer) return;
 
@@ -641,14 +645,9 @@
                         this.pupilY = deltaY * scale;
                     };
 
-                    window.addEventListener('mousemove', (e) => {
-                        updatePupils(e.clientX, e.clientY);
-                    });
-
+                    window.addEventListener('mousemove', (e) => updatePupils(e.clientX, e.clientY));
                     window.addEventListener('touchmove', (e) => {
-                        if (e.touches.length > 0) {
-                            updatePupils(e.touches[0].clientX, e.touches[0].clientY);
-                        }
+                        if (e.touches.length > 0) updatePupils(e.touches[0].clientX, e.touches[0].clientY);
                     }, { passive: true });
                 },
 
@@ -659,9 +658,7 @@
                     if (emotion !== 'normal' && emotion !== 'bosan' && emotion !== 'mengantuk') {
                         this.pupilX = 0;
                         this.pupilY = 0;
-                        this.emotionTimeout = setTimeout(() => {
-                            this.currentEmotion = 'normal';
-                        }, 10000);
+                        this.emotionTimeout = setTimeout(() => { this.currentEmotion = 'normal'; }, 10000);
                     }
                 },
 
@@ -695,10 +692,7 @@
                     reader.onload = (e) => {
                         const base64String = e.target.result.split(',')[1];
                         this.attachedImage = {
-                            inlineData: {
-                                data: base64String,
-                                mimeType: file.type
-                            }
+                            inlineData: { data: base64String, mimeType: file.type }
                         };
                     };
                     reader.readAsDataURL(file);
@@ -707,11 +701,9 @@
                 async loadAllChatHistory() {
                     try {
                         const { data, error } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: false });
-                        if (data) {
-                            this.allChatHistory = data;
-                        }
+                        if (data) this.allChatHistory = data;
                     } catch (err) {
-                        console.error("Gagal memuat semua riwayat chat:", err);
+                        console.error("Gagal memuat riwayat chat:", err);
                     }
                 },
 
@@ -723,9 +715,7 @@
                 async saveChatToSupabase(sender, text) {
                     try {
                         const { data, error } = await _supabase.from('chat_history').insert([{ sender: sender, text_content: text }]).select();
-                        if (data && data.length > 0) {
-                            this.allChatHistory.unshift(data[0]);
-                        }
+                        if (data && data.length > 0) this.allChatHistory.unshift(data[0]);
                     } catch (err) {
                         console.error("Gagal menyimpan chat:", err);
                     }
@@ -739,7 +729,6 @@
                             this.allChatHistory = this.allChatHistory.filter(item => item.id !== id);
                         } catch (err) {
                             console.error("Gagal menghapus chat:", err);
-                            alert('Gagal menghapus dari database.');
                         }
                     }
                 },
@@ -763,17 +752,11 @@
                 async loadConfigAndData() {
                     try {
                         const { data: configData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'gemini_api_key').single();
-                        if (configData && configData.key_value) {
-                            cachedApiKey = configData.key_value;
-                        }
+                        if (configData && configData.key_value) cachedApiKey = configData.key_value;
 
                         const { data: profileData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'user_profile_wawasan').single();
                         if (profileData && profileData.key_value) {
-                            try {
-                                this.profile = JSON.parse(profileData.key_value);
-                            } catch (e) {
-                                console.error("Gagal parsing profil:", e);
-                            }
+                            try { this.profile = JSON.parse(profileData.key_value); } catch (e) { console.error(e); }
                         }
 
                         const { data: picData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'user_profile_pic_base64').single();
@@ -786,11 +769,8 @@
                         }
 
                         const { data: hafalan } = await _supabase.from('hafalan_quran').select('*').limit(1);
-                        if (hafalan && hafalan.length > 0) {
-                            this.hafalanStatus = `Target: Surah ${hafalan[0].surah} Ayat ${hafalan[0].ayat}`;
-                        } else {
-                            this.hafalanStatus = 'Belum ada target tersimpan.';
-                        }
+                        if (hafalan && hafalan.length > 0) this.hafalanStatus = `Target: Surah ${hafalan[0].surah} Ayat ${hafalan[0].ayat}`;
+                        else this.hafalanStatus = 'Belum ada target tersimpan.';
 
                         const { data: keuangan } = await _supabase.from('keuangan').select('*');
                         if (keuangan && keuangan.length > 0) {
@@ -799,11 +779,8 @@
                         }
 
                         const { data: todos } = await _supabase.from('todos').select('*').eq('selesai', false).limit(1);
-                        if (todos && todos.length > 0) {
-                            this.todoStatus = `Tugas aktif: ${todos[0].tugas}`;
-                        } else {
-                            this.todoStatus = 'Tidak ada tugas aktif.';
-                        }
+                        if (todos && todos.length > 0) this.todoStatus = `Tugas aktif: ${todos[0].tugas}`;
+                        else this.todoStatus = 'Tidak ada tugas aktif.';
                     } catch (err) {
                         console.error('Gagal memuat data dari Supabase:', err);
                     }
@@ -821,7 +798,6 @@
                         alert('Pengaturan berhasil diperbarui dan disimpan ke Supabase!');
                     } catch (err) {
                         console.error("Gagal menyimpan profil:", err);
-                        alert('Gagal menyimpan ke database.');
                     }
                 },
 
@@ -853,16 +829,13 @@
                     const prompt = this.userQuery.trim();
                     this.userQuery = '';
 
-                    if (this.$refs.searchInput) {
-                        this.$refs.searchInput.blur();
-                    }
+                    if (this.$refs.searchInput) this.$refs.searchInput.blur();
                     
                     playRobotSound('beep');
                     await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
 
                     const lowerPrompt = prompt.toLowerCase();
-
                     if (lowerPrompt.includes('marah') || lowerPrompt.includes('kesal')) {
                         setTimeout(() => {
                             this.loadingAI = false;
@@ -884,9 +857,12 @@
                         return;
                     }
 
+                    // Menggabungkan Wawasan AI dan Memori Jangka Panjang (Dynamic Memories) ke dalam System Prompt
+                    let systemPromptCombined = `${this.profile.customInstructions}\n\n[CATATAN MEMORI JANGKA PANJANG TENTANG TUAN MIPRA]\n${this.dynamicMemoriesText}`;
+
                     let partsArray = [
                         {
-                            text: `${this.profile.customInstructions}\n\nPertanyaan dari Tuan ${this.profile.panggilan}: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [sedih], [bosan], atau [serius]).`
+                            text: `${systemPromptCombined}\n\nPertanyaan dari Tuan ${this.profile.panggilan}: ${prompt}\n\n(Catatan: Di akhir jawabanmu, lampirkan satu kata kunci emosi yang paling pas di dalam tanda kurung siku seperti [senang], [kagum], [marah], [sedih], [bosan], atau [serius]).`
                         }
                     ];
 
@@ -895,29 +871,18 @@
                         this.attachedImage = null;
                     }
 
-                    const payload = {
-                        contents: [
-                            {
-                                role: "user",
-                                parts: partsArray
-                            }
-                        ]
-                    };
-                    
+                    const payload = { contents: [{ role: "user", parts: partsArray }] };
                     let replyText = null;
 
                     try {
-                        let response = await this.callGeminiAPI('gemini-3.7-flash', payload);
-                        
+                        let response = await this.callGeminiAPI('gemini-2.5-flash', payload);
                         if (!response.ok) {
-                            response = await this.callGeminiAPI('gemini-3.5-flash-lite', payload);
+                            response = await this.callGeminiAPI('gemini-2.5-flash-lite', payload);
                         }
 
                         if (response.ok) {
                             const data = await response.json();
-                            if (data && data.candidates && data.candidates.length > 0 && 
-                                data.candidates[0].content && data.candidates.length > 0 && 
-                                data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+                            if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                                 replyText = data.candidates[0].content.parts[0].text;
                             }
                         }
@@ -940,6 +905,9 @@
                             playRobotSound('beep');
                             this.startTypingEffect(replyText);
                             await this.saveChatToSupabase('ai', replyText);
+
+                            // Ekstrak dan simpan poin memori penting di latar belakang secara otomatis
+                            this.extractAndSaveMemory(prompt, replyText);
                         } else {
                             this.setEmotionWithTimeout('serius');
                             this.startTypingEffect('Duh, server lagi bengong nih.');
