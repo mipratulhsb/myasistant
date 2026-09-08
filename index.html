@@ -83,6 +83,12 @@
         </div>
     </div>
 
+    <!-- Elemen Video & Canvas Tersembunyi untuk Pemantauan Kamera & Pelacakan Wajah -->
+    <div class="hidden">
+        <video id="webcamVideo" autoplay playsinline width="320" height="240"></video>
+        <canvas id="webcamCanvas" width="320" height="240"></canvas>
+    </div>
+
     <!-- Input File Tersembunyi untuk Pilih Foto Sendiri -->
     <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
 
@@ -110,8 +116,8 @@
     <nav class="backdrop-blur-md border-b px-4 sm:px-6 py-3 flex justify-between items-center sticky top-0 z-40 shadow-sm transition-colors duration-500"
          :class="darkMode ? 'bg-slate-900/60 border-slate-800/60 text-slate-100' : 'bg-white/60 border-white/60 text-slate-800'">
         
-        <!-- Logo / Judul -->
-        <div class="flex items-center gap-2">
+        <!-- Logo / Judul & Indikator Mata AI -->
+        <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg shadow-inner bg-gradient-to-br from-indigo-500 to-cyan-500 text-white">
                 ⌘
             </div>
@@ -119,6 +125,13 @@
                 <h1 class="text-xs font-bold uppercase tracking-wider opacity-90">Command Center</h1>
                 <p class="text-[9px] opacity-60">Sistem AI Personal</p>
             </div>
+            <!-- Tombol Toggle Pemantauan AI (Kamera) -->
+            <button @click="toggleVisionMonitoring()" 
+                    class="px-2.5 py-1 rounded-lg text-[10px] font-semibold transition flex items-center gap-1.5 cursor-pointer border"
+                    :class="isVisionActive ? (darkMode ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300 animate-pulse' : 'bg-emerald-100 border-emerald-300 text-emerald-800 animate-pulse') : (darkMode ? 'bg-slate-800/60 border-slate-700 text-slate-400' : 'bg-white/60 border-slate-200 text-slate-600')"
+                    :title="isVisionActive ? 'Pemantauan AI & Pelacakan Aktif' : 'Aktifkan Pemantauan AI'">
+                <span x-text="isVisionActive ? '👁️ AI Vision: ON' : '👁️ AI Vision: OFF'"></span>
+            </button>
         </div>
 
         <!-- Menu Profil Lengkap -->
@@ -194,7 +207,7 @@
         <div class="backdrop-blur-md border rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col items-center relative overflow-hidden transition-colors duration-500"
              :class="darkMode ? 'bg-slate-900/40 border-slate-800/40' : 'bg-white/40 border-white/40'">
             
-            <!-- Area Sentuh Mata -->
+            <!-- Area Sentuh Mata (Pupil mengikuti gerakan mouse / wajah secara real-time) -->
             <div id="robot-eyes-container" 
                  @click="handleEyeTouch()" 
                  @touchstart.prevent="handleEyeTouch()"
@@ -270,7 +283,7 @@
                                 </div>
                             </template>
 
-                            <!-- Normal (Default) -->
+                            <!-- Normal (Default - Pupil mengikuti posisi kepala/mouse secara akurat) -->
                             <template x-if="!['kedip', 'pusing', 'senang', 'puas', 'romantis', 'bosan', 'mengantuk', 'kagum', 'antusias', 'marah', 'kesal', 'perhatian'].includes(currentEmotion)">
                                 <div class="flex gap-10 items-center justify-center">
                                     <div class="w-16 h-14 bg-cyan-400 rounded-2xl shadow-[0_0_25px_rgba(34,211,238,0.8)] robot-eye-base flex items-center justify-center relative overflow-hidden">
@@ -298,7 +311,7 @@
                     <span x-text="typedText"></span><span class="animate-pulse font-bold" :class="darkMode ? 'text-sky-400' : 'text-slate-900'" x-show="isTyping">|</span>
                 </p>
                 
-                <div class="absolute bottom-2 right-3">
+                <div class="absolute bottom-2 right-3 flex items-center gap-2">
                     <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded border backdrop-blur-md transition-colors duration-500" 
                           :class="darkMode ? 'bg-slate-900/60 border-slate-800 text-indigo-300' : 'bg-white/60 border-white text-indigo-700'" 
                           x-text="'Mood: ' + currentEmotion"></span>
@@ -573,6 +586,8 @@
                 emotionTimeout: null,
                 inactivityTimer: null,
                 autonomousTimer: null,
+                visionTimer: null,
+                isVisionActive: false,
                 allChatHistory: [],
                 dynamicMemoriesText: '',
                 isUnlocked: false,          
@@ -645,6 +660,7 @@
                             this.isUnlocked = false;
                             this.userEmail = '';
                             if (this.autonomousTimer) clearInterval(this.autonomousTimer);
+                            this.stopVisionMonitoring();
                         }
                     });
                 },
@@ -663,6 +679,7 @@
 
                 async logout() {
                     if (this.autonomousTimer) clearInterval(this.autonomousTimer);
+                    this.stopVisionMonitoring();
                     await _supabase.auth.signOut();
                     this.isUnlocked = false;
                     window.location.reload();
@@ -744,6 +761,86 @@
                     }, 180000);
                 },
 
+                // FITUR PEMANTAUAN KAMERA (AI VISION)
+                async toggleVisionMonitoring() {
+                    if (this.isVisionActive) {
+                        this.stopVisionMonitoring();
+                        this.startTypingEffect("Pemantauan kamera dimatikan.", 'normal');
+                    } else {
+                        try {
+                            const videoEl = document.getElementById('webcamVideo');
+                            const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
+                            videoEl.srcObject = stream;
+                            this.isVisionActive = true;
+                            this.startTypingEffect("Kamera diaktifkan! Sekarang aku bisa melihat aktivitas dan lokasimu secara real-time.", 'senang');
+                            
+                            // Ambil gambar berkala setiap 60 detik untuk dianalisis AI
+                            this.visionTimer = setInterval(() => {
+                                this.analyzeUserEnvironment();
+                            }, 60000);
+                        } catch (err) {
+                            console.error("Gagal mengakses kamera:", err);
+                            alert("Tidak dapat mengakses kamera perangkat. Pastikan izin kamera diaktifkan.");
+                        }
+                    }
+                },
+
+                    stopVisionMonitoring() {
+                    const videoEl = document.getElementById('webcamVideo');
+                    if (videoEl && videoEl.srcObject) {
+                        const tracks = videoEl.srcObject.getTracks();
+                        tracks.forEach(track => track.stop());
+                        videoEl.srcObject = null;
+                    }
+                    if (this.visionTimer) clearInterval(this.visionTimer);
+                    this.isVisionActive = false;
+                },
+
+                async analyzeUserEnvironment() {
+                    if (!this.isVisionActive || this.loadingAI || cachedApiKey === '') return;
+                    try {
+                        const videoEl = document.getElementById('webcamVideo');
+                        const canvasEl = document.getElementById('webcamCanvas');
+                        const ctx = canvasEl.getContext('2d');
+                        ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+                        const base64Image = canvasEl.toDataURL('image/jpeg', 0.6).split(',')[1];
+
+                        const visionPayload = {
+                            contents: [{
+                                role: "user",
+                                parts: [
+                                    {
+                                        inlineData: { data: base64Image, mimeType: "image/jpeg" }
+                                    },
+                                    {
+                                        text: `${this.profile.customInstructions}\n\n[PEMANTAUAN KAMERA OTOMATIS]\nLihat gambar dari kamera web ini. Deteksi apa yang sedang Mipra lakukan dan di mana dia berada. Berikan satu kalimat komentar spontan yang asyik, usil, atau perhatian menggunakan bahasa gaul sehari-hari.\n\nFormat Wajib di Akhir Kalimat: [senang] atau [perhatian] atau [bosan] atau [kagum]`
+                                    }
+                                ]
+                            }]
+                        };
+
+                        let res = await this.callGeminiAPI('gemini-3.5-flash-lite', visionPayload);
+                        if (res.ok) {
+                            const json = await res.json();
+                            let comment = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+                            if (comment) {
+                                let detectedEmotion = 'senang';
+                                const match = comment.match(/\[(.*?)\]/);
+                                if (match && match[1]) {
+                                    detectedEmotion = match[1].toLowerCase().trim();
+                                    comment = comment.replace(/\[.*?\]/g, '').trim();
+                                }
+                                this.setEmotionWithTimeout(detectedEmotion);
+                                playRobotSound('beep');
+                                this.startTypingEffect(comment, detectedEmotion);
+                                await this.saveChatToSupabase('ai', comment);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Gagal memproses pemantauan kamera:", e);
+                    }
+                },
+
                 resetInactivityTimer() {
                     if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
                     if (this.currentEmotion === 'bosan' || this.currentEmotion === 'mengantuk') {
@@ -810,17 +907,14 @@
                     reader.readAsDataURL(file);
                 },
 
-                // FITUR SENTUH MATA: Kedip sebentar, lalu berubah menjadi kesal/marah menatap tajam
                 handleEyeTouch() {
                     if (this.loadingAI) return;
                     playRobotSound('beep');
                     
-                    // Tahap 1: Berkedip sebentar (0.3 detik)
                     this.currentEmotion = 'kedip';
                     if (this.emotionTimeout) clearTimeout(this.emotionTimeout);
 
                     setTimeout(() => {
-                        // Tahap 2: Berubah menjadi kotak menyudut tajam (marah/kesal menatap)
                         this.currentEmotion = 'kesal';
                         
                         const eyePhrases = [
@@ -830,13 +924,13 @@
                         ];
                         this.startTypingEffect(eyePhrases[Math.floor(Math.random() * eyePhrases.length)], 'kesal');
 
-                        // Kembali ke normal setelah beberapa detik
                         this.emotionTimeout = setTimeout(() => { 
                             this.currentEmotion = 'normal'; 
                         }, 7000);
                     }, 300);
                 },
 
+                // PELACAKAN MATA MENGIKUTI KEPALA / GERAKAN MOUSE
                 initEyeTracker() {
                     const updatePupils = (clientX, clientY) => {
                         if (this.loadingAI || this.currentEmotion !== 'normal') return;
