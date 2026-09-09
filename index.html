@@ -1,42 +1,928 @@
--- 1. Tabel untuk menyimpan Konfigurasi Aplikasi & Passcode Keypad
-CREATE TABLE IF NOT EXISTS public.user_config (
-    key_name TEXT PRIMARY KEY,
-    key_value TEXT NOT NULL
-);
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Assistant - Executive Command Center</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+        }
+        .macos-glass-dark {
+            background: rgba(24, 24, 27, 0.85);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+        .macos-glass-subtle-dark {
+            background: rgba(39, 39, 42, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .passcode-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.15s ease;
+        }
+        .passcode-btn:active, .passcode-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+            transform: scale(0.96);
+        }
+        @keyframes floatCrescent {
+            0%, 100% { transform: translateY(0px) rotate(-5deg); }
+            50% { transform: translateY(-6px) rotate(2deg); }
+        }
+        .animate-crescent {
+            animation: floatCrescent 6s ease-in-out infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        .animate-star {
+            animation: twinkle 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 relative overflow-x-hidden select-none" 
+      x-data="macosApp()">
 
--- Masukkan default passcode (123456) dan API key jika belum ada
-INSERT INTO public.user_config (key_name, key_value) 
-VALUES 
-    ('app_passcode', '123456'),
-    ('gemini_api_key', '')
-ON CONFLICT (key_name) DO NOTHING;
+    <!-- BACKGROUND DINAMIS & ANIMASI MALAM -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-slate-950">
+        <div class="absolute inset-0 bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 opacity-90"></div>
+        <div class="absolute top-12 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-star" style="animation-delay: 0.5s;"></div>
+        <div class="absolute top-20 left-1/3 w-1 h-1 bg-blue-200 rounded-full animate-star" style="animation-delay: 1.2s;"></div>
+        <div class="absolute top-10 right-1/4 w-2 h-2 bg-yellow-100 rounded-full animate-star" style="animation-delay: 2s;"></div>
+        <div class="absolute top-28 right-1/5 w-1 h-1 bg-white rounded-full animate-star" style="animation-delay: 0.8s;"></div>
+        <div class="absolute top-8 right-16 text-4xl animate-crescent select-none filter drop-shadow-[0_0_12px_rgba(253,224,71,0.6)]">🌙</div>
+        <div class="absolute bottom-0 inset-x-0 h-48 opacity-25 bg-repeat-x bg-bottom pointer-events-none"
+             style="background-image: url('https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1500&q=80'); background-size: cover;"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+    </div>
 
+    <!-- LOCKSCREEN PASSCODE ALA iOS (RESPONSIF LAPTOP & PONSEL) -->
+    <div x-show="!isUnlocked" class="fixed inset-0 bg-slate-950/92 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-sm macos-glass-dark rounded-[36px] p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center border border-white/10 relative">
+            
+            <!-- Ikon / Indikator Gembok -->
+            <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl mb-4 shadow-inner">
+                🔒
+            </div>
 
--- 2. Tabel untuk Checklist Target & Hafalan Quran Harian
-CREATE TABLE IF NOT EXISTS public.executive_tasks (
-    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-    task_title TEXT NOT NULL,
-    schedule_category TEXT NOT NULL, -- misal: 'hari_ini', 'besok', 'senin', 'selasa', dll.
-    task_date DATE NOT NULL,
-    is_completed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
-);
+            <h2 class="text-base sm:text-lg font-semibold mb-2 tracking-tight text-slate-100">Enter Passcode</h2>
+            <p class="text-xs text-red-400 mb-4 h-4 font-medium" x-text="passcodeError"></p>
 
+            <!-- Indikator Lingkaran Passcode (6 Digit) -->
+            <div class="flex gap-3 mb-8">
+                <template x-for="i in 6" :key="i">
+                    <div class="w-3.5 h-3.5 rounded-full transition-all duration-200 border border-white/40"
+                         :class="passcode.length >= i ? 'bg-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'bg-transparent'"></div>
+                </template>
+            </div>
 
--- 3. Tabel untuk Progres Tahfiz 20 Juz (Restorasi & Target Baru)
-CREATE TABLE IF NOT EXISTS public.tahfiz_progress (
-    juz_number INT PRIMARY KEY,
-    category TEXT NOT NULL, -- 'restoration' atau 'new'
-    pages_completed INT DEFAULT 0, -- maksimal 20 halaman per juz
-    status TEXT DEFAULT 'pending', -- 'pending', 'in_progress', 'completed'
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
-);
+            <!-- Keypad Angka ala iOS -->
+            <div class="grid grid-cols-3 gap-3.5 w-full max-w-[260px] mb-6">
+                <!-- Tombol 1 - 9 -->
+                <template x-for="num in [{n:'1',sub:''},{n:'2',sub:'ABC'},{n:'3',sub:'DEF'},{n:'4',sub:'GHI'},{n:'5',sub:'JKL'},{n:'6',sub:'MNO'},{n:'7',sub:'PQRS'},{n:'8',sub:'TUV'},{n:'9',sub:'WXYZ'}]">
+                    <button @click="pressPasscode(num.n)" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md">
+                        <span class="text-xl font-medium text-slate-100" x-text="num.n"></span>
+                        <span class="text-[8px] tracking-widest opacity-60 font-semibold" x-text="num.sub"></span>
+                    </button>
+                </template>
 
+                <!-- Tombol Kosong / Spacer -->
+                <div></div>
+                <!-- Tombol 0 -->
+                <button @click="pressPasscode('0')" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md">
+                    <span class="text-xl font-medium text-slate-100">0</span>
+                </button>
+                <!-- Tombol Hapus (Delete) -->
+                <button @click="deletePasscode()" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex items-center justify-center text-xs font-semibold opacity-80 hover:opacity-100 transition cursor-pointer">
+                    ⌫
+                </button>
+            </div>
 
--- 4. Tabel untuk Riwayat Percakapan Spotlight AI
-CREATE TABLE IF NOT EXISTS public.chat_history (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    sender TEXT NOT NULL, -- 'user' atau 'ai'
-    text_content TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
-);
+            <!-- Tombol Bawah: Emergency & Cancel -->
+            <div class="w-full flex justify-between px-4 text-xs opacity-60 font-medium">
+                <button @click="alert('Mode Darurat / Kontak Administrator')" class="hover:opacity-150 transition cursor-pointer">Emergency</button>
+                <button @click="passcode = ''" class="hover:opacity-100 transition cursor-pointer">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PENGATURAN API KEY -->
+    <div x-show="showApiKeyModal" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="macos-glass-dark rounded-[24px] p-6 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
+            <h3 class="font-semibold text-sm text-blue-400 mb-2">🔑 Konfigurasi Kunci API Gemini</h3>
+            <p class="text-xs opacity-80 mb-4">Masukkan Gemini API Key Anda agar sistem AI eksekutif dapat berfungsi penuh.</p>
+            <input type="password" x-model="tempApiKey" placeholder="Tempel API Key di sini..." class="w-full macos-glass-subtle-dark rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500 mb-4 text-center text-slate-100">
+            <button @click="saveApiKey()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-lg">Simpan & Aktifkan</button>
+        </div>
+    </div>
+
+    <!-- CUSTOM NAVBAR -->
+    <header class="macos-glass-dark px-6 py-3 flex justify-between items-center sticky top-0 z-40 text-xs font-medium shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-inner"></div>
+            <div>
+                <h1 class="font-bold text-xs uppercase tracking-wider text-slate-100">Personal Assistant</h1>
+                <p class="text-[9px] opacity-60">Command Center v3.0</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-5">
+            <div class="hidden md:flex items-center gap-3 text-right">
+                <span class="opacity-95 font-medium text-slate-200" x-text="currentWeather"></span>
+                <span class="font-bold text-slate-100" x-text="currentDateTime"></span>
+            </div>
+
+            <!-- BILAH MENU PROFIL -->
+            <div class="relative" x-data="{ profileOpen: false }">
+                <button @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1.5 pr-3 rounded-2xl transition hover:bg-white/10 macos-glass-subtle-dark">
+                    <div class="w-8 h-8 rounded-full overflow-hidden shadow-md relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-blue-600 to-indigo-600 border border-white/20">
+                        <template x-if="userProfilePic">
+                            <img :src="userProfilePic" alt="Profil" class="w-full h-full object-cover">
+                        </template>
+                        <template x-if="!userProfilePic">
+                            <span class="text-xs" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
+                        </template>
+                    </div>
+                    <div class="text-right hidden sm:block">
+                        <span class="block text-xs font-bold truncate max-w-[120px] text-slate-100" x-text="profile.namaLengkap"></span>
+                        <span class="block text-[9px] opacity-70 uppercase tracking-wide">Administrator</span>
+                    </div>
+                    <svg class="w-3 h-3 opacity-60 transition-transform duration-300" :class="profileOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+
+                <div x-show="profileOpen" style="display: none;"
+                     class="absolute right-0 top-full mt-2 w-60 macos-glass-dark rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5 space-y-1">
+                    <div class="p-2.5 rounded-xl macos-glass-subtle-dark mb-1">
+                        <p class="text-[9px] uppercase tracking-wider font-semibold opacity-60">Status Akses</p>
+                        <p class="text-xs font-bold truncate text-emerald-400">Passcode Terverifikasi</p>
+                    </div>
+                    <button @click="activeModal = 'dataPribadi'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">👤 Profil & Data Diri</button>
+                    <button @click="activeModal = 'wawasanAI'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">🧠 Konfigurasi Sistem</button>
+                    <button @click="openChatHistoryModal(); profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">📜 Riwayat Percakapan</button>
+                    <div class="border-t border-white/10 pt-1">
+                        <button @click="logout()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-400 transition flex items-center gap-2.5 cursor-pointer hover:bg-red-500/20">🚪 Kunci Kembali</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE CONTAINER -->
+    <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
+
+        <!-- JAM ANALOG & COUNTDOWN TARGET 2 TAHUN -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            
+            <!-- Kolom Jam Analog & Tanggal Masehi/Hijriah -->
+            <div class="lg:col-span-4 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col items-center justify-between text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-blue-500/5 pointer-events-none"></div>
+                
+                <div class="w-full pb-2 border-b border-white/10 flex justify-between items-center text-[11px]">
+                    <span class="font-bold text-blue-400" x-text="currentHijriDate"></span>
+                    <span class="opacity-70" x-text="currentDayName"></span>
+                </div>
+
+                <div class="w-24 h-24 rounded-full border-2 border-white/30 relative flex items-center justify-center bg-slate-900/60 shadow-inner my-3">
+                    <span class="absolute top-1 text-[9px] font-bold opacity-60">12</span>
+                    <span class="absolute right-1.5 text-[9px] font-bold opacity-60">3</span>
+                    <span class="absolute bottom-1 text-[9px] font-bold opacity-60">6</span>
+                    <span class="absolute left-1.5 text-[9px] font-bold opacity-60">9</span>
+                    <div class="w-2 h-2 bg-blue-400 rounded-full z-20 shadow-md"></div>
+                    <div class="absolute w-1 bg-slate-100 rounded-full origin-bottom z-10 transition-transform duration-300"
+                         :style="'height: 24px; bottom: 50%; transform: rotate(' + analogHourDeg + 'deg)'"></div>
+                    <div class="absolute w-0.5 bg-blue-400 rounded-full origin-bottom z-10 transition-transform duration-300"
+                         :style="'height: 32px; bottom: 50%; transform: rotate(' + analogMinuteDeg + 'deg)'"></div>
+                    <div class="absolute w-[1px] bg-red-400 rounded-full origin-bottom z-10"
+                         :style="'height: 36px; bottom: 50%; transform: rotate(' + analogSecondDeg + 'deg)'"></div>
+                </div>
+
+                <div class="w-full pt-2 border-t border-white/10">
+                    <span class="text-xs font-bold text-slate-100" x-text="currentFullMasehiDate"></span>
+                </div>
+            </div>
+
+            <!-- Panel Baru: Countdown Target 2 Tahun & Progress Hafalan -->
+            <div class="lg:col-span-8 macos-glass-dark rounded-[24px] p-6 shadow-xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-slate-950">
+                <div class="flex justify-between items-center mb-3">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">⏳ Countdown Target 2 Tahun Tahfiz 20 Juz</h3>
+                        <p class="text-[10px] opacity-70">Mulai: 10 September 2026 &bull; Deadline: 10 September 2028</p>
+                    </div>
+                    <button @click="showTahfizModal = true" class="bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/35 px-3 py-1.5 rounded-xl text-[10px] font-bold transition cursor-pointer">
+                        📊 Buka Panel Tahfiz
+                    </button>
+                </div>
+
+                <!-- Font Angka Countdown Besar -->
+                <div class="grid grid-cols-4 gap-2 text-center my-2">
+                    <div class="macos-glass-subtle-dark rounded-2xl p-3 border border-white/10">
+                        <span class="text-3xl sm:text-4xl font-black text-emerald-400 tabular-nums" x-text="countdown.days">00</span>
+                        <p class="text-[10px] uppercase opacity-70 mt-1">Hari</p>
+                    </div>
+                    <div class="macos-glass-subtle-dark rounded-2xl p-3 border border-white/10">
+                        <span class="text-3xl sm:text-4xl font-black text-slate-100 tabular-nums" x-text="countdown.hours">00</span>
+                        <p class="text-[10px] uppercase opacity-70 mt-1">Jam</p>
+                    </div>
+                    <div class="macos-glass-subtle-dark rounded-2xl p-3 border border-white/10">
+                        <span class="text-3xl sm:text-4xl font-black text-slate-100 tabular-nums" x-text="countdown.minutes">00</span>
+                        <p class="text-[10px] uppercase opacity-70 mt-1">Menit</p>
+                    </div>
+                    <div class="macos-glass-subtle-dark rounded-2xl p-3 border border-white/10">
+                        <span class="text-3xl sm:text-4xl font-black text-blue-400 tabular-nums" x-text="countdown.seconds">00</span>
+                        <p class="text-[10px] uppercase opacity-70 mt-1">Detik</p>
+                    </div>
+                </div>
+
+                <!-- Informasi Progres Hafalan Saat Ini -->
+                <div class="pt-3 border-t border-white/10 flex flex-col gap-1.5">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-semibold text-slate-300">Progres Keseluruhan Target 20 Juz:</span>
+                        <span class="font-bold text-emerald-400" x-text="totalCompletedPages + ' / 400 Halaman (' + totalProgressPercent + '%)'"></span>
+                    </div>
+                    <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-white/10">
+                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" :style="'width: ' + totalProgressPercent + '%'"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHECKLIST HAFALAN QURAN & STRATEGI -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            
+            <!-- Panel Kiri: Strategi & Target Harian Terstruktur -->
+            <div class="lg:col-span-4 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
+                        <span>🎯</span> Strategi & Target Harian
+                    </h3>
+                    <div class="space-y-2.5 text-xs text-slate-200">
+                        <div class="macos-glass-subtle-dark rounded-xl p-3 border border-white/5">
+                            <span class="font-bold text-emerald-400 block mb-1">📖 Ziyadah Baru (Senin - Jumat)</span>
+                            <p class="opacity-80 leading-relaxed">Target: <strong>4 baris per hari</strong> (~setengah halaman). Genap 4 halaman dalam sepekan.</p>
+                        </div>
+                        <div class="macos-glass-subtle-dark rounded-xl p-3 border border-white/5">
+                            <span class="font-bold text-blue-400 block mb-1">🔄 Pemulihan 5 Juz Lama</span>
+                            <p class="opacity-80 leading-relaxed">Fokus restorasi Juz 1-3 & 29-30 menggunakan metode Tikrar (1 halaman/sesi).</p>
+                        </div>
+                        <div class="macos-glass-subtle-dark rounded-xl p-3 border border-white/5">
+                            <span class="font-bold text-purple-400 block mb-1">🛡️ Murojaah Kubro (Sabtu - Minggu)</span>
+                            <p class="opacity-80 leading-relaxed">Pengulangan total hafalan sepekan dan penguatan sambung ayat tanpa ziyadah baru.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Kanan: Checklist Interaktif Berdasarkan Hari -->
+            <div class="lg:col-span-8 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col justify-between relative overflow-hidden">
+                <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">📖</span>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">Executive Quran Memorization Checklist Hub</h3>
+                    </div>
+                    <button @click="showTaskModal = true" class="bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/35 px-3 py-1.5 rounded-xl text-[10px] font-bold transition cursor-pointer flex items-center gap-1 shadow-md">
+                        <span>+ Tambah Target Hafalan</span>
+                    </button>
+                </div>
+
+                <!-- Navigasi Tombol Hari Dinamis -->
+                <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
+                    <template x-for="tab in dynamicTaskTabs" :key="tab.key">
+                        <button @click="activeTaskTab = tab.key"
+                                :class="activeTaskTab === tab.key ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 font-bold' : 'macos-glass-subtle-dark text-slate-300 hover:bg-white/10'"
+                                class="px-3.5 py-1.5 rounded-xl text-[11px] transition cursor-pointer whitespace-nowrap"
+                                x-text="tab.label">
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Daftar Checklist Hafalan Sesuai Tab Hari Aktif -->
+                <div class="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                    <template x-for="task in filteredTasks" :key="task.id">
+                        <div class="flex justify-between items-center p-2.5 rounded-xl macos-glass-subtle-dark hover:bg-white/5 transition-colors border border-white/5">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" :checked="task.is_completed" @change="toggleTaskCompletion(task.id)" class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                                <div>
+                                    <p class="text-xs font-semibold" :class="task.is_completed ? 'line-through opacity-50 text-slate-400' : 'text-slate-100'" x-text="task.task_title"></p>
+                                    <p class="text-[9px] opacity-60" x-text="'Jadwal: ' + task.schedule_category + ' (' + task.task_date + ')'"></p>
+                                </div>
+                            </div>
+                            <button @click="deleteTask(task.id)" class="text-red-400 hover:text-red-500 text-xs px-2 py-1">🗑️</button>
+                        </div>
+                    </template>
+
+                    <template x-if="filteredTasks.length === 0">
+                        <p class="text-xs text-center py-8 opacity-60 font-medium">Belum ada target hafalan terjadwal pada hari ini.</p>
+                    </template>
+                </div>
+
+                <div class="mt-3 pt-2 border-t border-white/10 flex justify-between items-center">
+                    <span class="text-[10px] opacity-75">Target 20 Juz & Pemulihan aktif di database.</span>
+                    <button @click="showTahfizModal = true" class="text-[10px] text-emerald-400 hover:underline font-bold cursor-pointer">Buka Panel Tahfiz 20 Juz &rarr;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SPOTLIGHT AI UTAMA (Tanpa AI Vision) -->
+        <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
+            <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
+                <p class="text-lg sm:text-2xl font-bold text-center leading-relaxed tracking-wide text-slate-100">
+                    <span x-text="typedText"></span><span class="animate-pulse font-bold text-blue-400" x-show="isTyping">|</span>
+                </p>
+            </div>
+
+            <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
+                <div class="flex-1 relative flex items-center">
+                    <span class="absolute left-4 text-lg opacity-50">🔍</span>
+                    <input type="text" x-ref="searchInput" x-model="userQuery" :disabled="loadingAI" placeholder="Ketik perintah atau tanyakan sesuatu pada Spotlight AI..." class="w-full macos-glass-dark focus:border-blue-500 focus:outline-none pl-12 pr-5 py-3.5 rounded-2xl text-sm shadow-inner disabled:opacity-50 transition-all backdrop-blur-2xl font-medium text-slate-100 placeholder-slate-400">
+                </div>
+
+                <button type="submit" :disabled="loadingAI" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-xs font-semibold transition shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95">
+                    <span>Kirim</span>
+                </button>
+            </form>
+        </div>
+
+    </main>
+
+    <!-- FOOTER TIPIS -->
+    <footer class="w-full py-4 text-center text-[11px] font-medium z-10 macos-glass-dark backdrop-blur-2xl mt-8 border-t border-white/10 text-slate-300">
+        Personal Assistant &bull; Mipratul Muslim &copy; 2026
+    </footer>
+
+    <!-- MODAL 1: TAMBAH TARGET HAFALAN BARU -->
+    <div x-show="showTaskModal" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-55">
+        <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-sm shadow-2xl relative border border-white/15">
+            <button @click="showTaskModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-sm">✕</button>
+            <h3 class="font-bold text-sm text-emerald-400 mb-4">➕ Tambah Target Hafalan Baru</h3>
+            
+            <form @submit.prevent="saveNewTask()" class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Keterangan Hafalan (Ziyadah/Murojaah)</label>
+                    <input type="text" x-model="newTask.title" placeholder="Contoh: Ziyadah Juz 4 (4 baris)" required class="w-full macos-glass-subtle-dark rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-100 font-medium">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Kategori Hari</label>
+                    <select x-model="newTask.scheduleCategory" class="w-full macos-glass-subtle-dark rounded-xl px-3 py-2 text-xs focus:outline-none text-slate-100 font-medium">
+                        <template x-for="tab in dynamicTaskTabs" :key="tab.key">
+                            <option :value="tab.key" x-text="tab.label"></option>
+                        </template>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Tanggal Pelaksanaan</label>
+                    <input type="date" x-model="newTask.date" required class="w-full macos-glass-subtle-dark rounded-xl px-3 py-2 text-xs text-slate-100 font-medium">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-bold transition shadow-lg mt-2">Simpan Target</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: PANEL TAHFIZ & HAFALAN QURAN -->
+    <div x-show="showTahfizModal" style="display: none;" class="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-6 z-50" @keydown.escape.window="showTahfizModal = false">
+        <div class="macos-glass-dark rounded-[32px] w-full max-w-4xl h-[90vh] shadow-2xl flex flex-col overflow-hidden relative border border-white/15">
+            <div class="px-6 py-4 flex justify-between items-center border-b border-white/10 bg-white/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-xl shadow-lg">📖</div>
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-100 uppercase tracking-wider">Executive Tahfiz Command Center (20 Juz / 2 Tahun)</h2>
+                        <p class="text-[10px] opacity-70">Mulai: 10 September 2026 &bull; Standar Mushaf Indonesia (10 Lembar/Juz)</p>
+                    </div>
+                </div>
+                <button @click="showTahfizModal = false" class="cursor-pointer text-slate-300 hover:text-white px-3 py-2 rounded-xl macos-glass-subtle-dark font-bold text-sm">✕</button>
+            </div>
+
+            <div class="flex border-b border-white/10 px-6 bg-black/20">
+                <button @click="tahfizTab = 'strategy'" :class="tahfizTab === 'strategy' ? 'border-b-2 border-emerald-500 text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'" class="py-3 px-4 text-xs transition cursor-pointer">🎯 Strategi & Jadwal Harian</button>
+                <button @click="tahfizTab = 'restoration'" :class="tahfizTab === 'restoration' ? 'border-b-2 border-emerald-500 text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'" class="py-3 px-4 text-xs transition cursor-pointer">🔄 Pemulihan 5 Juz Lama</button>
+                <button @click="tahfizTab = 'newtarget'" :class="tahfizTab === 'newtarget' ? 'border-b-2 border-emerald-500 text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'" class="py-3 px-4 text-xs transition cursor-pointer">🚀 Target 15 Juz Baru</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <div x-show="tahfizTab === 'strategy'" class="space-y-5">
+                    <div class="macos-glass-subtle-dark rounded-2xl p-5 space-y-3 border border-emerald-500/20">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">💡 Peta Jalan & Poin Utama Strategi</h3>
+                        <p class="text-xs leading-relaxed text-slate-200">
+                            Target Anda adalah menyelesaikan 20 juz dalam waktu 2 tahun (730 hari) mulai besok <strong>10/09/2026</strong>. Sembari memulihkan 5 juz lama (Juz 1-3 & 29-30), Anda mencicil Ziyadah baru sebanyak 4 baris per hari (Senin-Jumat).
+                        </p>
+                    </div>
+                </div>
+
+                <div x-show="tahfizTab === 'restoration'" class="space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">🔄 Status Pemulihan (Juz 1-3 & 29-30)</h3>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <template x-for="juz in [1, 2, 3, 29, 30]" :key="juz">
+                            <div class="macos-glass-subtle-dark rounded-2xl p-4 flex flex-col justify-between space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-bold text-slate-100" x-text="'Juz ' + juz"></span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-semibold">Restorasi</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'restoration')" class="w-20 macos-glass-dark rounded-xl px-3 py-1.5 text-xs text-center font-bold text-slate-100 focus:outline-none">
+                                    <span class="text-[11px] opacity-70">/ 20 Halaman Selesai</span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div x-show="tahfizTab === 'newtarget'" class="space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400">🚀 Progres 15 Juz Baru (Juz 4 s.d 28)</h3>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[350px] overflow-y-auto pr-1">
+                        <template x-for="juz in [4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]" :key="juz">
+                            <div class="macos-glass-subtle-dark rounded-2xl p-3.5 flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold text-slate-100" x-text="'Juz ' + juz"></span>
+                                    <p class="text-[9px] opacity-60">Ziyadah Baru</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'new')" class="w-16 macos-glass-dark rounded-xl px-2 py-1 text-xs text-center font-bold text-slate-100 focus:outline-none">
+                                    <span class="text-[10px] opacity-70">Hal</span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RIWAYAT CHAT -->
+    <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-3 pb-3 border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">📜</span>
+                    <h3 class="font-semibold text-sm text-blue-400">Riwayat Percakapan Sistem</h3>
+                </div>
+                <button @click="activeModal = null" class="cursor-pointer font-bold text-sm px-2.5 py-1 rounded-xl macos-glass-subtle-dark text-slate-200">✕</button>
+            </div>
+            <div class="flex-1 overflow-y-auto space-y-3 pr-1 my-2">
+                <template x-if="allChatHistory.length === 0">
+                    <p class="text-xs text-center py-8 opacity-60">Belum ada riwayat percakapan tersimpan.</p>
+                </template>
+                <template x-for="chat in allChatHistory" :key="chat.id">
+                    <div class="p-3.5 rounded-2xl macos-glass-subtle-dark flex flex-col gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wide"
+                                  :class="chat.sender === 'user' ? 'bg-blue-600/30 text-blue-400' : 'bg-emerald-600/30 text-emerald-400'"
+                                  x-text="chat.sender === 'user' ? '👤 Tuan' : '🤖 Sistem AI'"></span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] opacity-60" x-text="new Date(chat.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
+                                <button @click="deleteSingleChat(chat.id)" class="text-red-400 hover:text-red-500 transition text-xs px-2 py-0.5 rounded-lg macos-glass-subtle-dark">🗑️</button>
+                            </div>
+                        </div>
+                        <p class="text-xs leading-relaxed font-medium text-slate-200" x-text="chat.text_content"></p>
+                    </div>
+                </template>
+            </div>
+            <div class="pt-3 border-t border-white/10 flex justify-between items-center">
+                <button @click="clearChatHistory()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 px-4 py-2 rounded-2xl text-xs font-semibold transition cursor-pointer backdrop-blur-md">🗑️ Bersihkan Riwayat</button>
+                <button @click="activeModal = null" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PENGATURAN PROFIL -->
+    <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+                <h3 class="font-semibold text-sm text-blue-400">👤 Data Administrator</h3>
+                <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl macos-glass-subtle-dark text-slate-200">✕</button>
+            </div>
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="block text-xs mb-1 font-semibold opacity-80">Nama Lengkap</label>
+                    <input type="text" x-model="profile.namaLengkap" class="w-full macos-glass-subtle-dark rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500 font-medium text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-xs mb-1 font-semibold opacity-80">Nama Panggilan</label>
+                    <input type="text" x-model="profile.panggilan" class="w-full macos-glass-subtle-dark rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500 font-medium text-slate-100">
+                </div>
+            </div>
+            <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan Perubahan</button>
+        </div>
+    </div>
+
+    <!-- MODAL KONFIGURASI AI -->
+    <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-md shadow-2xl">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+                <h3 class="font-semibold text-sm text-blue-400">🧠 Konfigurasi Persona Formal</h3>
+                <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl macos-glass-subtle-dark text-slate-200">✕</button>
+            </div>
+            <div class="mb-5">
+                <label class="block text-xs mb-1.5 font-semibold opacity-80">Instruksi Sistem Eksekutif</label>
+                <textarea x-model="profile.customInstructions" rows="6" class="w-full macos-glass-subtle-dark rounded-2xl p-3.5 text-xs focus:outline-none focus:border-blue-500 resize-none font-medium text-slate-100"></textarea>
+            </div>
+            <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan Konfigurasi</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT UTAMA -->
+    <script>
+        const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let cachedApiKey = '';
+        let activeTypingInterval = null;
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('macosApp', () => ({
+                userQuery: '',
+                loadingAI: false,
+                activeModal: null,
+                userProfilePic: '',
+                typedText: '',
+                isTyping: false,
+                currentDateTime: '',
+                currentDayNum: '',
+                currentDayName: '',
+                currentMonthName: '',
+                currentFullMasehiDate: '',
+                currentHijriDate: '',
+                
+                analogHourDeg: 0,
+                analogMinuteDeg: 0,
+                analogSecondDeg: 0,
+
+                isUnlocked: false,          
+                showApiKeyModal: false,
+                tempApiKey: '',
+                passcode: '',
+                passcodeError: '',
+                correctPasscodeHash: '123456', // Passcode default yang diverifikasi dari database
+
+                countdown: { days: '00', hours: '00', minutes: '00', seconds: '00' },
+
+                showTaskModal: false,
+                activeTaskTab: 'hari_ini',
+                dynamicTaskTabs: [],
+                tasksList: [],
+                newTask: {
+                    title: '',
+                    scheduleCategory: 'hari_ini',
+                    date: new Date().toISOString().split('T')[0]
+                },
+
+                showTahfizModal: false,
+                tahfizTab: 'strategy',
+                tahfizData: {},
+                allChatHistory: [],
+                
+                profile: {
+                    namaLengkap: 'Mipratul Muslim',
+                    panggilan: 'Mipra',
+                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Administrator Mipratul Muslim (dipanggil Tuan Mipra). Anda memiliki akses serba tahu terhadap seluruh data operasional, target tahfiz 20 juz, checklist hafalan quran harian, dan riwayat di database sistem.'
+                },
+
+                get totalCompletedPages() {
+                    let total = 0;
+                    for (let key in this.tahfizData) {
+                        total += Number(this.tahfizData[key] || 0);
+                    }
+                    return total;
+                },
+
+                get totalProgressPercent() {
+                    return Math.min(Math.round((this.totalCompletedPages / 400) * 100), 100);
+                },
+
+                get filteredTasks() {
+                    return this.tasksList.filter(t => t.schedule_category === this.activeTaskTab);
+                },
+
+                async init() {
+                    this.updateClockAndCalendar();
+                    this.generateDynamicTabs();
+                    this.startCountdownTimer();
+                    setInterval(() => {
+                        this.updateClockAndCalendar();
+                        this.startCountdownTimer();
+                    }, 1000);
+
+                    await this.loadPasscodeFromSupabase();
+                    await this.loadConfigAndData();
+                    await this.loadTasksFromDB();
+                    await this.loadTahfizProgressFromDB();
+                    await this.loadAllChatHistory();
+                },
+
+                async loadPasscodeFromSupabase() {
+                    const { data } = await _supabase.from('user_config').select('key_value').eq('key_name', 'app_passcode').single();
+                    if (data?.key_value) {
+                        this.correctPasscodeHash = data.key_value;
+                    }
+                },
+
+                pressPasscode(num) {
+                    if (this.passcode.length < 6) {
+                        this.passcode += num;
+                        this.passcodeError = '';
+                        if (this.passcode.length === 6) {
+                            this.verifyPasscode();
+                        }
+                    }
+                },
+
+                deletePasscode() {
+                    if (this.passcode.length > 0) {
+                        this.passcode = this.passcode.slice(0, -1);
+                        this.passcodeError = '';
+                    }
+                },
+
+                async verifyPasscode() {
+                    if (this.passcode === this.correctPasscodeHash) {
+                        this.isUnlocked = true;
+                        if (!cachedApiKey) {
+                            this.showApiKeyModal = true;
+                        } else {
+                            this.startTypingEffect(`Selamat malam Tuan ${this.profile.panggilan}, sistem siap melayani.`);
+                        }
+                    } else {
+                        this.passcodeError = 'Passcode salah. Silakan coba lagi.';
+                        setTimeout(() => {
+                            this.passcode = '';
+                        }, 400);
+                    }
+                },
+
+                startCountdownTimer() {
+                    const deadline = new Date('2028-09-10T00:00:00').getTime();
+                    const now = new Date().getTime();
+                    const distance = deadline - now;
+
+                    if (distance > 0) {
+                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                        this.countdown.days = String(days).padStart(2, '0');
+                        this.countdown.hours = String(hours).padStart(2, '0');
+                        this.countdown.minutes = String(minutes).padStart(2, '0');
+                        this.countdown.seconds = String(seconds).padStart(2, '0');
+                    } else {
+                        this.countdown = { days: '00', hours: '00', minutes: '00', seconds: '00' };
+                    }
+                },
+
+                generateDynamicTabs() {
+                    const daysOrder = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                    const now = new Date();
+                    let tabs = [];
+
+                    for (let i = 0; i < 7; i++) {
+                        let d = new Date();
+                        d.setDate(now.getDate() + i);
+                        let dayName = daysOrder[d.getDay()];
+                        
+                        if (i === 0) {
+                            tabs.push({ key: 'hari_ini', label: 'Hari Ini (' + dayName + ')' });
+                        } else if (i === 1) {
+                            tabs.push({ key: 'besok', label: 'Besok (' + dayName + ')' });
+                        } else {
+                            tabs.push({ key: dayName.toLowerCase(), label: dayName });
+                        }
+                    }
+                    this.dynamicTaskTabs = tabs;
+                },
+
+                updateClockAndCalendar() {
+                    const now = new Date();
+                    const hours = now.getHours();
+                    const minutes = now.getMinutes();
+                    const seconds = now.getSeconds();
+
+                    this.analogSecondDeg = seconds * 6;
+                    this.analogMinuteDeg = minutes * 6 + seconds * 0.1;
+                    this.analogHourDeg = (hours % 12) * 30 + minutes * 0.5;
+
+                    this.currentDateTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    this.currentDayNum = now.getDate();
+                    this.currentDayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
+                    this.currentMonthName = now.toLocaleDateString('id-ID', { month: 'long' });
+                    this.currentFullMasehiDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    try {
+                        const options = { calendar: 'islamic-umalqura', day: 'numeric', month: 'long', year: 'numeric' };
+                        this.currentHijriDate = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', options).format(now);
+                    } catch (e) {
+                        this.currentHijriDate = '27 Rabiul Awal 1448 H';
+                    }
+                },
+
+                async loadTasksFromDB() {
+                    const { data } = await _supabase.from('executive_tasks').select('*').order('task_date', { ascending: true });
+                    if (data && data.length > 0) {
+                        this.tasksList = data;
+                    } else {
+                        this.tasksList = [
+                            { id: 1, task_title: 'Ziyadah Juz 4 (4 baris)', schedule_category: 'hari_ini', task_date: new Date().toISOString().split('T')[0], is_completed: false },
+                            { id: 2, task_title: 'Murojaah Juz 1 & Juz 29', schedule_category: 'hari_ini', task_date: new Date().toISOString().split('T')[0], is_completed: true }
+                        ];
+                    }
+                },
+
+                async saveNewTask() {
+                    if (!this.newTask.title.trim()) return;
+                    const payload = {
+                        task_title: this.newTask.title,
+                        schedule_category: this.newTask.scheduleCategory,
+                        task_date: this.newTask.date,
+                        is_completed: false
+                    };
+                    const { data, error } = await _supabase.from('executive_tasks').insert([payload]).select();
+                    if (!error && data) {
+                        this.tasksList.push(data[0]);
+                        this.newTask.title = '';
+                        this.showTaskModal = false;
+                    } else {
+                        payload.id = Date.now();
+                        this.tasksList.push(payload);
+                        this.newTask.title = '';
+                        this.showTaskModal = false;
+                    }
+                },
+
+                async toggleTaskCompletion(id) {
+                    const task = this.tasksList.find(t => t.id === id);
+                    if (!task) return;
+                    task.is_completed = !task.is_completed;
+                    await _supabase.from('executive_tasks').update({ is_completed: task.is_completed }).eq('id', id);
+                },
+
+                async deleteTask(id) {
+                    if (confirm('Hapus target hafalan ini?')) {
+                        this.tasksList = this.tasksList.filter(t => t.id !== id);
+                        await _supabase.from('executive_tasks').delete().eq('id', id);
+                    }
+                },
+
+                async loadTahfizProgressFromDB() {
+                    const { data } = await _supabase.from('tahfiz_progress').select('*');
+                    if (data) {
+                        data.forEach(item => {
+                            this.tahfizData['juz_' + item.juz_number] = item.pages_completed || 0;
+                        });
+                    }
+                },
+
+                async saveTahfizProgress(juzNum, categoryType) {
+                    const pages = Number(this.tahfizData['juz_' + juzNum] || 0);
+                    await _supabase.from('tahfiz_progress').upsert({
+                        juz_number: juzNum,
+                        category: categoryType,
+                        pages_completed: pages,
+                        status: pages >= 20 ? 'completed' : (pages > 0 ? 'in_progress' : 'pending')
+                    }, { onConflict: 'juz_number' });
+                },
+
+                async loadAllChatHistory() {
+                    const { data } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: false });
+                    if (data) this.allChatHistory = data;
+                },
+
+                async openChatHistoryModal() {
+                    await this.loadAllChatHistory();
+                    this.activeModal = 'chatHistory';
+                },
+
+                async deleteSingleChat(id) {
+                    await _supabase.from('chat_history').delete().eq('id', id);
+                    this.allChatHistory = this.allChatHistory.filter(item => item.id !== id);
+                },
+
+                async clearChatHistory() {
+                    if (confirm('Bersihkan seluruh riwayat percakapan sistem?')) {
+                        await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                        this.allChatHistory = [];
+                        this.startTypingEffect("Riwayat sistem telah dibersihkan.");
+                    }
+                },
+
+                async saveApiKey() {
+                    if (!this.tempApiKey.trim()) return;
+                    await _supabase.from('user_config').upsert({ key_name: 'gemini_api_key', key_value: this.tempApiKey.trim() }, { onConflict: 'key_name' });
+                    cachedApiKey = this.tempApiKey.trim();
+                    this.showApiKeyModal = false;
+                    this.startTypingEffect(`Kunci API berhasil disimpan.`);
+                },
+
+                logout() {
+                    this.isUnlocked = false;
+                    this.passcode = '';
+                },
+
+                startTypingEffect(text) {
+                    if (activeTypingInterval) clearInterval(activeTypingInterval);
+                    let i = 0;
+                    this.typedText = '';
+                    this.isTyping = true;
+                    activeTypingInterval = setInterval(() => {
+                        if (i < text.length) {
+                            this.typedText += text.charAt(i);
+                            i++;
+                        } else {
+                            clearInterval(activeTypingInterval);
+                            this.isTyping = false;
+                        }
+                    }, 22);
+                },
+
+                async loadConfigAndData() {
+                    const { data } = await _supabase.from('user_config').select('key_name, key_value').in('key_name', ['gemini_api_key', 'user_profile_pic']);
+                    if (data) {
+                        data.forEach(item => {
+                            if (item.key_name === 'gemini_api_key') cachedApiKey = item.key_value;
+                            if (item.key_name === 'user_profile_pic') this.userProfilePic = item.key_value;
+                        });
+                    }
+
+                    const { data: profileData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'user_profile_wawasan').single();
+                    if (profileData?.key_value) {
+                        try {
+                            const parsed = JSON.parse(profileData.key_value);
+                            if (parsed.namaLengkap) this.profile.namaLengkap = parsed.namaLengkap;
+                            if (parsed.panggilan) this.profile.panggilan = parsed.panggilan;
+                            if (parsed.customInstructions) this.profile.customInstructions = parsed.customInstructions;
+                        } catch(e) {}
+                    }
+                },
+
+                async saveProfile() {
+                    await _supabase.from('user_config').upsert({
+                        key_name: 'user_profile_wawasan',
+                        key_value: JSON.stringify(this.profile)
+                    }, { onConflict: 'key_name' });
+                    alert('Konfigurasi profil berhasil diperbarui.');
+                },
+
+                async callGeminiAPI(modelName, payload) {
+                    return await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cachedApiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                },
+
+                async submitToAI() {
+                    if (!this.userQuery.trim() || this.loadingAI) return;
+                    if (!cachedApiKey) { this.showApiKeyModal = true; return; }
+
+                    const prompt = this.userQuery.trim();
+                    this.userQuery = '';
+                    this.loadingAI = true;
+
+                    let tasksSummary = JSON.stringify(this.tasksList);
+                    let tahfizProgressSummary = JSON.stringify(this.tahfizData);
+                    let fullSystemInstruction = `${this.profile.customInstructions}
+[PROFIL PENGGUNA] Nama: ${this.profile.namaLengkap} (${this.profile.panggilan})
+[CHECKLIST HAFALAN QURAN AKTIF] ${tasksSummary}
+[PROGRES TAHFIZ 20 JUZ] ${tahfizProgressSummary}
+Instruksi Tuan ${this.profile.panggilan}: ${prompt}`;
+
+                    let partsArray = [{ text: fullSystemInstruction }];
+
+                    try {
+                        let res = await this.callGeminiAPI('gemini-3.7-flash', { contents: [{ role: "user", parts: partsArray }] });
+                        if (!res.ok) res = await this.callGeminiAPI('gemini-3.5-flash-lite', { contents: [{ role: "user", parts: partsArray }] });
+                        if (res.ok) {
+                            const data = await res.json();
+                            let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah diproses.";
+                            this.startTypingEffect(reply);
+                        }
+                    } catch (e) {
+                        this.startTypingEffect("Gangguan koneksi.");
+                    } finally {
+                        this.loadingAI = false;
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
