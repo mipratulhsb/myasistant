@@ -165,7 +165,7 @@
 
             <!-- Menu Profil Profesional di Kanan Atas -->
             <div class="relative" x-data="{ profileOpen: false }">
-                <button @click="profileOpen = !profileOpen" @click.away="profileOpen = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1.5 pr-3 rounded-2xl transition hover:bg-white/10 macos-glass-subtle-dark">
+                <button @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1.5 pr-3 rounded-2xl transition hover:bg-white/10 macos-glass-subtle-dark">
                     <div class="w-8 h-8 rounded-full overflow-hidden shadow-md relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-blue-600 to-indigo-600 border border-white/20">
                         <template x-if="userProfilePic">
                             <img :src="userProfilePic" alt="Profil" class="w-full h-full object-cover">
@@ -483,7 +483,7 @@
                 activeModal: null,
                 attachedImage: null,
                 userProfilePic: '',
-                rawAIResponse: 'Halo Tuan Mipra, ada yang bisa saya bantu hari ini?',
+                rawAIResponse: '',
                 typedText: '',
                 isTyping: false,
                 currentDateTime: '',
@@ -539,7 +539,7 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Anda adalah asisten eksekutif cerdas untuk Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA: 1) Jika pengguna menyapa (seperti "Halo", "Hai", "Pagi"), balas dengan sangat ramah, singkat, dan natural (misal: "Halo Tuan Mipra, ada yang bisa saya bantu?"). 2) Jika pengguna menanyakan target, progres, atau hal operasional, berikan jawaban yang SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown (tabel ringkas, bullet points, teks tebal). Jangan pernah bertele-tele.'
+                    customInstructions: 'Anda adalah asisten eksekutif cerdas untuk Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA: 1) Jika pengguna menyapa (seperti "Halo", "Hai", "Pagi"), balas dengan sangat ramah, singkat, dan natural (misal: "Halo Tuan Mipra, ada yang bisa saya bantu?"). 2) Jika pengguna menanyakan target, progres, atau hal operasional, berikan jawaban yang SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown (tabel ringkas, bullet points, teks tebal).'
                 },
 
                 get totalCompletedPages() {
@@ -555,7 +555,7 @@
                 },
 
                 get renderedAIResponse() {
-                    return marked.parse(this.typedText || '');
+                    return marked.parse(this.typedText || 'Sistem siap melayani, Tuan Mipra.');
                 },
 
                 get filteredStructuredTasks() {
@@ -842,7 +842,6 @@
                     this.loadingAI = true;
 
                     let currentDayTasks = JSON.stringify(this.filteredStructuredTasks);
-                    let tahfizProgressSummary = JSON.stringify(this.tahfizData);
                     let fullSystemInstruction = `${this.profile.customInstructions}
 [PROFIL PENGGUNA] Nama: ${this.profile.namaLengkap} (${this.profile.panggilan})
 [HARI INI] ${this.currentDayName}, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -866,6 +865,8 @@ PERTANYAAN/PESAN DARI TUAN ${this.profile.panggilan}: ${prompt}`;
                             let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah sedang diproses, Tuan.";
                             this.startTypingEffect(reply);
                             await this.saveChatToSupabase('ai', reply);
+                        } else {
+                            this.startTypingEffect("Gagal terhubung ke server API Gemini. Periksa kembali kunci API Anda.");
                         }
                     } catch (e) {
                         this.startTypingEffect("Gangguan koneksi terdeteksi pada server pusat.");
