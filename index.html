@@ -156,6 +156,41 @@
     <!-- MAIN WORKSPACE CONTAINER -->
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
+        <!-- ======================================================= -->
+        <!-- PANEL BARU: JAM & CEKLIST TARGET HAFALAN QURAN -->
+        <!-- ======================================================= -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            
+            <!-- Kotak Jam Analog / Digital Estetik -->
+            <div class="macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col items-center justify-center text-center relative overflow-hidden h-full min-h-[120px]">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-indigo-500/5 pointer-events-none"></div>
+                <div class="text-3xl mb-1">⏰</div>
+                <span class="text-xl font-extrabold tracking-wider text-slate-100" x-text="currentDateTime"></span>
+                <span class="text-[10px] uppercase font-semibold text-blue-400 tracking-widest mt-0.5" x-text="currentDayName + ', ' + currentDayNum + ' ' + currentMonthName"></span>
+            </div>
+
+            <!-- Kotak Target Hafalan Quran (Min - Sab) -->
+            <div class="macos-glass-dark rounded-[24px] p-5 shadow-xl md:col-span-3 flex flex-col justify-center relative overflow-hidden">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">📖 Target Hafalan Quran</h3>
+                    <span class="text-[10px] opacity-70 font-medium">Klik bulatan untuk mencentang</span>
+                </div>
+                
+                <div class="grid grid-cols-7 gap-2 sm:gap-4 text-center">
+                    <template x-for="day in quranDays" :key="day.code">
+                        <div class="flex flex-col items-center gap-1.5 cursor-pointer group" @click="toggleQuranCheck(day.code)">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-md border"
+                                 :class="day.isChecked ? 'bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/30 scale-105' : 'macos-glass-subtle-dark text-slate-400 border-white/10 group-hover:border-white/30'">
+                                <span class="text-lg font-bold" x-text="day.isChecked ? '✓' : ''"></span>
+                            </div>
+                            <span class="text-[11px] font-semibold transition-colors" :class="day.isChecked ? 'text-emerald-400' : 'text-slate-300'" x-text="day.label"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+        </div>
+
         <!-- PANEL AI UTAMA -->
         <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
             <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
@@ -630,7 +665,7 @@
         </div>
     </div>
 
-    <!-- Script Utama (AI Serba Tahu & Terintegrasi Penuh ke Database) -->
+    <!-- Script Utama (Terintegrasi Jam, Ceklis Hafalan Quran, & AI Serba Tahu) -->
     <script>
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
@@ -665,6 +700,17 @@
                 isUnlocked: false,          
                 showApiKeyModal: false,
                 tempApiKey: '',
+
+                // State Ceklis Hafalan Quran Harian
+                quranDays: [
+                    { code: 'Min', label: 'Min', isChecked: false },
+                    { code: 'Sen', label: 'Sen', isChecked: false },
+                    { code: 'Sel', label: 'Sel', isChecked: false },
+                    { code: 'Rab', label: 'Rab', isChecked: false },
+                    { code: 'Kam', label: 'Kam', isChecked: false },
+                    { code: 'Jum', label: 'Jum', isChecked: false },
+                    { code: 'Sab', label: 'Sab', isChecked: false },
+                ],
 
                 finance: {
                     accounts: [],
@@ -843,6 +889,7 @@
                             if (!this.userProfilePic) this.userProfilePic = googleUserAvatarUrl;
                         }
                         await this.loadConfigAndData();
+                        await this.loadQuranChecklists();
                         await this.loadAllChatHistory();
                         await this.loadDynamicMemories();
                         await this.finance.initData();
@@ -869,6 +916,7 @@
                                 if (!this.userProfilePic) this.userProfilePic = googleUserAvatarUrl;
                             }
                             await this.loadConfigAndData();
+                            await this.loadQuranChecklists();
                             await this.loadAllChatHistory();
                             await this.loadDynamicMemories();
                             await this.finance.initData();
@@ -894,6 +942,28 @@
                     this.currentDayNum = now.getDate();
                     this.currentDayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
                     this.currentMonthName = now.toLocaleDateString('id-ID', { month: 'long' });
+                },
+
+                async loadQuranChecklists() {
+                    const { data } = await _supabase.from('quran_checklists').select('*');
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const found = this.quranDays.find(d => d.code === item.day_code);
+                            if (found) found.isChecked = item.is_checked;
+                        });
+                    }
+                },
+
+                async toggleQuranCheck(code) {
+                    const target = this.quranDays.find(d => d.code === code);
+                    if (!target) return;
+                    target.isChecked = !target.isChecked;
+
+                    // Simpan ke database Supabase
+                    await _supabase.from('quran_checklists').upsert({
+                        day_code: target.code,
+                        is_checked: target.isChecked
+                    }, { onConflict: 'day_code' });
                 },
 
                 async saveApiKey() {
@@ -1151,9 +1221,9 @@
                     await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
 
-                    // Ambil rangkuman data keuangan, akun, dan riwayat langsung dari database secara real-time untuk AI
                     let dbAccountsSummary = JSON.stringify(this.finance.accounts);
-                    let dbTransactionsSummary = JSON.stringify(this.finance.transactions.slice(0, 10)); // 10 transaksi terbaru
+                    let dbTransactionsSummary = JSON.stringify(this.finance.transactions.slice(0, 10));
+                    let quranStatusSummary = JSON.stringify(this.quranDays);
 
                     let fullSystemInstruction = `${this.profile.customInstructions}
 
@@ -1165,6 +1235,7 @@
 - Total Saldo Akun: ${this.finance.totalBalance}
 - Daftar Akun & Saldo: ${dbAccountsSummary}
 - Riwayat Transaksi Terakhir: ${dbTransactionsSummary}
+- Status Ceklis Target Hafalan Quran: ${quranStatusSummary}
 - Waktu Sistem: Rabu, 9 September 2026
 
 Instruksi Tuan ${this.profile.panggilan}: ${prompt}`;
