@@ -93,7 +93,7 @@
         <div class="absolute inset-0 backdrop-blur-[4px]"></div>
     </div>
 
-    <!-- LOCKSCREEN PASSCODE ALA iOS (Dukung Keyboard) -->
+    <!-- LOCKSCREEN PASSCODE ALA iOS (Dengan Fitur Penalti 60 Detik jika Salah 4 Kali) -->
     <div x-show="!isUnlocked" class="fixed inset-0 bg-slate-950/92 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm macos-glass-dark rounded-[36px] p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center border border-white/10 relative">
             <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl mb-4 shadow-inner">
@@ -101,7 +101,15 @@
             </div>
             <h2 class="text-base sm:text-lg font-semibold mb-1 tracking-tight text-slate-100">Enter Passcode</h2>
             <p class="text-[10px] text-slate-400 mb-2">Gunakan klik layar atau ketik langsung via keyboard laptop</p>
-            <p class="text-xs text-red-400 mb-3 h-4 font-medium" x-text="passcodeError"></p>
+            
+            <template x-if="lockoutTime > 0">
+                <div class="w-full bg-red-500/20 border border-red-500/40 rounded-xl p-2.5 mb-3 text-red-300 text-xs font-semibold">
+                    Terlalu banyak percobaan salah.<br>Silakan tunggu <span class="font-bold underline" x-text="lockoutTime"></span> detik.
+                </div>
+            </template>
+            <template x-if="lockoutTime === 0">
+                <p class="text-xs text-red-400 mb-3 h-4 font-medium" x-text="passcodeError"></p>
+            </template>
 
             <div class="flex gap-3 mb-8">
                 <template x-for="i in 6" :key="i">
@@ -112,16 +120,16 @@
 
             <div class="grid grid-cols-3 gap-3.5 w-full max-w-[260px] mb-6">
                 <template x-for="num in [{n:'1',sub:''},{n:'2',sub:'ABC'},{n:'3',sub:'DEF'},{n:'4',sub:'GHI'},{n:'5',sub:'JKL'},{n:'6',sub:'MNO'},{n:'7',sub:'PQRS'},{n:'8',sub:'TUV'},{n:'9',sub:'WXYZ'}]">
-                    <button @click="pressPasscode(num.n)" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md">
+                    <button @click="pressPasscode(num.n)" :disabled="lockoutTime > 0" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md disabled:opacity-30 disabled:cursor-not-allowed">
                         <span class="text-xl font-medium text-slate-100" x-text="num.n"></span>
                         <span class="text-[8px] tracking-widest opacity-60 font-semibold" x-text="num.sub"></span>
                     </button>
                 </template>
                 <div></div>
-                <button @click="pressPasscode('0')" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md">
+                <button @click="pressPasscode('0')" :disabled="lockoutTime > 0" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md disabled:opacity-30 disabled:cursor-not-allowed">
                     <span class="text-xl font-medium text-slate-100">0</span>
                 </button>
-                <button @click="deletePasscode()" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex items-center justify-center text-xs font-semibold opacity-80 hover:opacity-100 transition cursor-pointer">
+                <button @click="deletePasscode()" :disabled="lockoutTime > 0" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex items-center justify-center text-xs font-semibold opacity-80 hover:opacity-100 transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
                     ⌫
                 </button>
             </div>
@@ -210,48 +218,7 @@
     <!-- MAIN WORKSPACE CONTAINER -->
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
-        <!-- PANEL AI UTAMA DENGAN EFEK MENGETIK & RENDERING MARKDOWN STABIL -->
-        <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
-            
-            <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
-                <!-- Output AI Dirender secara Stabil Menggunakan Marked.js -->
-                <div class="ai-markdown-output text-sm sm:text-base text-slate-100 overflow-x-auto leading-relaxed" x-html="renderedAIResponse"></div>
-                <span class="animate-pulse font-bold text-blue-400 text-lg absolute bottom-4 right-6" x-show="isTyping">|</span>
-            </div>
-
-            <!-- Input Pencarian / Perintah -->
-            <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
-                <label class="macos-glass-dark p-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-md hover:scale-105 active:scale-95" 
-                       title="Unggah Berkas Visual">
-                    <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
-                    <svg class="w-5 h-5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
-                </label>
-
-                <div class="flex-1 relative flex items-center">
-                    <span class="absolute left-4 text-lg opacity-50">🔍</span>
-                    <input 
-                        type="text" 
-                        x-ref="searchInput"
-                        x-model="userQuery" 
-                        :disabled="loadingAI"
-                        placeholder="Ketik perintah atau tanyakan sesuatu pada Spotlight AI..." 
-                        class="w-full macos-glass-dark focus:border-blue-500 focus:outline-none pl-12 pr-5 py-3.5 rounded-2xl text-sm shadow-inner disabled:opacity-50 transition-all backdrop-blur-2xl font-medium text-slate-100 placeholder-slate-400"
-                    >
-                </div>
-
-                <button 
-                    type="submit" 
-                    :disabled="loadingAI"
-                    class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-xs font-semibold transition shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95"
-                >
-                    <span>Kirim</span>
-                </button>
-            </form>
-            <p class="text-[10px] px-2 opacity-75 font-medium text-slate-300" x-show="attachedImage">📎 Berkas gambar terlampir untuk analisis sistem.</p>
-        </div>
-
-        <!-- COUNTDOWN & CHECKLIST HAFALAN QURAN (2 TAHUN 20 JUZ) -->
+        <!-- 1. COUNTDOWN & CHECKLIST HAFALAN QURAN (DI BAGIAN ATAS) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
             
             <!-- Widget Countdown -->
@@ -313,6 +280,47 @@
                 </div>
             </div>
 
+        </div>
+
+        <!-- 2. PANEL AI UTAMA (DIPINDAHKAN KE BAGIAN BAWAH) -->
+        <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
+            
+            <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
+                <!-- Output AI Dirender secara Stabil Menggunakan Marked.js -->
+                <div class="ai-markdown-output text-sm sm:text-base text-slate-100 overflow-x-auto leading-relaxed" x-html="renderedAIResponse"></div>
+                <span class="animate-pulse font-bold text-blue-400 text-lg absolute bottom-4 right-6" x-show="isTyping">|</span>
+            </div>
+
+            <!-- Input Pencarian / Perintah -->
+            <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
+                <label class="macos-glass-dark p-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-md hover:scale-105 active:scale-95" 
+                       title="Unggah Berkas Visual">
+                    <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
+                    <svg class="w-5 h-5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
+                </label>
+
+                <div class="flex-1 relative flex items-center">
+                    <span class="absolute left-4 text-lg opacity-50">🔍</span>
+                    <input 
+                        type="text" 
+                        x-ref="searchInput"
+                        x-model="userQuery" 
+                        :disabled="loadingAI"
+                        placeholder="Ketik perintah atau tanyakan sesuatu pada Spotlight AI..." 
+                        class="w-full macos-glass-dark focus:border-blue-500 focus:outline-none pl-12 pr-5 py-3.5 rounded-2xl text-sm shadow-inner disabled:opacity-50 transition-all backdrop-blur-2xl font-medium text-slate-100 placeholder-slate-400"
+                    >
+                </div>
+
+                <button 
+                    type="submit" 
+                    :disabled="loadingAI"
+                    class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-xs font-semibold transition shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95"
+                >
+                    <span>Kirim</span>
+                </button>
+            </form>
+            <p class="text-[10px] px-2 opacity-75 font-medium text-slate-300" x-show="attachedImage">📎 Berkas gambar terlampir untuk analisis sistem.</p>
         </div>
 
     </main>
@@ -475,6 +483,7 @@
 
         let cachedApiKey = '';
         let activeTypingInterval = null;
+        let lockoutInterval = null;
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('macosApp', () => ({
@@ -499,6 +508,8 @@
                 passcode: '',
                 passcodeError: '',
                 correctPasscodeHash: '123456',
+                failedAttempts: 0,
+                lockoutTime: 0,
 
                 countdown: { days: '00' },
                 showTahfizModal: false,
@@ -594,7 +605,7 @@
                 },
 
                 handleGlobalKeydown(event) {
-                    if (this.isUnlocked) return;
+                    if (this.isUnlocked || this.lockoutTime > 0) return;
                     if (/^[0-9]$/.test(event.key)) {
                         event.preventDefault();
                         this.pressPasscode(event.key);
@@ -605,6 +616,7 @@
                 },
 
                 pressPasscode(num) {
+                    if (this.lockoutTime > 0) return;
                     if (this.passcode.length < 6) {
                         this.passcode += num;
                         this.passcodeError = '';
@@ -615,6 +627,7 @@
                 },
 
                 deletePasscode() {
+                    if (this.lockoutTime > 0) return;
                     if (this.passcode.length > 0) {
                         this.passcode = this.passcode.slice(0, -1);
                         this.passcodeError = '';
@@ -624,14 +637,29 @@
                 async verifyPasscode() {
                     if (this.passcode === this.correctPasscodeHash) {
                         this.isUnlocked = true;
+                        this.failedAttempts = 0;
                         if (!cachedApiKey) {
                             this.showApiKeyModal = true;
                         } else {
                             this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, sistem siap melayani. Ada yang bisa saya bantu?`);
                         }
                     } else {
-                        this.passcodeError = 'Passcode salah. Silakan coba lagi.';
-                        setTimeout(() => { this.passcode = ''; }, 400);
+                        this.failedAttempts++;
+                        if (this.failedAttempts >= 4) {
+                            this.lockoutTime = 60;
+                            this.passcode = '';
+                            if (lockoutInterval) clearInterval(lockoutInterval);
+                            lockoutInterval = setInterval(() => {
+                                this.lockoutTime--;
+                                if (this.lockoutTime <= 0) {
+                                    clearInterval(lockoutInterval);
+                                    this.failedAttempts = 0;
+                                }
+                            }, 1000);
+                        } else {
+                            this.passcodeError = `Passcode salah (${this.failedAttempts}/4 percobaan).`;
+                            setTimeout(() => { this.passcode = ''; }, 400);
+                        }
                     }
                 },
 
@@ -796,6 +824,8 @@
                 logout() {
                     this.isUnlocked = false;
                     this.passcode = '';
+                    this.failedAttempts = 0;
+                    this.lockoutTime = 0;
                 },
 
                 async loadConfigAndData() {
