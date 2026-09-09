@@ -74,19 +74,15 @@
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
     </div>
 
-    <!-- LOCKSCREEN PASSCODE ALA iOS (RESPONSIF LAPTOP & PONSEL) -->
+    <!-- LOCKSCREEN PASSCODE ALA iOS -->
     <div x-show="!isUnlocked" class="fixed inset-0 bg-slate-950/92 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm macos-glass-dark rounded-[36px] p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center border border-white/10 relative">
-            
-            <!-- Ikon / Indikator Gembok -->
             <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl mb-4 shadow-inner">
                 🔒
             </div>
-
             <h2 class="text-base sm:text-lg font-semibold mb-2 tracking-tight text-slate-100">Enter Passcode</h2>
             <p class="text-xs text-red-400 mb-4 h-4 font-medium" x-text="passcodeError"></p>
 
-            <!-- Indikator Lingkaran Passcode (6 Digit) -->
             <div class="flex gap-3 mb-8">
                 <template x-for="i in 6" :key="i">
                     <div class="w-3.5 h-3.5 rounded-full transition-all duration-200 border border-white/40"
@@ -94,31 +90,24 @@
                 </template>
             </div>
 
-            <!-- Keypad Angka ala iOS -->
             <div class="grid grid-cols-3 gap-3.5 w-full max-w-[260px] mb-6">
-                <!-- Tombol 1 - 9 -->
                 <template x-for="num in [{n:'1',sub:''},{n:'2',sub:'ABC'},{n:'3',sub:'DEF'},{n:'4',sub:'GHI'},{n:'5',sub:'JKL'},{n:'6',sub:'MNO'},{n:'7',sub:'PQRS'},{n:'8',sub:'TUV'},{n:'9',sub:'WXYZ'}]">
                     <button @click="pressPasscode(num.n)" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md">
                         <span class="text-xl font-medium text-slate-100" x-text="num.n"></span>
                         <span class="text-[8px] tracking-widest opacity-60 font-semibold" x-text="num.sub"></span>
                     </button>
                 </template>
-
-                <!-- Tombol Kosong / Spacer -->
                 <div></div>
-                <!-- Tombol 0 -->
                 <button @click="pressPasscode('0')" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md">
                     <span class="text-xl font-medium text-slate-100">0</span>
                 </button>
-                <!-- Tombol Hapus (Delete) -->
                 <button @click="deletePasscode()" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex items-center justify-center text-xs font-semibold opacity-80 hover:opacity-100 transition cursor-pointer">
                     ⌫
                 </button>
             </div>
 
-            <!-- Tombol Bawah: Emergency & Cancel -->
             <div class="w-full flex justify-between px-4 text-xs opacity-60 font-medium">
-                <button @click="alert('Mode Darurat / Kontak Administrator')" class="hover:opacity-150 transition cursor-pointer">Emergency</button>
+                <button @click="alert('Mode Darurat / Kontak Administrator')" class="hover:opacity-100 transition cursor-pointer">Emergency</button>
                 <button @click="passcode = ''" class="hover:opacity-100 transition cursor-pointer">Cancel</button>
             </div>
         </div>
@@ -150,7 +139,6 @@
                 <span class="font-bold text-slate-100" x-text="currentDateTime"></span>
             </div>
 
-            <!-- BILAH MENU PROFIL -->
             <div class="relative" x-data="{ profileOpen: false }">
                 <button @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1.5 pr-3 rounded-2xl transition hover:bg-white/10 macos-glass-subtle-dark">
                     <div class="w-8 h-8 rounded-full overflow-hidden shadow-md relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-blue-600 to-indigo-600 border border-white/20">
@@ -191,7 +179,6 @@
         <!-- JAM ANALOG & COUNTDOWN TARGET 2 TAHUN -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
             
-            <!-- Kolom Jam Analog & Tanggal Masehi/Hijriah -->
             <div class="lg:col-span-4 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col items-center justify-between text-center relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-blue-500/5 pointer-events-none"></div>
                 
@@ -219,7 +206,6 @@
                 </div>
             </div>
 
-            <!-- Panel Baru: Countdown Target 2 Tahun & Progress Hafalan -->
             <div class="lg:col-span-8 macos-glass-dark rounded-[24px] p-6 shadow-xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-slate-950">
                 <div class="flex justify-between items-center mb-3">
                     <div>
@@ -231,7 +217,6 @@
                     </button>
                 </div>
 
-                <!-- Font Angka Countdown Besar -->
                 <div class="grid grid-cols-4 gap-2 text-center my-2">
                     <div class="macos-glass-subtle-dark rounded-2xl p-3 border border-white/10">
                         <span class="text-3xl sm:text-4xl font-black text-emerald-400 tabular-nums" x-text="countdown.days">00</span>
@@ -251,7 +236,6 @@
                     </div>
                 </div>
 
-                <!-- Informasi Progres Hafalan Saat Ini -->
                 <div class="pt-3 border-t border-white/10 flex flex-col gap-1.5">
                     <div class="flex justify-between items-center text-xs">
                         <span class="font-semibold text-slate-300">Progres Keseluruhan Target 20 Juz:</span>
@@ -264,10 +248,9 @@
             </div>
         </div>
 
-        <!-- CHECKLIST HAFALAN QURAN & STRATEGI -->
+        <!-- CHECKLIST HAFALAN QURAN & STRATEGI TERSTRUKTUR 2 TAHUN -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
             
-            <!-- Panel Kiri: Strategi & Target Harian Terstruktur -->
             <div class="lg:col-span-4 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col justify-between">
                 <div>
                     <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
@@ -276,33 +259,29 @@
                     <div class="space-y-2.5 text-xs text-slate-200">
                         <div class="macos-glass-subtle-dark rounded-xl p-3 border border-white/5">
                             <span class="font-bold text-emerald-400 block mb-1">📖 Ziyadah Baru (Senin - Jumat)</span>
-                            <p class="opacity-80 leading-relaxed">Target: <strong>4 baris per hari</strong> (~setengah halaman). Genap 4 halaman dalam sepekan.</p>
+                            <p class="opacity-80 leading-relaxed">Target: <strong>4 baris per hari</strong> (~setengah halaman). Terstruktur tetap selama 2 tahun.</p>
                         </div>
                         <div class="macos-glass-subtle-dark rounded-xl p-3 border border-white/5">
                             <span class="font-bold text-blue-400 block mb-1">🔄 Pemulihan 5 Juz Lama</span>
-                            <p class="opacity-80 leading-relaxed">Fokus restorasi Juz 1-3 & 29-30 menggunakan metode Tikrar (1 halaman/sesi).</p>
+                            <p class="opacity-80 leading-relaxed">Fokus restorasi Juz 1-3 & 29-30 menggunakan metode Tikrar rutin.</p>
                         </div>
                         <div class="macos-glass-subtle-dark rounded-xl p-3 border border-white/5">
                             <span class="font-bold text-purple-400 block mb-1">🛡️ Murojaah Kubro (Sabtu - Minggu)</span>
-                            <p class="opacity-80 leading-relaxed">Pengulangan total hafalan sepekan dan penguatan sambung ayat tanpa ziyadah baru.</p>
+                            <p class="opacity-80 leading-relaxed">Pengulangan total hafalan sepekan tanpa ziyadah baru di akhir pekan.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Panel Kanan: Checklist Interaktif Berdasarkan Hari -->
+            <!-- Panel Kanan: Checklist Berdasarkan Hari (Terstruktur Tetap) -->
             <div class="lg:col-span-8 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col justify-between relative overflow-hidden">
                 <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
                     <div class="flex items-center gap-2">
                         <span class="text-base">📖</span>
                         <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">Executive Quran Memorization Checklist Hub</h3>
                     </div>
-                    <button @click="showTaskModal = true" class="bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/35 px-3 py-1.5 rounded-xl text-[10px] font-bold transition cursor-pointer flex items-center gap-1 shadow-md">
-                        <span>+ Tambah Target Hafalan</span>
-                    </button>
                 </div>
 
-                <!-- Navigasi Tombol Hari Dinamis -->
                 <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
                     <template x-for="tab in dynamicTaskTabs" :key="tab.key">
                         <button @click="activeTaskTab = tab.key"
@@ -313,34 +292,29 @@
                     </template>
                 </div>
 
-                <!-- Daftar Checklist Hafalan Sesuai Tab Hari Aktif -->
                 <div class="space-y-2 max-h-[180px] overflow-y-auto pr-1">
-                    <template x-for="task in filteredTasks" :key="task.id">
-                        <div class="flex justify-between items-center p-2.5 rounded-xl macos-glass-subtle-dark hover:bg-white/5 transition-colors border border-white/5">
+                    <template x-for="task in filteredStructuredTasks" :key="task.id">
+                        <div class="flex justify-between items-center p-3 rounded-xl macos-glass-subtle-dark hover:bg-white/5 transition-colors border border-white/5">
                             <div class="flex items-center gap-3">
-                                <input type="checkbox" :checked="task.is_completed" @change="toggleTaskCompletion(task.id)" class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                                <input type="checkbox" :checked="task.is_completed" @change="toggleStructuredTask(task.id)" class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
                                 <div>
-                                    <p class="text-xs font-semibold" :class="task.is_completed ? 'line-through opacity-50 text-slate-400' : 'text-slate-100'" x-text="task.task_title"></p>
-                                    <p class="text-[9px] opacity-60" x-text="'Jadwal: ' + task.schedule_category + ' (' + task.task_date + ')'"></p>
+                                    <p class="text-xs font-semibold" :class="task.is_completed ? 'line-through opacity-50 text-slate-400' : 'text-slate-100'" x-text="task.title"></p>
+                                    <p class="text-[9px] opacity-60" x-text="'Jadwal Tetap 2 Tahun: ' + task.categoryName"></p>
                                 </div>
                             </div>
-                            <button @click="deleteTask(task.id)" class="text-red-400 hover:text-red-500 text-xs px-2 py-1">🗑️</button>
+                            <span class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold">Tetap</span>
                         </div>
-                    </template>
-
-                    <template x-if="filteredTasks.length === 0">
-                        <p class="text-xs text-center py-8 opacity-60 font-medium">Belum ada target hafalan terjadwal pada hari ini.</p>
                     </template>
                 </div>
 
                 <div class="mt-3 pt-2 border-t border-white/10 flex justify-between items-center">
-                    <span class="text-[10px] opacity-75">Target 20 Juz & Pemulihan aktif di database.</span>
+                    <span class="text-[10px] opacity-75">Sistem Kurikulum Hafalan 20 Juz Terstruktur (2 Tahun).</span>
                     <button @click="showTahfizModal = true" class="text-[10px] text-emerald-400 hover:underline font-bold cursor-pointer">Buka Panel Tahfiz 20 Juz &rarr;</button>
                 </div>
             </div>
         </div>
 
-        <!-- SPOTLIGHT AI UTAMA (Tanpa AI Vision) -->
+        <!-- SPOTLIGHT AI UTAMA -->
         <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
             <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
                 <p class="text-lg sm:text-2xl font-bold text-center leading-relaxed tracking-wide text-slate-100">
@@ -367,36 +341,8 @@
         Personal Assistant &bull; Mipratul Muslim &copy; 2026
     </footer>
 
-    <!-- MODAL 1: TAMBAH TARGET HAFALAN BARU -->
-    <div x-show="showTaskModal" style="display: none;" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-55">
-        <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-sm shadow-2xl relative border border-white/15">
-            <button @click="showTaskModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-sm">✕</button>
-            <h3 class="font-bold text-sm text-emerald-400 mb-4">➕ Tambah Target Hafalan Baru</h3>
-            
-            <form @submit.prevent="saveNewTask()" class="space-y-3">
-                <div>
-                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Keterangan Hafalan (Ziyadah/Murojaah)</label>
-                    <input type="text" x-model="newTask.title" placeholder="Contoh: Ziyadah Juz 4 (4 baris)" required class="w-full macos-glass-subtle-dark rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-100 font-medium">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Kategori Hari</label>
-                    <select x-model="newTask.scheduleCategory" class="w-full macos-glass-subtle-dark rounded-xl px-3 py-2 text-xs focus:outline-none text-slate-100 font-medium">
-                        <template x-for="tab in dynamicTaskTabs" :key="tab.key">
-                            <option :value="tab.key" x-text="tab.label"></option>
-                        </template>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Tanggal Pelaksanaan</label>
-                    <input type="date" x-model="newTask.date" required class="w-full macos-glass-subtle-dark rounded-xl px-3 py-2 text-xs text-slate-100 font-medium">
-                </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-bold transition shadow-lg mt-2">Simpan Target</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: PANEL TAHFIZ & HAFALAN QURAN -->
-    <div x-show="showTahfizModal" style="display: none;" class="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-6 z-50" @keydown.escape.window="showTahfizModal = false">
+    <!-- MODAL 2: PANEL TAHFIZ & HAFALAN QURAN (Z-INDEX TINGGI AGAR DI DEPAN) -->
+    <div x-show="showTahfizModal" style="display: none;" class="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-6 z-[100]" @keydown.escape.window="showTahfizModal = false">
         <div class="macos-glass-dark rounded-[32px] w-full max-w-4xl h-[90vh] shadow-2xl flex flex-col overflow-hidden relative border border-white/15">
             <div class="px-6 py-4 flex justify-between items-center border-b border-white/10 bg-white/5">
                 <div class="flex items-center gap-3">
@@ -469,7 +415,7 @@
     </div>
 
     <!-- MODAL RIWAYAT CHAT -->
-    <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
         <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center mb-3 pb-3 border-b border-white/10">
                 <div class="flex items-center gap-2">
@@ -505,7 +451,7 @@
     </div>
 
     <!-- MODAL PENGATURAN PROFIL -->
-    <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
         <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
                 <h3 class="font-semibold text-sm text-blue-400">👤 Data Administrator</h3>
@@ -526,7 +472,7 @@
     </div>
 
     <!-- MODAL KONFIGURASI AI -->
-    <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
         <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-md shadow-2xl">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
                 <h3 class="font-semibold text-sm text-blue-400">🧠 Konfigurasi Persona Formal</h3>
@@ -573,24 +519,46 @@
                 tempApiKey: '',
                 passcode: '',
                 passcodeError: '',
-                correctPasscodeHash: '123456', // Passcode default yang diverifikasi dari database
+                correctPasscodeHash: '123456',
 
                 countdown: { days: '00', hours: '00', minutes: '00', seconds: '00' },
-
-                showTaskModal: false,
-                activeTaskTab: 'hari_ini',
-                dynamicTaskTabs: [],
-                tasksList: [],
-                newTask: {
-                    title: '',
-                    scheduleCategory: 'hari_ini',
-                    date: new Date().toISOString().split('T')[0]
-                },
 
                 showTahfizModal: false,
                 tahfizTab: 'strategy',
                 tahfizData: {},
                 allChatHistory: [],
+
+                // Kurikulum & Target Terstruktur Tetap 2 Tahun Berdasarkan Hari
+                activeTaskTab: 'hari_ini',
+                dynamicTaskTabs: [],
+                structuredTasks: {
+                    'senin': [
+                        { id: 's1', title: 'Ziyadah Baru: 4 Baris Juz Aktif', categoryName: 'Ziyadah Senin', is_completed: false },
+                        { id: 's2', title: 'Murojaah Restorasi Juz 1 (1 Halaman)', categoryName: 'Pemulihan Juz 1', is_completed: false }
+                    ],
+                    'selasa': [
+                        { id: 'se1', title: 'Ziyadah Baru: 4 Baris Juz Aktif', categoryName: 'Ziyadah Selasa', is_completed: false },
+                        { id: 'se2', title: 'Murojaah Restorasi Juz 2 (1 Halaman)', categoryName: 'Pemulihan Juz 2', is_completed: false }
+                    ],
+                    'rabu': [
+                        { id: 'r1', title: 'Ziyadah Baru: 4 Baris Juz Aktif', categoryName: 'Ziyadah Rabu', is_completed: false },
+                        { id: 'r2', title: 'Murojaah Restorasi Juz 3 (1 Halaman)', categoryName: 'Pemulihan Juz 3', is_completed: false }
+                    ],
+                    'kamis': [
+                        { id: 'k1', title: 'Ziyadah Baru: 4 Baris Juz Aktif', categoryName: 'Ziyadah Kamis', is_completed: false },
+                        { id: 'k2', title: 'Murojaah Restorasi Juz 29 (1 Halaman)', categoryName: 'Pemulihan Juz 29', is_completed: false }
+                    ],
+                    'jumat': [
+                        { id: 'j1', title: 'Ziyadah Baru: 4 Baris Juz Aktif (Genap 1 Pekan)', categoryName: 'Ziyadah Jumat', is_completed: false },
+                        { id: 'j2', title: 'Murojaah Restorasi Juz 30 (1 Halaman)', categoryName: 'Pemulihan Juz 30', is_completed: false }
+                    ],
+                    'sabtu': [
+                        { id: 'sa1', title: 'Murojaah Kubro: Pengulangan Total Hafalan Sepekan', categoryName: 'Murojaah Akhir Pekan', is_completed: false }
+                    ],
+                    'minggu': [
+                        { id: 'm1', title: 'Murojaah Kubro: Penguatan Sambung Ayat & Evaluasi', categoryName: 'Murojaah Akhir Pekan', is_completed: false }
+                    ]
+                },
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
@@ -610,8 +578,16 @@
                     return Math.min(Math.round((this.totalCompletedPages / 400) * 100), 100);
                 },
 
-                get filteredTasks() {
-                    return this.tasksList.filter(t => t.schedule_category === this.activeTaskTab);
+                get filteredStructuredTasks() {
+                    let key = this.activeTaskTab;
+                    if (key === 'hari_ini') {
+                        const daysOrder = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+                        key = daysOrder[new Date().getDay()];
+                    } else if (key === 'besok') {
+                        const daysOrder = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+                        key = daysOrder[(new Date().getDay() + 1) % 7];
+                    }
+                    return this.structuredTasks[key] || [];
                 },
 
                 async init() {
@@ -625,7 +601,6 @@
 
                     await this.loadPasscodeFromSupabase();
                     await this.loadConfigAndData();
-                    await this.loadTasksFromDB();
                     await this.loadTahfizProgressFromDB();
                     await this.loadAllChatHistory();
                 },
@@ -735,50 +710,18 @@
                     }
                 },
 
-                async loadTasksFromDB() {
-                    const { data } = await _supabase.from('executive_tasks').select('*').order('task_date', { ascending: true });
-                    if (data && data.length > 0) {
-                        this.tasksList = data;
-                    } else {
-                        this.tasksList = [
-                            { id: 1, task_title: 'Ziyadah Juz 4 (4 baris)', schedule_category: 'hari_ini', task_date: new Date().toISOString().split('T')[0], is_completed: false },
-                            { id: 2, task_title: 'Murojaah Juz 1 & Juz 29', schedule_category: 'hari_ini', task_date: new Date().toISOString().split('T')[0], is_completed: true }
-                        ];
+                toggleStructuredTask(id) {
+                    let key = this.activeTaskTab;
+                    if (key === 'hari_ini') {
+                        const daysOrder = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+                        key = daysOrder[new Date().getDay()];
+                    } else if (key === 'besok') {
+                        const daysOrder = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+                        key = daysOrder[(new Date().getDay() + 1) % 7];
                     }
-                },
-
-                async saveNewTask() {
-                    if (!this.newTask.title.trim()) return;
-                    const payload = {
-                        task_title: this.newTask.title,
-                        schedule_category: this.newTask.scheduleCategory,
-                        task_date: this.newTask.date,
-                        is_completed: false
-                    };
-                    const { data, error } = await _supabase.from('executive_tasks').insert([payload]).select();
-                    if (!error && data) {
-                        this.tasksList.push(data[0]);
-                        this.newTask.title = '';
-                        this.showTaskModal = false;
-                    } else {
-                        payload.id = Date.now();
-                        this.tasksList.push(payload);
-                        this.newTask.title = '';
-                        this.showTaskModal = false;
-                    }
-                },
-
-                async toggleTaskCompletion(id) {
-                    const task = this.tasksList.find(t => t.id === id);
-                    if (!task) return;
-                    task.is_completed = !task.is_completed;
-                    await _supabase.from('executive_tasks').update({ is_completed: task.is_completed }).eq('id', id);
-                },
-
-                async deleteTask(id) {
-                    if (confirm('Hapus target hafalan ini?')) {
-                        this.tasksList = this.tasksList.filter(t => t.id !== id);
-                        await _supabase.from('executive_tasks').delete().eq('id', id);
+                    const task = this.structuredTasks[key]?.find(t => t.id === id);
+                    if (task) {
+                        task.is_completed = !task.is_completed;
                     }
                 },
 
@@ -897,11 +840,9 @@
                     this.userQuery = '';
                     this.loadingAI = true;
 
-                    let tasksSummary = JSON.stringify(this.tasksList);
                     let tahfizProgressSummary = JSON.stringify(this.tahfizData);
                     let fullSystemInstruction = `${this.profile.customInstructions}
 [PROFIL PENGGUNA] Nama: ${this.profile.namaLengkap} (${this.profile.panggilan})
-[CHECKLIST HAFALAN QURAN AKTIF] ${tasksSummary}
 [PROGRES TAHFIZ 20 JUZ] ${tahfizProgressSummary}
 Instruksi Tuan ${this.profile.panggilan}: ${prompt}`;
 
