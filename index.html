@@ -34,23 +34,13 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .passcode-btn {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            transition: all 0.15s ease;
-        }
-        .passcode-btn:active, .passcode-btn:hover {
-            background: rgba(255, 255, 255, 0.22);
-            transform: scale(0.96);
-        }
-        /* Styling untuk Output AI yang Terstruktur & Rapi */
+        /* Styling untuk Output AI Markdown & Tabel */
         .ai-markdown-output table {
             width: 100%;
             margin-top: 0.75rem;
             margin-bottom: 0.75rem;
             border-collapse: collapse;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
         }
         .ai-markdown-output th, .ai-markdown-output td {
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -80,76 +70,42 @@
             color: #34d399;
             font-weight: 600;
         }
-        @keyframes floatCrescent {
-            0%, 100% { transform: translateY(0px) rotate(-5deg); }
-            50% { transform: translateY(-6px) rotate(2deg); }
-        }
-        .animate-crescent {
-            animation: floatCrescent 6s ease-in-out infinite;
-        }
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.2; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.2); }
-        }
-        .animate-star {
-            animation: twinkle 3s ease-in-out infinite;
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 relative overflow-x-hidden select-none" 
       x-data="macosApp()"
-      @keydown.window="handleGlobalKeydown($event)">
+      @mousemove="resetInactivityTimer()"
+      @keydown="resetInactivityTimer()">
 
-    <!-- BACKGROUND DINAMIS & ANIMASI MALAM -->
-    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-slate-950">
-        <div class="absolute inset-0 bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 opacity-90"></div>
-        <div class="absolute top-12 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-star" style="animation-delay: 0.5s;"></div>
-        <div class="absolute top-20 left-1/3 w-1 h-1 bg-blue-200 rounded-full animate-star" style="animation-delay: 1.2s;"></div>
-        <div class="absolute top-10 right-1/4 w-2 h-2 bg-yellow-100 rounded-full animate-star" style="animation-delay: 2s;"></div>
-        <div class="absolute top-28 right-1/5 w-1 h-1 bg-white rounded-full animate-star" style="animation-delay: 0.8s;"></div>
-        <div class="absolute top-8 right-16 text-4xl animate-crescent select-none filter drop-shadow-[0_0_12px_rgba(253,224,71,0.6)]">🌙</div>
-        <div class="absolute bottom-0 inset-x-0 h-48 opacity-25 bg-repeat-x bg-bottom pointer-events-none"
-             style="background-image: url('https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1500&q=80'); background-size: cover;"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+    <!-- WALLPAPER DINAMIS DARK MODE -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute inset-0 bg-cover bg-center filter brightness-50 opacity-40"
+             style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80');"></div>
+        <div class="absolute inset-0 backdrop-blur-[4px]"></div>
     </div>
 
-    <!-- LOCKSCREEN PASSCODE ALA iOS (Dukung Keyboard) -->
-    <div x-show="!isUnlocked" class="fixed inset-0 bg-slate-950/92 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-sm macos-glass-dark rounded-[36px] p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center border border-white/10 relative">
-            <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl mb-4 shadow-inner">
-                🔒
-            </div>
-            <h2 class="text-base sm:text-lg font-semibold mb-1 tracking-tight text-slate-100">Enter Passcode</h2>
-            <p class="text-[10px] text-slate-400 mb-2">Gunakan klik layar atau ketik langsung via keyboard laptop</p>
-            <p class="text-xs text-red-400 mb-3 h-4 font-medium" x-text="passcodeError"></p>
-
-            <div class="flex gap-3 mb-8">
-                <template x-for="i in 6" :key="i">
-                    <div class="w-3.5 h-3.5 rounded-full transition-all duration-200 border border-white/40"
-                         :class="passcode.length >= i ? 'bg-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'bg-transparent'"></div>
+    <!-- POP-UP LOCKSCREEN GOOGLE OAUTH -->
+    <div x-show="!isUnlocked" class="fixed inset-0 bg-black/85 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-sm macos-glass-dark rounded-[28px] p-8 shadow-2xl flex flex-col items-center text-center">
+            <div class="w-20 h-20 rounded-full overflow-hidden shadow-xl mb-4 border-2 border-white/20 flex items-center justify-center bg-gradient-to-tr from-blue-600 to-indigo-700 text-white text-2xl font-bold relative">
+                <template x-if="userProfilePic">
+                    <img :src="userProfilePic" alt="Foto Profil" class="w-full h-full object-cover">
+                </template>
+                <template x-if="!userProfilePic">
+                    <span class="text-2xl" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
                 </template>
             </div>
-
-            <div class="grid grid-cols-3 gap-3.5 w-full max-w-[260px] mb-6">
-                <template x-for="num in [{n:'1',sub:''},{n:'2',sub:'ABC'},{n:'3',sub:'DEF'},{n:'4',sub:'GHI'},{n:'5',sub:'JKL'},{n:'6',sub:'MNO'},{n:'7',sub:'PQRS'},{n:'8',sub:'TUV'},{n:'9',sub:'WXYZ'}]">
-                    <button @click="pressPasscode(num.n)" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md">
-                        <span class="text-xl font-medium text-slate-100" x-text="num.n"></span>
-                        <span class="text-[8px] tracking-widest opacity-60 font-semibold" x-text="num.sub"></span>
-                    </button>
-                </template>
-                <div></div>
-                <button @click="pressPasscode('0')" class="passcode-btn w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-md">
-                    <span class="text-xl font-medium text-slate-100">0</span>
-                </button>
-                <button @click="deletePasscode()" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full mx-auto flex items-center justify-center text-xs font-semibold opacity-80 hover:opacity-100 transition cursor-pointer">
-                    ⌫
-                </button>
-            </div>
-
-            <div class="w-full flex justify-between px-4 text-xs opacity-60 font-medium">
-                <button @click="alert('Mode Darurat / Kontak Administrator')" class="hover:opacity-100 transition cursor-pointer">Emergency</button>
-                <button @click="passcode = ''" class="hover:opacity-100 transition cursor-pointer">Cancel</button>
-            </div>
+            <h2 class="text-base font-semibold mb-1 tracking-tight">Selamat Datang di Personal Assistant</h2>
+            <p class="text-xs mb-6 opacity-75">Silakan login untuk masuk ke ruang kerja eksekutif Anda.</p>
+            <button @click="loginWithGoogle()" class="w-full bg-white/90 hover:bg-white text-slate-900 border border-white/40 py-3 rounded-xl text-xs font-medium transition cursor-pointer shadow-lg backdrop-blur-md flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Masuk dengan Google</span>
+            </button>
         </div>
     </div>
 
@@ -163,18 +119,28 @@
         </div>
     </div>
 
-    <!-- CUSTOM NAVBAR DENGAN LOGO MANAJEMEN EKSEKUTIF -->
+    <!-- Video & Canvas Tersembunyi untuk AI Vision -->
+    <div class="hidden">
+        <video id="webcamVideo" autoplay playsinline width="320" height="240"></video>
+        <canvas id="webcamCanvas" width="320" height="240"></canvas>
+    </div>
+    <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
+
+    <!-- CUSTOM NAVBAR -->
     <header class="macos-glass-dark px-6 py-3 flex justify-between items-center sticky top-0 z-40 text-xs font-medium shadow-sm">
         <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-tr from-emerald-600 via-teal-600 to-blue-600 text-white shadow-lg shadow-emerald-600/30 border border-white/20">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-inner">
+                
             </div>
             <div>
                 <h1 class="font-bold text-xs uppercase tracking-wider text-slate-100">Executive Hub</h1>
                 <p class="text-[9px] opacity-60">Command Center v3.0</p>
             </div>
+            <button @click="toggleVisionMonitoring()" 
+                    class="ml-3 px-2.5 py-1 rounded-xl text-[10px] font-semibold transition flex items-center gap-1 cursor-pointer border macos-glass-subtle-dark"
+                    :class="isVisionActive ? 'text-emerald-400 border-emerald-500/50 animate-pulse' : 'opacity-80'">
+                <span x-text="isVisionActive ? '👁️ Vision ON' : '👁️ Vision OFF'"></span>
+            </button>
         </div>
 
         <div class="flex items-center gap-5">
@@ -183,8 +149,9 @@
                 <span class="font-bold text-slate-100" x-text="currentDateTime"></span>
             </div>
 
+            <!-- Menu Profil Profesional di Kanan Atas -->
             <div class="relative" x-data="{ profileOpen: false }">
-                <button @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1.5 pr-3 rounded-2xl transition hover:bg-white/10 macos-glass-subtle-dark">
+                <button @click="profileOpen = !profileOpen" @click.away="profileOpen = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1.5 pr-3 rounded-2xl transition hover:bg-white/10 macos-glass-subtle-dark">
                     <div class="w-8 h-8 rounded-full overflow-hidden shadow-md relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-blue-600 to-indigo-600 border border-white/20">
                         <template x-if="userProfilePic">
                             <img :src="userProfilePic" alt="Profil" class="w-full h-full object-cover">
@@ -200,17 +167,26 @@
                     <svg class="w-3 h-3 opacity-60 transition-transform duration-300" :class="profileOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
 
+                <!-- Dropdown Profil Profesional -->
                 <div x-show="profileOpen" style="display: none;"
                      class="absolute right-0 top-full mt-2 w-60 macos-glass-dark rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5 space-y-1">
                     <div class="p-2.5 rounded-xl macos-glass-subtle-dark mb-1">
-                        <p class="text-[9px] uppercase tracking-wider font-semibold opacity-60">Status Akses</p>
-                        <p class="text-xs font-bold truncate text-emerald-400">Passcode Terverifikasi</p>
+                        <p class="text-[9px] uppercase tracking-wider font-semibold opacity-60">Akun Tertaut</p>
+                        <p class="text-xs font-bold truncate text-blue-400" x-text="userEmail"></p>
                     </div>
-                    <button @click="activeModal = 'dataPribadi'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">👤 Profil & Data Diri</button>
-                    <button @click="activeModal = 'wawasanAI'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">🧠 Konfigurasi Sistem</button>
-                    <button @click="openChatHistoryModal(); profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">📜 Riwayat Percakapan</button>
+                    <button @click="activeModal = 'dataPribadi'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">
+                        <span>👤</span> Profil & Data Diri
+                    </button>
+                    <button @click="activeModal = 'wawasanAI'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">
+                        <span>🧠</span> Konfigurasi Sistem
+                    </button>
+                    <button @click="openChatHistoryModal(); profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">
+                        <span>📜</span> Riwayat Percakapan
+                    </button>
                     <div class="border-t border-white/10 pt-1">
-                        <button @click="logout()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-400 transition flex items-center gap-2.5 cursor-pointer hover:bg-red-500/20">🚪 Kunci Kembali</button>
+                        <button @click="logout()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-400 transition flex items-center gap-2.5 cursor-pointer hover:bg-red-500/20">
+                            <span>🚪</span> Keluar Aplikasi
+                        </button>
                     </div>
                 </div>
             </div>
@@ -220,157 +196,119 @@
     <!-- MAIN WORKSPACE CONTAINER -->
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
-        <!-- JAM ANALOG & COUNTDOWN TARGET 2 TAHUN (HANYA HARI) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+        <!-- PANEL AI UTAMA DENGAN EFEK MENGETIK & RENDERING MARKDOWN STABIL -->
+        <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
             
-            <div class="lg:col-span-4 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col items-center justify-between text-center relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-blue-500/5 pointer-events-none"></div>
-                
-                <div class="w-full pb-2 border-b border-white/10 flex justify-between items-center text-[11px]">
-                    <span class="font-bold text-blue-400" x-text="currentHijriDate"></span>
-                    <span class="opacity-70" x-text="currentDayName"></span>
-                </div>
-
-                <div class="w-24 h-24 rounded-full border-2 border-white/30 relative flex items-center justify-center bg-slate-900/60 shadow-inner my-3">
-                    <span class="absolute top-1 text-[9px] font-bold opacity-60">12</span>
-                    <span class="absolute right-1.5 text-[9px] font-bold opacity-60">3</span>
-                    <span class="absolute bottom-1 text-[9px] font-bold opacity-60">6</span>
-                    <span class="absolute left-1.5 text-[9px] font-bold opacity-60">9</span>
-                    <div class="w-2 h-2 bg-blue-400 rounded-full z-20 shadow-md"></div>
-                    <div class="absolute w-1 bg-slate-100 rounded-full origin-bottom z-10 transition-transform duration-300"
-                         :style="'height: 24px; bottom: 50%; transform: rotate(' + analogHourDeg + 'deg)'"></div>
-                    <div class="absolute w-0.5 bg-blue-400 rounded-full origin-bottom z-10 transition-transform duration-300"
-                         :style="'height: 32px; bottom: 50%; transform: rotate(' + analogMinuteDeg + 'deg)'"></div>
-                    <div class="absolute w-[1px] bg-red-400 rounded-full origin-bottom z-10"
-                         :style="'height: 36px; bottom: 50%; transform: rotate(' + analogSecondDeg + 'deg)'"></div>
-                </div>
-
-                <div class="w-full pt-2 border-t border-white/10">
-                    <span class="text-xs font-bold text-slate-100" x-text="currentFullMasehiDate"></span>
-                </div>
+            <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
+                <!-- Output AI Dirender secara Stabil Menggunakan Marked.js -->
+                <div class="ai-markdown-output text-sm sm:text-base text-slate-100 overflow-x-auto leading-relaxed" x-html="renderedAIResponse"></div>
+                <span class="animate-pulse font-bold text-blue-400 text-lg absolute bottom-4 right-6" x-show="isTyping">|</span>
             </div>
 
-            <!-- Panel Countdown: HANYA HARI SAJA -->
-            <div class="lg:col-span-8 macos-glass-dark rounded-[24px] p-6 shadow-xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-slate-950">
+            <!-- Input Pencarian / Perintah -->
+            <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
+                <label class="macos-glass-dark p-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-md hover:scale-105 active:scale-95" 
+                       title="Unggah Berkas Visual">
+                    <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
+                    <svg class="w-5 h-5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
+                </label>
+
+                <div class="flex-1 relative flex items-center">
+                    <span class="absolute left-4 text-lg opacity-50">🔍</span>
+                    <input 
+                        type="text" 
+                        x-ref="searchInput"
+                        x-model="userQuery" 
+                        :disabled="loadingAI"
+                        placeholder="Ketik perintah atau tanyakan sesuatu pada Spotlight AI..." 
+                        class="w-full macos-glass-dark focus:border-blue-500 focus:outline-none pl-12 pr-5 py-3.5 rounded-2xl text-sm shadow-inner disabled:opacity-50 transition-all backdrop-blur-2xl font-medium text-slate-100 placeholder-slate-400"
+                    >
+                </div>
+
+                <button 
+                    type="submit" 
+                    :disabled="loadingAI"
+                    class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-xs font-semibold transition shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95"
+                >
+                    <span>Kirim</span>
+                </button>
+            </form>
+            <p class="text-[10px] px-2 opacity-75 font-medium text-slate-300" x-show="attachedImage">📎 Berkas gambar terlampir untuk analisis sistem.</p>
+        </div>
+
+        <!-- COUNTDOWN & CHECKLIST HAFALAN QURAN (2 TAHUN 20 JUZ) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            
+            <!-- Widget Countdown -->
+            <div class="lg:col-span-5 macos-glass-dark rounded-[24px] p-6 shadow-xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-slate-950">
                 <div class="flex justify-between items-center mb-3">
                     <div>
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">⏳ COUNTDOWN TARGET 2 TAHUN TAHFIZ 20 JUZ</h3>
-                        <p class="text-[10px] opacity-70">Mulai: 10 September 2026 &bull; Deadline: 10 September 2028</p>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">⏳ TARGET TAHFIZ 20 JUZ</h3>
+                        <p class="text-[10px] opacity-70">Deadline: 10 September 2028</p>
                     </div>
                     <button @click="showTahfizModal = true" class="bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/35 px-3 py-1.5 rounded-xl text-[10px] font-bold transition cursor-pointer">
-                        📊 Buka Panel Tahfiz
+                        📊 Panel Tahfiz
                     </button>
                 </div>
 
-                <div class="macos-glass-subtle-dark rounded-2xl p-5 text-center my-2 border border-white/10 flex flex-col items-center justify-center">
-                    <span class="text-5xl sm:text-6xl font-black text-emerald-400 tabular-nums tracking-tight" x-text="countdown.days">00</span>
-                    <p class="text-xs uppercase tracking-widest opacity-75 mt-1 font-semibold">HARI MENUJU TARGET 2 TAHUN</p>
+                <div class="macos-glass-subtle-dark rounded-2xl p-4 text-center my-2 border border-white/10 flex flex-col items-center justify-center">
+                    <span class="text-4xl sm:text-5xl font-black text-emerald-400 tabular-nums tracking-tight" x-text="countdown.days">00</span>
+                    <p class="text-[10px] uppercase tracking-widest opacity-75 mt-1 font-semibold">HARI MENUJU TARGET 2 TAHUN</p>
                 </div>
 
-                <div class="pt-3 border-t border-white/10 flex flex-col gap-1.5">
+                <div class="pt-2 border-t border-white/10 flex flex-col gap-1">
                     <div class="flex justify-between items-center text-xs">
-                        <span class="font-semibold text-slate-300">Progres Keseluruhan Target 20 Juz:</span>
-                        <span class="font-bold text-emerald-400" x-text="totalCompletedPages + ' / 400 Halaman (' + totalProgressPercent + '%)'"></span>
+                        <span class="font-semibold text-slate-300">Progres 20 Juz:</span>
+                        <span class="font-bold text-emerald-400" x-text="totalCompletedPages + ' / 400 Hal (' + totalProgressPercent + '%)'"></span>
                     </div>
                     <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-white/10">
                         <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" :style="'width: ' + totalProgressPercent + '%'"></div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- CHECKLIST HAFALAN QURAN & STRATEGI TERSTRUKTUR 2 TAHUN -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-            
-            <div class="lg:col-span-4 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col justify-between">
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
-                        <span>🎯</span> Strategi & Target Harian
-                    </h3>
-                    <div class="space-y-2.5 text-xs text-slate-200">
-                        <div class="macos-glass-subtle-dark rounded-xl p-3 border border-white/5">
-                            <span class="font-bold text-emerald-400 block mb-1">📖 Ziyadah Baru (Senin - Jumat)</span>
-                            <p class="opacity-80 leading-relaxed">Target: <strong>4 baris per hari</strong> (~setengah halaman). Terstruktur tetap selama 2 tahun.</p>
-                        </div>
-                        <div class="macos-glass-subtle-dark rounded-xl p-3 border border-white/5">
-                            <span class="font-bold text-blue-400 block mb-1">🔄 Pemulihan 5 Juz Lama</span>
-                            <p class="opacity-80 leading-relaxed">Fokus restorasi Juz 1-3 & 29-30 menggunakan metode Tikrar rutin.</p>
-                        </div>
-                        <div class="macos-glass-subtle-dark rounded-xl p-3 border border-white/5">
-                            <span class="font-bold text-purple-400 block mb-1">🛡️ Murojaah Kubro (Sabtu - Minggu)</span>
-                            <p class="opacity-80 leading-relaxed">Pengulangan total hafalan sepekan tanpa ziyadah baru di akhir pekan.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-8 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col justify-between relative overflow-hidden">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
-                    <div class="flex items-center gap-2">
-                        <span class="text-base">📖</span>
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">Executive Quran Memorization Checklist Hub</h3>
-                    </div>
+            <!-- Widget Checklist Harian (Sinkron Permanen Supabase) -->
+            <div class="lg:col-span-7 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col justify-between relative overflow-hidden">
+                <div class="flex justify-between items-center mb-2 pb-2 border-b border-white/10">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">📖 Checklist Hafalan & Target Harian</h3>
                 </div>
 
-                <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
+                <div class="flex gap-1.5 mb-2 overflow-x-auto pb-1">
                     <template x-for="tab in dynamicTaskTabs" :key="tab.key">
                         <button @click="activeTaskTab = tab.key"
                                 :class="activeTaskTab === tab.key ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 font-bold' : 'macos-glass-subtle-dark text-slate-300 hover:bg-white/10'"
-                                class="px-3.5 py-1.5 rounded-xl text-[11px] transition cursor-pointer whitespace-nowrap"
+                                class="px-3 py-1 rounded-xl text-[10px] transition cursor-pointer whitespace-nowrap"
                                 x-text="tab.label">
                         </button>
                     </template>
                 </div>
 
-                <div class="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                <div class="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
                     <template x-for="task in filteredStructuredTasks" :key="task.id">
-                        <div class="flex justify-between items-center p-3 rounded-xl macos-glass-subtle-dark hover:bg-white/5 transition-colors border border-white/5">
-                            <div class="flex items-center gap-3">
+                        <div class="flex justify-between items-center p-2.5 rounded-xl macos-glass-subtle-dark hover:bg-white/5 transition-colors border border-white/5">
+                            <div class="flex items-center gap-2.5">
                                 <input type="checkbox" :checked="task.is_completed" @change="toggleStructuredTask(task.id)" class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
                                 <div>
                                     <p class="text-xs font-semibold" :class="task.is_completed ? 'line-through opacity-50 text-slate-400' : 'text-slate-100'" x-text="task.title"></p>
-                                    <p class="text-[9px] opacity-60" x-text="'Jadwal Tetap 2 Tahun: ' + task.categoryName"></p>
+                                    <p class="text-[9px] opacity-60" x-text="'Kurikulum 2 Tahun: ' + task.categoryName"></p>
                                 </div>
                             </div>
-                            <span class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold">Tetap</span>
                         </div>
                     </template>
                 </div>
-
-                <div class="mt-3 pt-2 border-t border-white/10 flex justify-between items-center">
-                    <span class="text-[10px] opacity-75">Sistem Kurikulum Hafalan 20 Juz Terstruktur (2 Tahun).</span>
-                    <button @click="showTahfizModal = true" class="text-[10px] text-emerald-400 hover:underline font-bold cursor-pointer">Buka Panel Tahfiz 20 Juz &rarr;</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- SPOTLIGHT AI UTAMA (Stabil & Render Markdown Sempurna) -->
-        <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
-            <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
-                <!-- Selalu render Markdown hasil AI secara stabil tanpa teks hilang -->
-                <div class="ai-markdown-output text-xs sm:text-sm text-slate-100 overflow-x-auto" x-html="renderedAIResponse"></div>
             </div>
 
-            <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
-                <div class="flex-1 relative flex items-center">
-                    <span class="absolute left-4 text-lg opacity-50">🔍</span>
-                    <input type="text" x-ref="searchInput" x-model="userQuery" :disabled="loadingAI" placeholder="Ketik perintah atau tanyakan sesuatu pada Spotlight AI..." class="w-full macos-glass-dark focus:border-blue-500 focus:outline-none pl-12 pr-5 py-3.5 rounded-2xl text-sm shadow-inner disabled:opacity-50 transition-all backdrop-blur-2xl font-medium text-slate-100 placeholder-slate-400">
-                </div>
-
-                <button type="submit" :disabled="loadingAI" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-xs font-semibold transition shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95">
-                    <span>Kirim</span>
-                </button>
-            </form>
         </div>
 
     </main>
 
-    <!-- FOOTER TIPIS -->
+    <!-- FOOTER TIPIS DI BAWAH -->
     <footer class="w-full py-4 text-center text-[11px] font-medium z-10 macos-glass-dark backdrop-blur-2xl mt-8 border-t border-white/10 text-slate-300">
         Executive Management Center &bull; Mipratul Muslim &copy; 2026
     </footer>
 
-    <!-- MODAL 2: PANEL TAHFIZ & HAFALAN QURAN -->
+    <!-- MODAL PANEL TAHFIZ & HAFALAN QURAN -->
     <div x-show="showTahfizModal" style="display: none;" class="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-6 z-[100]" @keydown.escape.window="showTahfizModal = false">
         <div class="macos-glass-dark rounded-[32px] w-full max-w-4xl h-[90vh] shadow-2xl flex flex-col overflow-hidden relative border border-white/15">
             <div class="px-6 py-4 flex justify-between items-center border-b border-white/10 bg-white/5">
@@ -395,7 +333,7 @@
                     <div class="macos-glass-subtle-dark rounded-2xl p-5 space-y-3 border border-emerald-500/20">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">💡 Peta Jalan & Poin Utama Strategi</h3>
                         <p class="text-xs leading-relaxed text-slate-200">
-                            Target Anda adalah menyelesaikan 20 juz dalam waktu 2 tahun (730 hari) mulai besok <strong>10/09/2026</strong>. Sembari memulihkan 5 juz lama (Juz 1-3 & 29-30), Anda mencicil Ziyadah baru sebanyak 4 baris per hari (Senin-Jumat).
+                            Target Anda adalah menyelesaikan 20 juz dalam waktu 2 tahun (730 hari) mulai 10 September 2026. Sembari memulihkan 5 juz lama (Juz 1-3 & 29-30), Anda mencicil Ziyadah baru sebanyak 4 baris per hari (Senin-Jumat).
                         </p>
                     </div>
                 </div>
@@ -444,7 +382,7 @@
     </div>
 
     <!-- MODAL RIWAYAT CHAT -->
-    <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
+    <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center mb-3 pb-3 border-b border-white/10">
                 <div class="flex items-center gap-2">
@@ -480,7 +418,7 @@
     </div>
 
     <!-- MODAL PENGATURAN PROFIL -->
-    <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
+    <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
                 <h3 class="font-semibold text-sm text-blue-400">👤 Data Administrator</h3>
@@ -501,7 +439,7 @@
     </div>
 
     <!-- MODAL KONFIGURASI AI -->
-    <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
+    <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-md shadow-2xl">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
                 <h3 class="font-semibold text-sm text-blue-400">🧠 Konfigurasi Persona Formal</h3>
@@ -520,40 +458,41 @@
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const ALLOWED_EMAIL = 'muslimmipratul7@gmail.com';
 
         let cachedApiKey = '';
+        let activeTypingInterval = null;
+        let googleUserAvatarUrl = '';
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('macosApp', () => ({
                 userQuery: '',
                 loadingAI: false,
                 activeModal: null,
+                attachedImage: null,
                 userProfilePic: '',
+                userEmail: '',
                 rawAIResponse: 'Halo Tuan Mipra, ada yang bisa saya bantu hari ini?',
+                typedText: '',
+                isTyping: false,
                 currentDateTime: '',
                 currentDayNum: '',
                 currentDayName: '',
                 currentMonthName: '',
-                currentFullMasehiDate: '',
-                currentHijriDate: '',
-                
-                analogHourDeg: 0,
-                analogMinuteDeg: 0,
-                analogSecondDeg: 0,
-
+                currentWeather: '28°C ⛅',
+                inactivityTimer: null,
+                autonomousTimer: null,
+                visionTimer: null,
+                isVisionActive: false,
+                allChatHistory: [],
                 isUnlocked: false,          
                 showApiKeyModal: false,
                 tempApiKey: '',
-                passcode: '',
-                passcodeError: '',
-                correctPasscodeHash: '123456',
 
                 countdown: { days: '00' },
-
                 showTahfizModal: false,
                 tahfizTab: 'strategy',
                 tahfizData: {},
-                allChatHistory: [],
 
                 activeTaskTab: 'hari_ini',
                 dynamicTaskTabs: [],
@@ -589,7 +528,7 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Anda adalah asisten eksekutif cerdas untuk Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA: 1) Jika pengguna menyapa (seperti "Halo", "Hai", "Pagi"), balas dengan sangat ramah, singkat, dan natural (misal: "Halo Tuan Mipra, ada yang bisa saya bantu?"). 2) Jika pengguna menanyakan target, progres, atau hal operasional, berikan jawaban yang SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown (tabel ringkas, bullet points, teks tebal). Jangan pernah bertele-tele.'
+                    customInstructions: 'Anda adalah asisten eksekutif cerdas untuk Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA: 1) Jika pengguna menyapa (seperti "Halo", "Hai", "Pagi"), balas dengan sangat ramah, singkat, dan natural (misal: "Halo Tuan Mipra, ada yang bisa saya bantu?"). 2) Jika pengguna menanyakan target, progres, atau hal operasional, berikan jawaban yang SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown (tabel ringkas, bullet points, teks tebal). Jangan pernah bertele-tele.'
                 },
 
                 get totalCompletedPages() {
@@ -605,7 +544,7 @@
                 },
 
                 get renderedAIResponse() {
-                    return marked.parse(this.rawAIResponse || '');
+                    return marked.parse(this.typedText || '');
                 },
 
                 get filteredStructuredTasks() {
@@ -629,60 +568,68 @@
                         this.startCountdownTimer();
                     }, 1000);
 
-                    await this.loadPasscodeFromSupabase();
-                    await this.loadConfigAndData();
-                    await this.loadTahfizProgressFromDB();
-                    await this.loadChecklistProgressFromDB();
-                    await this.loadAllChatHistory();
-                },
-
-                async loadPasscodeFromSupabase() {
-                    const { data } = await _supabase.from('user_config').select('key_value').eq('key_name', 'app_passcode').single();
-                    if (data?.key_value) {
-                        this.correctPasscodeHash = data.key_value;
-                    }
-                },
-
-                handleGlobalKeydown(event) {
-                    if (this.isUnlocked) return;
-                    if (/^[0-9]$/.test(event.key)) {
-                        event.preventDefault();
-                        this.pressPasscode(event.key);
-                    } else if (event.key === 'Backspace' || event.key === 'Delete') {
-                        event.preventDefault();
-                        this.deletePasscode();
-                    }
-                },
-
-                pressPasscode(num) {
-                    if (this.passcode.length < 6) {
-                        this.passcode += num;
-                        this.passcodeError = '';
-                        if (this.passcode.length === 6) {
-                            this.verifyPasscode();
+                    const { data: { session } } = await _supabase.auth.getSession();
+                    if (session) {
+                        const email = session.user.email;
+                        if (email !== ALLOWED_EMAIL) {
+                            alert('Akses ditolak: Akun tidak diizinkan.');
+                            await this.logout();
+                            return;
                         }
-                    }
-                },
-
-                deletePasscode() {
-                    if (this.passcode.length > 0) {
-                        this.passcode = this.passcode.slice(0, -1);
-                        this.passcodeError = '';
-                    }
-                },
-
-                async verifyPasscode() {
-                    if (this.passcode === this.correctPasscodeHash) {
                         this.isUnlocked = true;
+                        this.userEmail = email;
+                        if (session.user.user_metadata?.avatar_url) {
+                            googleUserAvatarUrl = session.user.user_metadata.avatar_url;
+                            this.userProfilePic = googleUserAvatarUrl;
+                        }
+                        await this.loadConfigAndData();
+                        await this.loadTahfizProgressFromDB();
+                        await this.loadChecklistProgressFromDB();
+                        await this.loadAllChatHistory();
+
                         if (!cachedApiKey) {
                             this.showApiKeyModal = true;
                         } else {
-                            this.rawAIResponse = `Halo Tuan ${this.profile.panggilan}, sistem siap melayani. Ada yang bisa saya bantu?`;
+                            this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, sistem siap melayani. Ada yang bisa saya bantu?`);
                         }
-                    } else {
-                        this.passcodeError = 'Passcode salah. Silakan coba lagi.';
-                        setTimeout(() => { this.passcode = ''; }, 400);
                     }
+
+                    _supabase.auth.onAuthStateChange(async (event, session) => {
+                        if (session && !this.isUnlocked) {
+                            if (session.user.email !== ALLOWED_EMAIL) {
+                                alert('Akses ditolak.');
+                                await this.logout();
+                                return;
+                            }
+                            this.isUnlocked = true;
+                            this.userEmail = session.user.email;
+                            if (session.user.user_metadata?.avatar_url) {
+                                googleUserAvatarUrl = session.user.user_metadata.avatar_url;
+                                this.userProfilePic = googleUserAvatarUrl;
+                            }
+                            await this.loadConfigAndData();
+                            await this.loadTahfizProgressFromDB();
+                            await this.loadChecklistProgressFromDB();
+                            await this.loadAllChatHistory();
+
+                            if (!cachedApiKey) {
+                                this.showApiKeyModal = true;
+                            } else {
+                                this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, sistem siap melayani. Ada yang bisa saya bantu?`);
+                            }
+                        } else if (!session) {
+                            this.isUnlocked = false;
+                            this.userEmail = '';
+                        }
+                    });
+                },
+
+                updateClockAndCalendar() {
+                    const now = new Date();
+                    this.currentDateTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    this.currentDayNum = now.getDate();
+                    this.currentDayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
+                    this.currentMonthName = now.toLocaleDateString('id-ID', { month: 'long' });
                 },
 
                 startCountdownTimer() {
@@ -711,22 +658,6 @@
                     this.dynamicTaskTabs = tabs;
                 },
 
-                updateClockAndCalendar() {
-                    const now = new Date();
-                    this.analogSecondDeg = now.getSeconds() * 6;
-                    this.analogMinuteDeg = now.getMinutes() * 6 + now.getSeconds() * 0.1;
-                    this.analogHourDeg = (now.getHours() % 12) * 30 + now.getMinutes() * 0.5;
-                    this.currentDateTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                    this.currentDayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
-                    this.currentFullMasehiDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                    try {
-                        this.currentHijriDate = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', { calendar: 'islamic-umalqura', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
-                    } catch (e) {
-                        this.currentHijriDate = '27 Rabiul Awal 1448 H';
-                    }
-                },
-
-                // Fungsi Toggle Checklist dengan Sinkronisasi Supabase (Agar tersimpan saat refresh)
                 async toggleStructuredTask(id) {
                     let key = this.activeTaskTab;
                     if (key === 'hari_ini') {
@@ -779,6 +710,41 @@
                     }, { onConflict: 'juz_number' });
                 },
 
+                startTypingEffect(text) {
+                    if (activeTypingInterval) clearInterval(activeTypingInterval);
+                    let i = 0;
+                    this.typedText = '';
+                    this.isTyping = true;
+                    activeTypingInterval = setInterval(() => {
+                        if (i < text.length) {
+                            this.typedText += text.charAt(i);
+                            i++;
+                        } else {
+                            clearInterval(activeTypingInterval);
+                            this.isTyping = false;
+                        }
+                    }, 15);
+                },
+
+                resetInactivityTimer() {
+                    if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
+                    this.inactivityTimer = setTimeout(() => {
+                        if (!this.loadingAI && this.isUnlocked) {
+                            this.startTypingEffect(`Apakah ada instruksi lanjutan yang Tuan ${this.profile.panggilan} perlukan?`);
+                        }
+                    }, 120000);
+                },
+
+                handleImageUpload(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.attachedImage = { inlineData: { data: e.target.result.split(',')[1], mimeType: file.type } };
+                    };
+                    reader.readAsDataURL(file);
+                },
+
                 async loadAllChatHistory() {
                     const { data } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: false });
                     if (data) this.allChatHistory = data;
@@ -787,6 +753,11 @@
                 async openChatHistoryModal() {
                     await this.loadAllChatHistory();
                     this.activeModal = 'chatHistory';
+                },
+
+                async saveChatToSupabase(sender, text) {
+                    const { data } = await _supabase.from('chat_history').insert([{ sender, text_content: text }]).select();
+                    if (data?.[0]) this.allChatHistory.unshift(data[0]);
                 },
 
                 async deleteSingleChat(id) {
@@ -798,7 +769,7 @@
                     if (confirm('Bersihkan seluruh riwayat percakapan sistem?')) {
                         await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
                         this.allChatHistory = [];
-                        this.rawAIResponse = "Riwayat sistem telah dibersihkan.";
+                        this.startTypingEffect("Riwayat sistem telah dibersihkan.");
                     }
                 },
 
@@ -807,22 +778,25 @@
                     await _supabase.from('user_config').upsert({ key_name: 'gemini_api_key', key_value: this.tempApiKey.trim() }, { onConflict: 'key_name' });
                     cachedApiKey = this.tempApiKey.trim();
                     this.showApiKeyModal = false;
-                    this.rawAIResponse = `Kunci API berhasil disimpan. Sistem siap digunakan.`;
+                    this.startTypingEffect(`Kunci API berhasil disimpan. Selamat pagi Tuan ${this.profile.panggilan}, sistem siap melayani.`);
                 },
 
-                logout() {
+                async loginWithGoogle() {
+                    await _supabase.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: { redirectTo: window.location.origin }
+                    });
+                },
+
+                async logout() {
+                    await _supabase.auth.signOut();
                     this.isUnlocked = false;
-                    this.passcode = '';
+                    window.location.reload();
                 },
 
                 async loadConfigAndData() {
-                    const { data } = await _supabase.from('user_config').select('key_name, key_value').in('key_name', ['gemini_api_key', 'user_profile_pic']);
-                    if (data) {
-                        data.forEach(item => {
-                            if (item.key_name === 'gemini_api_key') cachedApiKey = item.key_value;
-                            if (item.key_name === 'user_profile_pic') this.userProfilePic = item.key_value;
-                        });
-                    }
+                    const { data: configData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'gemini_api_key').single();
+                    if (configData?.key_value) cachedApiKey = configData.key_value;
 
                     const { data: profileData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'user_profile_wawasan').single();
                     if (profileData?.key_value) {
@@ -840,7 +814,7 @@
                         key_name: 'user_profile_wawasan',
                         key_value: JSON.stringify(this.profile)
                     }, { onConflict: 'key_name' });
-                    alert('Konfigurasi profil berhasil diperbarui.');
+                    alert('Konfigurasi sistem berhasil diperbarui.');
                 },
 
                 async callGeminiAPI(modelName, payload) {
@@ -852,46 +826,45 @@
                 },
 
                 async submitToAI() {
-                    if (!this.userQuery.trim() || this.loadingAI) return;
-                    if (!cachedApiKey) { this.showApiKeyModal = true; return; }
+                    if ((!this.userQuery.trim() && !this.attachedImage) || this.loadingAI) return;
+                    if (!cachedApiKey) {
+                        this.showApiKeyModal = true;
+                        return;
+                    }
 
                     const prompt = this.userQuery.trim();
                     this.userQuery = '';
+                    await this.saveChatToSupabase('user', prompt);
                     this.loadingAI = true;
 
                     let currentDayTasks = JSON.stringify(this.filteredStructuredTasks);
                     let tahfizProgressSummary = JSON.stringify(this.tahfizData);
                     let fullSystemInstruction = `${this.profile.customInstructions}
 [PROFIL PENGGUNA] Nama: ${this.profile.namaLengkap} (${this.profile.panggilan})
-[HARI INI] ${this.currentDayName}, ${this.currentFullMasehiDate}
+[HARI INI] ${this.currentDayName}, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
 [TARGET HAFALAN HARI INI] ${currentDayTasks}
 [PROGRES KESELURUHAN TAHFIZ 20 JUZ] Halaman Selesai: ${this.totalCompletedPages}/400 (${this.totalProgressPercent}%)
 
 PERTANYAAN/PESAN DARI TUAN ${this.profile.panggilan}: ${prompt}`;
 
                     let partsArray = [{ text: fullSystemInstruction }];
+                    if (this.attachedImage) {
+                        partsArray.push(this.attachedImage);
+                        this.attachedImage = null;
+                    }
 
                     try {
-                        // Menggunakan model gemini-3.7-flash pilihan Anda
                         let res = await this.callGeminiAPI('gemini-3.7-flash', { contents: [{ role: "user", parts: partsArray }] });
-                        if (!res.ok) {
-                            res = await this.callGeminiAPI('gemini-3.5-flash-lite', { contents: [{ role: "user", parts: partsArray }] });
-                        }
+                        if (!res.ok) res = await this.callGeminiAPI('gemini-3.5-flash-lite', { contents: [{ role: "user", parts: partsArray }] });
+                        
                         if (res.ok) {
                             const data = await res.json();
-                            let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah diproses.";
-                            this.rawAIResponse = reply;
-                            
-                            await _supabase.from('chat_history').insert([
-                                { sender: 'user', text_content: prompt },
-                                { sender: 'ai', text_content: reply }
-                            ]);
-                            await this.loadAllChatHistory();
-                        } else {
-                            this.rawAIResponse = "Gagal terhubung ke server AI. Periksa kembali API Key Anda.";
+                            let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah sedang diproses, Tuan.";
+                            this.startTypingEffect(reply);
+                            await this.saveChatToSupabase('ai', reply);
                         }
                     } catch (e) {
-                        this.rawAIResponse = "Gangguan koneksi sistem. Silakan coba kembali.";
+                        this.startTypingEffect("Gangguan koneksi terdeteksi pada server pusat.");
                     } finally {
                         this.loadingAI = false;
                     }
