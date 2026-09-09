@@ -111,7 +111,6 @@
                 <span class="font-bold text-slate-100" x-text="currentDateTime"></span>
             </div>
 
-            <!-- Menu Profil Profesional di Kanan Atas -->
             <div class="relative" x-data="{ profileOpen: false }">
                 <button @click="profileOpen = !profileOpen" @click.away="profileOpen = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1.5 pr-3 rounded-2xl transition hover:bg-white/10 macos-glass-subtle-dark">
                     <div class="w-8 h-8 rounded-full overflow-hidden shadow-md relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-blue-600 to-indigo-600 border border-white/20">
@@ -129,7 +128,6 @@
                     <svg class="w-3 h-3 opacity-60 transition-transform duration-300" :class="profileOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
 
-                <!-- Dropdown Profil Profesional -->
                 <div x-show="profileOpen" style="display: none;"
                      class="absolute right-0 top-full mt-2 w-60 macos-glass-dark rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5 space-y-1">
                     <div class="p-2.5 rounded-xl macos-glass-subtle-dark mb-1">
@@ -209,18 +207,23 @@
                         <span class="text-4xl font-extrabold tracking-tight text-slate-100" x-text="finance.formatRupiah(finance.totalBalance)">Rp 0</span>
                         <p class="text-xs mt-1.5 opacity-80 font-medium text-slate-300">Akumulasi Seluruh Dompet & Rekening</p>
                     </div>
-                    <button @click="finance.showFormModal = true" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl text-xs font-bold transition cursor-pointer shadow-lg shadow-blue-600/30 mt-4 flex items-center justify-center gap-2">
-                        <span class="text-sm">+</span> CATAT TRANSAKSI BARU
-                    </button>
+                    <div class="flex gap-2 mt-4">
+                        <button @click="finance.showAppModal = true" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl text-xs font-bold transition cursor-pointer shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-1.5">
+                            <span>📊</span> Buka Money Manager
+                        </button>
+                        <button @click="finance.showFormModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-xl text-xs font-bold transition cursor-pointer shadow-lg shadow-blue-600/30">
+                            + Catat
+                        </button>
+                    </div>
                 </div>
 
                 <div class="macos-glass-dark rounded-[24px] p-5 shadow-xl">
-                    <h3 class="text-xs font-semibold text-slate-300 mb-3 uppercase tracking-wide">Daftar Akun</h3>
+                    <h3 class="text-xs font-semibold text-slate-300 mb-3 uppercase tracking-wide">Daftar Akun Utama</h3>
                     <div class="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
                         <template x-for="account in finance.accounts" :key="account.id">
                             <div class="flex justify-between items-center p-3 rounded-xl macos-glass-subtle-dark text-slate-100">
                                 <div class="flex items-center gap-3">
-                                    <span class="text-lg" x-text="account.type === 'cash' ? '💵' : (account.type === 'bank' ? '🏛️' : '💳')"></span>
+                                    <span class="text-lg" x-text="account.type === 'cash' ? '💵' : (account.type === 'bank' ? '🏛️' : (account.type === 'debt' ? '⚠️' : '💳'))"></span>
                                     <span class="text-xs font-semibold" x-text="account.name"></span>
                                 </div>
                                 <span class="text-xs font-bold" x-text="finance.formatRupiah(account.balance)">Rp 0</span>
@@ -233,8 +236,8 @@
             <div class="macos-glass-dark rounded-[24px] p-6 shadow-xl lg:col-span-2 flex flex-col justify-between">
                 <div>
                     <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
-                        <h3 class="text-xs font-bold text-slate-100 uppercase tracking-wider">📜 Riwayat Transaksi (Money Manager)</h3>
-                        <span class="text-[10px] opacity-70 font-medium">15 Catatan Terakhir</span>
+                        <h3 class="text-xs font-bold text-slate-100 uppercase tracking-wider">📜 Riwayat Transaksi Terakhir</h3>
+                        <button @click="finance.showAppModal = true" class="text-[10px] text-blue-400 hover:underline font-semibold cursor-pointer">Buka Aplikasi Lengkap &rarr;</button>
                     </div>
                     
                     <div class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
@@ -292,6 +295,190 @@
         Personal Assistant &bull; Mipratul Muslim &copy; 2026
     </footer>
 
+    <!-- ======================================================= -->
+    <!-- POP-UP APLIKASI UTAMA: MONEY MANAGER & KALENDER INTERAKTIF -->
+    <!-- ======================================================= -->
+    <div x-show="finance.showAppModal" style="display: none;" class="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-6 z-50" @keydown.escape.window="finance.showAppModal = false">
+        <div class="macos-glass-dark rounded-[32px] w-full max-w-5xl h-[92vh] shadow-2xl flex flex-col overflow-hidden relative border border-white/15">
+            
+            <!-- Header Popup Aplikasi -->
+            <div class="px-6 py-4 flex justify-between items-center border-b border-white/10 bg-white/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-500 to-rose-600 flex items-center justify-center text-xl shadow-lg">🐷</div>
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-100 uppercase tracking-wider">Money Manager & Executive Command</h2>
+                        <p class="text-[10px] opacity-70">Manajemen Anggaran, Akun Multi-Instrumen, Hutang, & Kalender Terintegrasi</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button @click="finance.showFormModal = true" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg">+ Transaksi</button>
+                    <button @click="finance.showAppModal = false" class="cursor-pointer text-slate-300 hover:text-white px-3 py-2 rounded-xl macos-glass-subtle-dark font-bold text-sm">✕</button>
+                </div>
+            </div>
+
+            <!-- Tab Navigasi Menu Aplikasi -->
+            <div class="flex border-b border-white/10 px-6 bg-black/20">
+                <button @click="finance.activeTab = 'dashboard'" :class="finance.activeTab === 'dashboard' ? 'border-b-2 border-blue-500 text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'" class="py-3 px-4 text-xs transition cursor-pointer">📊 Anggaran & Diagram</button>
+                <button @click="finance.activeTab = 'accounts'" :class="finance.activeTab === 'accounts' ? 'border-b-2 border-blue-500 text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'" class="py-3 px-4 text-xs transition cursor-pointer">🏦 Akun & Instrumen</button>
+                <button @click="finance.activeTab = 'debts'" :class="finance.activeTab === 'debts' ? 'border-b-2 border-blue-500 text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'" class="py-3 px-4 text-xs transition cursor-pointer">⚠️ Akun Hutang</button>
+                <button @click="finance.activeTab = 'calendar'" :class="finance.activeTab === 'calendar' ? 'border-b-2 border-blue-500 text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'" class="py-3 px-4 text-xs transition cursor-pointer">📅 Kalender & Siklus</button>
+            </div>
+
+            <!-- Konten Isi Aplikasi -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+                <!-- TAB 1: DIAGRAM VENN & ANGGARAN -->
+                <div x-show="finance.activeTab === 'dashboard'" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="macos-glass-subtle-dark rounded-2xl p-5 flex flex-col justify-between">
+                            <span class="text-xs font-semibold opacity-70">Batas Anggaran Bulan Ini</span>
+                            <div class="my-3">
+                                <span class="text-2xl font-bold" x-text="finance.formatRupiah(finance.monthlyBudgetLimit)"></span>
+                            </div>
+                            <button @click="finance.editBudgetLimit()" class="text-[11px] text-blue-400 hover:underline font-semibold text-left cursor-pointer">⚙️ Atur Batas Anggaran</button>
+                        </div>
+                        <div class="macos-glass-subtle-dark rounded-2xl p-5 flex flex-col justify-between">
+                            <span class="text-xs font-semibold opacity-70">Total Pengeluaran Bulan Ini</span>
+                            <div class="my-3">
+                                <span class="text-2xl font-bold text-red-400" x-text="finance.formatRupiah(finance.totalMonthlyExpense)"></span>
+                            </div>
+                            <span class="text-[10px] opacity-60">Sisa Anggaran Terkendali</span>
+                        </div>
+                        <div class="macos-glass-subtle-dark rounded-2xl p-5 flex flex-col justify-between">
+                            <span class="text-xs font-semibold opacity-70">Persentase Penggunaan</span>
+                            <div class="my-3 flex items-center gap-3">
+                                <span class="text-2xl font-bold text-emerald-400" x-text="finance.budgetPercentage + '%'"></span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                <div class="bg-blue-500 h-full rounded-full transition-all duration-500" :style="'width: ' + Math.min(finance.budgetPercentage, 100) + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulasi Diagram Venn Pengeluaran -->
+                    <div class="macos-glass-subtle-dark rounded-2xl p-6">
+                        <h3 class="text-xs font-bold uppercase tracking-wider mb-4 text-blue-400">📊 Proporsi & Diagram Venn Kategori Pengeluaran</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                            <div class="flex flex-col gap-3">
+                                <template x-for="cat in finance.categories.filter(c => c.type === 'expense')" :key="cat.id">
+                                    <div class="flex justify-between items-center p-3 rounded-xl macos-glass-dark">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-xl" x-text="cat.icon || '💸'"></span>
+                                            <div>
+                                                <p class="text-xs font-semibold" x-text="cat.name"></p>
+                                                <p class="text-[9px] opacity-60" x-text="'Siklus: ' + (cat.recurring_type || 'Bulanan')"></p>
+                                            </div>
+                                        </div>
+                                        <button @click="finance.deleteCategory(cat.id)" class="text-red-400 hover:text-red-500 text-xs px-2 py-1">🗑️</button>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="flex flex-col items-center justify-center p-6 macos-glass-dark rounded-2xl text-center">
+                                <div class="w-40 h-40 rounded-full border-4 border-blue-500/40 flex items-center justify-center relative shadow-inner bg-blue-500/10 animate-pulse">
+                                    <div class="absolute inset-4 rounded-full border-4 border-emerald-500/40 flex items-center justify-center">
+                                        <span class="text-xs font-bold text-slate-100">Analisis Venn Aktif</span>
+                                    </div>
+                                </div>
+                                <p class="text-[11px] opacity-70 mt-4">Diagram proporsi otomatis dikalkulasi berdasarkan kategori transaksi real-time.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: AKUN & INSTRUMEN (Bank, Tabungan, Investasi, Saham) -->
+                <div x-show="finance.activeTab === 'accounts'" class="space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400">🏦 Manajemen Akun & Instrumen Keuangan</h3>
+                        <button @click="finance.addAccountPrompt()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">+ Tambah Akun</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <template x-for="acc in finance.accounts" :key="acc.id">
+                            <div class="macos-glass-subtle-dark rounded-2xl p-5 flex flex-col justify-between">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-2xl" x-text="acc.type === 'cash' ? '💵' : (acc.type === 'bank' ? '🏛️' : (acc.type === 'investment' ? '📈' : '💳'))"></span>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-slate-100" x-text="acc.name"></h4>
+                                            <p class="text-[10px] uppercase opacity-60 font-semibold" x-text="acc.type"></p>
+                                        </div>
+                                    </div>
+                                    <button @click="finance.deleteAccount(acc.id)" class="text-red-400 hover:text-red-500 text-xs">🗑️</button>
+                                </div>
+                                <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
+                                    <span class="text-xs opacity-70">Saldo / Nilai Instrumen:</span>
+                                    <span class="text-sm font-extrabold text-emerald-400" x-text="finance.formatRupiah(acc.balance)"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- TAB 3: AKUN HUTANG -->
+                <div x-show="finance.activeTab === 'debts'" class="space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-red-400">⚠️ Manajemen Akun Hutang & Kewajiban</h3>
+                        <button @click="finance.addDebtPrompt()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">+ Catat Hutang</button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <template x-for="debt in finance.accounts.filter(a => a.type === 'debt')" :key="debt.id">
+                            <div class="macos-glass-subtle-dark rounded-2xl p-4 flex justify-between items-center border border-red-500/20">
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-100" x-text="debt.name"></h4>
+                                    <p class="text-[10px] text-red-400 font-medium">Kewajiban Aktif</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-extrabold text-red-400" x-text="finance.formatRupiah(debt.balance)"></span>
+                                    <button @click="finance.deleteAccount(debt.id)" class="block text-[10px] text-slate-400 hover:text-white mt-1">Lunas / Hapus</button>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="finance.accounts.filter(a => a.type === 'debt').length === 0">
+                            <p class="text-xs text-center py-10 opacity-60">Tidak ada catatan hutang saat ini.</p>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- TAB 4: KALENDER INTERAKTIF & SIKLUS -->
+                <div x-show="finance.activeTab === 'calendar'" class="space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400">📅 Kalender Keuangan & Siklus Otomatis</h3>
+                            <p class="text-[11px] opacity-70">Pilih tanggal untuk melihat mutasi transaksi dan jadwal pengulangan (Harian/Mingguan/Bulanan/Tahunan).</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="date" x-model="finance.selectedDate" @change="finance.loadTransactionsByDate()" class="macos-glass-subtle-dark px-3 py-2 rounded-xl text-xs text-slate-100 font-semibold focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Tampilan Daftar Transaksi pada Tanggal Dipilih -->
+                    <div class="macos-glass-subtle-dark rounded-2xl p-5 space-y-3">
+                        <h4 class="text-xs font-semibold text-slate-300">Transaksi pada Tanggal: <span class="text-blue-400 font-bold" x-text="finance.selectedDate"></span></h4>
+                        <div class="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                            <template x-for="t in finance.filteredTransactions" :key="t.id">
+                                <div class="flex justify-between items-center p-3 rounded-xl macos-glass-dark">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-lg" x-text="t.type === 'income' ? '📥' : (t.type === 'expense' ? '📤' : '🔄')"></span>
+                                        <div>
+                                            <p class="text-xs font-semibold" x-text="t.note || 'Transaksi Keuangan'"></p>
+                                            <p class="text-[9px] opacity-60" x-text="'Akun ID: ' + t.account_id"></p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-bold" :class="finance.getTypeColor(t.type)" x-text="finance.formatRupiah(t.amount)"></span>
+                                </div>
+                            </template>
+                            <template x-if="finance.filteredTransactions.length === 0">
+                                <p class="text-xs text-center py-6 opacity-60">Tidak ada transaksi pada tanggal ini.</p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL FORM TRANSAKSI -->
     <div x-show="finance.showFormModal" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50" @keydown.escape.window="finance.showFormModal = false">
         <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-md shadow-2xl relative border border-white/10" @click.away="finance.showFormModal = false">
@@ -332,25 +519,26 @@
                     </select>
                 </div>
 
-                <div x-show="finance.form.type !== 'transfer'">
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Pilih Kategori</label>
-                    <select x-model="finance.form.category_id" class="w-full macos-glass-subtle-dark rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-slate-100 font-medium cursor-pointer">
-                        <option value="" disabled selected>Pilih Kategori...</option>
-                        <template x-for="cat in finance.categories.filter(c => c.type === finance.form.type)" :key="cat.id">
-                            <option :value="cat.id" x-text="(cat.icon || '') + ' ' + cat.name"></option>
-                        </template>
-                    </select>
-                </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tanggal</label>
                         <input type="date" x-model="finance.form.transaction_date" required class="w-full macos-glass-subtle-dark rounded-xl px-3 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100 font-medium">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Catatan</label>
-                        <input type="text" x-model="finance.form.note" placeholder="Opsional..." class="w-full macos-glass-subtle-dark rounded-xl px-3 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100 font-medium">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Siklus / Pengulangan</label>
+                        <select x-model="finance.form.recurring_type" class="w-full macos-glass-subtle-dark rounded-xl px-3 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100 font-medium">
+                            <option value="none">Sekali Saja</option>
+                            <option value="daily">Harian</option>
+                            <option value="weekly">Mingguan</option>
+                            <option value="monthly">Bulanan</option>
+                            <option value="yearly">Tahunan</option>
+                        </select>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Catatan</label>
+                    <input type="text" x-model="finance.form.note" placeholder="Opsional..." class="w-full macos-glass-subtle-dark rounded-xl px-3 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100 font-medium">
                 </div>
 
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl text-xs font-semibold transition cursor-pointer shadow-lg shadow-blue-600/30 mt-2">Simpan Transaksi</button>
@@ -493,8 +681,15 @@
                     accounts: [],
                     categories: [],
                     transactions: [],
+                    filteredTransactions: [],
                     totalBalance: 0,
+                    monthlyBudgetLimit: 5000000,
+                    totalMonthlyExpense: 0,
+                    budgetPercentage: 0,
                     showFormModal: false,
+                    showAppModal: false,
+                    activeTab: 'dashboard',
+                    selectedDate: new Date().toISOString().split('T')[0],
                     form: {
                         type: 'expense',
                         account_id: '',
@@ -502,6 +697,7 @@
                         category_id: '',
                         amount: '',
                         transaction_date: new Date().toISOString().split('T')[0],
+                        recurring_type: 'none',
                         note: ''
                     },
 
@@ -519,8 +715,28 @@
                             *,
                             accounts:account_id ( name ),
                             categories:category_id ( name, icon )
-                        `).order('transaction_date', { ascending: false }).limit(15);
-                        if (trans) this.transactions = trans;
+                        `).order('transaction_date', { ascending: false }).limit(50);
+                        if (trans) {
+                            this.transactions = trans;
+                            this.calculateBudgetStats();
+                            this.loadTransactionsByDate();
+                        }
+                    },
+
+                    calculateBudgetStats() {
+                        const currentMonth = new Date().toISOString().slice(0, 7);
+                        let monthlyExpense = 0;
+                        this.transactions.forEach(t => {
+                            if (t.transaction_date && t.transaction_date.startsWith(currentMonth) && t.type === 'expense') {
+                                monthlyExpense += Number(t.amount || 0);
+                            }
+                        });
+                        this.totalMonthlyExpense = monthlyExpense;
+                        this.budgetPercentage = this.monthlyBudgetLimit > 0 ? Math.round((monthlyExpense / this.monthlyBudgetLimit) * 100) : 0;
+                    },
+
+                    loadTransactionsByDate() {
+                        this.filteredTransactions = this.transactions.filter(t => t.transaction_date === this.selectedDate);
                     },
 
                     formatRupiah(amount) {
@@ -531,6 +747,57 @@
                         if (type === 'income') return 'text-emerald-400';
                         if (type === 'expense') return 'text-red-400';
                         return 'text-blue-400';
+                    },
+
+                    async addAccountPrompt() {
+                        const name = prompt("Masukkan nama akun baru (Contoh: Bank Jago, Saham BCA, Reksadana):");
+                        if (!name) return;
+                        const type = prompt("Pilih jenis akun ('bank', 'cash', 'investment', 'debt'):", "bank");
+                        const initialBalance = Number(prompt("Masukkan saldo awal / nilai instrumen:", "0")) || 0;
+
+                        const { error } = await _supabase.from('accounts').insert([{ name, type, balance: initialBalance }]);
+                        if (!error) {
+                            alert('Akun berhasil ditambahkan.');
+                            this.initData();
+                        } else {
+                            alert('Gagal menambah akun: ' + error.message);
+                        }
+                    },
+
+                    async addDebtPrompt() {
+                        const name = prompt("Masukkan nama/keterangan akun hutang:");
+                        if (!name) return;
+                        const amount = Number(prompt("Masukkan jumlah total hutang:", "0")) || 0;
+
+                        const { error } = await _supabase.from('accounts').insert([{ name, type: 'debt', balance: amount }]);
+                        if (!error) {
+                            alert('Akun hutang berhasil dicatat.');
+                            this.initData();
+                        } else {
+                            alert('Gagal mencatat hutang.');
+                        }
+                    },
+
+                    async deleteAccount(id) {
+                        if (confirm('Hapus akun ini dari sistem?')) {
+                            await _supabase.from('accounts').delete().eq('id', id);
+                            this.initData();
+                        }
+                    },
+
+                    async deleteCategory(id) {
+                        if (confirm('Hapus kategori ini?')) {
+                            await _supabase.from('categories').delete().eq('id', id);
+                            this.initData();
+                        }
+                    },
+
+                    editBudgetLimit() {
+                        const newLimit = prompt("Masukkan batas maksimal pengeluaran bulanan baru (Rp):", this.monthlyBudgetLimit);
+                        if (newLimit && !isNaN(newLimit)) {
+                            this.monthlyBudgetLimit = Number(newLimit);
+                            this.calculateBudgetStats();
+                        }
                     },
 
                     async saveTransaction() {
@@ -546,6 +813,7 @@
                             type: this.form.type,
                             amount: Number(this.form.amount),
                             transaction_date: this.form.transaction_date,
+                            recurring_type: this.form.recurring_type,
                             note: this.form.note
                         }]);
 
