@@ -157,20 +157,43 @@
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
         <!-- ======================================================= -->
-        <!-- PANEL BARU: JAM & CEKLIST TARGET HAFALAN QURAN -->
+        <!-- PANEL JAM ANALOG REAL-TIME & CEKLIST TARGET HAFALAN QURAN -->
         <!-- ======================================================= -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
             
-            <!-- Kotak Jam Analog / Digital Estetik -->
-            <div class="macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col items-center justify-center text-center relative overflow-hidden h-full min-h-[120px]">
+            <!-- Kotak Jam Analog Real-Time -->
+            <div class="macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col items-center justify-center text-center relative overflow-hidden h-full min-h-[140px]">
                 <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-indigo-500/5 pointer-events-none"></div>
-                <div class="text-3xl mb-1">⏰</div>
-                <span class="text-xl font-extrabold tracking-wider text-slate-100" x-text="currentDateTime"></span>
-                <span class="text-[10px] uppercase font-semibold text-blue-400 tracking-widest mt-0.5" x-text="currentDayName + ', ' + currentDayNum + ' ' + currentMonthName"></span>
+                
+                <!-- Lingkaran Jam Analog -->
+                <div class="w-24 h-24 rounded-full border-2 border-white/30 relative flex items-center justify-center bg-slate-900/60 shadow-inner my-1">
+                    <!-- Angka Penunjuk Utama -->
+                    <span class="absolute top-1 text-[9px] font-bold opacity-60">12</span>
+                    <span class="absolute right-1.5 text-[9px] font-bold opacity-60">3</span>
+                    <span class="absolute bottom-1 text-[9px] font-bold opacity-60">6</span>
+                    <span class="absolute left-1.5 text-[9px] font-bold opacity-60">9</span>
+
+                    <!-- Titik Tengah Poros Jarum -->
+                    <div class="w-2 h-2 bg-blue-400 rounded-full z-20 shadow-md"></div>
+
+                    <!-- Jarum Jam -->
+                    <div class="absolute w-1 bg-slate-100 rounded-full origin-bottom z-10 transition-transform duration-300"
+                         :style="'height: 24px; bottom: 50%; transform: rotate(' + analogHourDeg + 'deg)'"></div>
+
+                    <!-- Jarum Menit -->
+                    <div class="absolute w-0.5 bg-blue-400 rounded-full origin-bottom z-10 transition-transform duration-300"
+                         :style="'height: 32px; bottom: 50%; transform: rotate(' + analogMinuteDeg + 'deg)'"></div>
+
+                    <!-- Jarum Detik -->
+                    <div class="absolute w-[1px] bg-red-400 rounded-full origin-bottom z-10"
+                         :style="'height: 36px; bottom: 50%; transform: rotate(' + analogSecondDeg + 'deg)'"></div>
+                </div>
+
+                <span class="text-[10px] uppercase font-semibold text-blue-400 tracking-wider mt-1" x-text="currentDayName + ', ' + currentDayNum + ' ' + currentMonthName"></span>
             </div>
 
             <!-- Kotak Target Hafalan Quran (Min - Sab) -->
-            <div class="macos-glass-dark rounded-[24px] p-5 shadow-xl md:col-span-3 flex flex-col justify-center relative overflow-hidden">
+            <div class="macos-glass-dark rounded-[24px] p-5 shadow-xl md:col-span-3 flex flex-col justify-center relative overflow-hidden h-full min-h-[140px]">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">📖 Target Hafalan Quran</h3>
                     <span class="text-[10px] opacity-70 font-medium">Klik bulatan untuk mencentang</span>
@@ -665,7 +688,7 @@
         </div>
     </div>
 
-    <!-- Script Utama (Terintegrasi Jam, Ceklis Hafalan Quran, & AI Serba Tahu) -->
+    <!-- Script Utama (Terintegrasi Jam Analog Real-Time, Ceklis Hafalan Quran, & AI) -->
     <script>
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
@@ -691,6 +714,12 @@
                 currentDayName: '',
                 currentMonthName: '',
                 currentWeather: '28°C ⛅',
+                
+                // Derajat Putaran Jarum Jam Analog Real-Time
+                analogHourDeg: 0,
+                analogMinuteDeg: 0,
+                analogSecondDeg: 0,
+
                 inactivityTimer: null,
                 autonomousTimer: null,
                 visionTimer: null,
@@ -938,6 +967,15 @@
 
                 updateClockAndCalendar() {
                     const now = new Date();
+                    const hours = now.getHours();
+                    const minutes = now.getMinutes();
+                    const seconds = now.getSeconds();
+
+                    // Kalkulasi sudut putar jarum jam analog
+                    this.analogSecondDeg = seconds * 6; // 360° / 60 = 6° per detik
+                    this.analogMinuteDeg = minutes * 6 + seconds * 0.1; // 6° per menit + pergerakan halus per detik
+                    this.analogHourDeg = (hours % 12) * 30 + minutes * 0.5; // 30° per jam + pergerakan halus per menit
+
                     this.currentDateTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                     this.currentDayNum = now.getDate();
                     this.currentDayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
@@ -959,7 +997,6 @@
                     if (!target) return;
                     target.isChecked = !target.isChecked;
 
-                    // Simpan ke database Supabase
                     await _supabase.from('quran_checklists').upsert({
                         day_code: target.code,
                         is_checked: target.isChecked
