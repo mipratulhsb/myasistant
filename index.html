@@ -589,7 +589,7 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Anda adalah sistem asisten eksekutif digital cerdas untuk Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA: 1) Jika pengguna menyapa (seperti "Halo", "Hai", "Pagi"), balas dengan sangat ramah, singkat, dan natural (misal: "Halo Tuan Mipra, ada yang bisa saya bantu?"). 2) Jika pengguna menanyakan target, progres, atau hal operasional, berikan jawaban yang SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown (tabel ringkas, bullet points, teks tebal). Jangan pernah bertele-tele.'
+                    customInstructions: 'Anda adalah asisten eksekutif cerdas untuk Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA: 1) Jika pengguna menyapa (seperti "Halo", "Hai", "Pagi"), balas dengan sangat ramah, singkat, dan natural (misal: "Halo Tuan Mipra, ada yang bisa saya bantu?"). 2) Jika pengguna menanyakan target, progres, atau hal operasional, berikan jawaban yang SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown (tabel ringkas, bullet points, teks tebal). Jangan pernah bertele-tele.'
                 },
 
                 get totalCompletedPages() {
@@ -632,6 +632,7 @@
                     await this.loadPasscodeFromSupabase();
                     await this.loadConfigAndData();
                     await this.loadTahfizProgressFromDB();
+                    await this.loadChecklistProgressFromDB();
                     await this.loadAllChatHistory();
                 },
 
@@ -644,12 +645,10 @@
 
                 handleGlobalKeydown(event) {
                     if (this.isUnlocked) return;
-
                     if (/^[0-9]$/.test(event.key)) {
                         event.preventDefault();
                         this.pressPasscode(event.key);
-                    } 
-                    else if (event.key === 'Backspace' || event.key === 'Delete') {
+                    } else if (event.key === 'Backspace' || event.key === 'Delete') {
                         event.preventDefault();
                         this.deletePasscode();
                     }
@@ -682,9 +681,7 @@
                         }
                     } else {
                         this.passcodeError = 'Passcode salah. Silakan coba lagi.';
-                        setTimeout(() => {
-                            this.passcode = '';
-                        }, 400);
+                        setTimeout(() => { this.passcode = ''; }, 400);
                     }
                 },
 
@@ -692,10 +689,8 @@
                     const deadline = new Date(2028, 8, 10, 0, 0, 0).getTime();
                     const now = new Date().getTime();
                     const distance = deadline - now;
-
                     if (distance > 0) {
-                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                        this.countdown.days = String(days);
+                        this.countdown.days = String(Math.floor(distance / (1000 * 60 * 60 * 24)));
                     } else {
                         this.countdown.days = '0';
                     }
@@ -705,48 +700,34 @@
                     const daysOrder = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
                     const now = new Date();
                     let tabs = [];
-
                     for (let i = 0; i < 7; i++) {
                         let d = new Date();
                         d.setDate(now.getDate() + i);
                         let dayName = daysOrder[d.getDay()];
-                        
-                        if (i === 0) {
-                            tabs.push({ key: 'hari_ini', label: 'Hari Ini (' + dayName + ')' });
-                        } else if (i === 1) {
-                            tabs.push({ key: 'besok', label: 'Besok (' + dayName + ')' });
-                        } else {
-                            tabs.push({ key: dayName.toLowerCase(), label: dayName });
-                        }
+                        if (i === 0) tabs.push({ key: 'hari_ini', label: 'Hari Ini (' + dayName + ')' });
+                        else if (i === 1) tabs.push({ key: 'besok', label: 'Besok (' + dayName + ')' });
+                        else tabs.push({ key: dayName.toLowerCase(), label: dayName });
                     }
                     this.dynamicTaskTabs = tabs;
                 },
 
                 updateClockAndCalendar() {
                     const now = new Date();
-                    const hours = now.getHours();
-                    const minutes = now.getMinutes();
-                    const seconds = now.getSeconds();
-
-                    this.analogSecondDeg = seconds * 6;
-                    this.analogMinuteDeg = minutes * 6 + seconds * 0.1;
-                    this.analogHourDeg = (hours % 12) * 30 + minutes * 0.5;
-
+                    this.analogSecondDeg = now.getSeconds() * 6;
+                    this.analogMinuteDeg = now.getMinutes() * 6 + now.getSeconds() * 0.1;
+                    this.analogHourDeg = (now.getHours() % 12) * 30 + now.getMinutes() * 0.5;
                     this.currentDateTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                    this.currentDayNum = now.getDate();
                     this.currentDayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
-                    this.currentMonthName = now.toLocaleDateString('id-ID', { month: 'long' });
                     this.currentFullMasehiDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
                     try {
-                        const options = { calendar: 'islamic-umalqura', day: 'numeric', month: 'long', year: 'numeric' };
-                        this.currentHijriDate = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', options).format(now);
+                        this.currentHijriDate = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', { calendar: 'islamic-umalqura', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
                     } catch (e) {
                         this.currentHijriDate = '27 Rabiul Awal 1448 H';
                     }
                 },
 
-                toggleStructuredTask(id) {
+                // Fungsi Toggle Checklist dengan Sinkronisasi Supabase (Agar tersimpan saat refresh)
+                async toggleStructuredTask(id) {
                     let key = this.activeTaskTab;
                     if (key === 'hari_ini') {
                         const daysOrder = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
@@ -758,6 +739,24 @@
                     const task = this.structuredTasks[key]?.find(t => t.id === id);
                     if (task) {
                         task.is_completed = !task.is_completed;
+                        await _supabase.from('checklist_tasks').upsert({
+                            task_id: task.id,
+                            day_key: key,
+                            title: task.title,
+                            is_completed: task.is_completed
+                        }, { onConflict: 'task_id' });
+                    }
+                },
+
+                async loadChecklistProgressFromDB() {
+                    const { data } = await _supabase.from('checklist_tasks').select('*');
+                    if (data) {
+                        data.forEach(item => {
+                            for (let day in this.structuredTasks) {
+                                let t = this.structuredTasks[day].find(x => x.id === item.task_id);
+                                if (t) t.is_completed = item.is_completed;
+                            }
+                        });
                     }
                 },
 
@@ -867,20 +866,20 @@
 [HARI INI] ${this.currentDayName}, ${this.currentFullMasehiDate}
 [TARGET HAFALAN HARI INI] ${currentDayTasks}
 [PROGRES KESELURUHAN TAHFIZ 20 JUZ] Halaman Selesai: ${this.totalCompletedPages}/400 (${this.totalProgressPercent}%)
-[DETAIL PROGRES JUZ] ${tahfizProgressSummary}
 
 PERTANYAAN/PESAN DARI TUAN ${this.profile.panggilan}: ${prompt}`;
 
                     let partsArray = [{ text: fullSystemInstruction }];
 
                     try {
+                        // Menggunakan model gemini-3.7-flash pilihan Anda
                         let res = await this.callGeminiAPI('gemini-3.7-flash', { contents: [{ role: "user", parts: partsArray }] });
-                        if (!res.ok) res = await this.callGeminiAPI('gemini-3.5-flash-lite', { contents: [{ role: "user", parts: partsArray }] });
+                        if (!res.ok) {
+                            res = await this.callGeminiAPI('gemini-3.5-flash-lite', { contents: [{ role: "user", parts: partsArray }] });
+                        }
                         if (res.ok) {
                             const data = await res.json();
                             let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah diproses.";
-                            
-                            // Langsung assign ke rawAIResponse secara stabil tanpa efek ketik yang berisiko hilang
                             this.rawAIResponse = reply;
                             
                             await _supabase.from('chat_history').insert([
@@ -888,6 +887,8 @@ PERTANYAAN/PESAN DARI TUAN ${this.profile.panggilan}: ${prompt}`;
                                 { sender: 'ai', text_content: reply }
                             ]);
                             await this.loadAllChatHistory();
+                        } else {
+                            this.rawAIResponse = "Gagal terhubung ke server AI. Periksa kembali API Key Anda.";
                         }
                     } catch (e) {
                         this.rawAIResponse = "Gangguan koneksi sistem. Silakan coba kembali.";
