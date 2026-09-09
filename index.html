@@ -13,8 +13,6 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Marked.js untuk Rendering Markdown yang Rapi -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.js"></script>
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -43,42 +41,6 @@
         .passcode-btn:active, .passcode-btn:hover {
             background: rgba(255, 255, 255, 0.22);
             transform: scale(0.96);
-        }
-        /* Styling untuk Output AI Markdown & Tabel */
-        .ai-markdown-output table {
-            width: 100%;
-            margin-top: 0.75rem;
-            margin-bottom: 0.75rem;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-        .ai-markdown-output th, .ai-markdown-output td {
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 0.5rem 0.75rem;
-            text-align: left;
-        }
-        .ai-markdown-output th {
-            background: rgba(59, 130, 246, 0.2);
-            font-weight: 600;
-            color: #60a5fa;
-        }
-        .ai-markdown-output ul {
-            list-style-type: disc;
-            padding-left: 1.25rem;
-            margin: 0.5rem 0;
-        }
-        .ai-markdown-output ol {
-            list-style-type: decimal;
-            padding-left: 1.25rem;
-            margin: 0.5rem 0;
-        }
-        .ai-markdown-output p {
-            margin-bottom: 0.5rem;
-            line-height: 1.6;
-        }
-        .ai-markdown-output strong {
-            color: #34d399;
-            font-weight: 600;
         }
     </style>
 </head>
@@ -141,16 +103,6 @@
         </div>
     </div>
 
-    <!-- MODAL PENGATURAN API KEY -->
-    <div x-show="showApiKeyModal" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="macos-glass-dark rounded-[24px] p-6 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
-            <h3 class="font-semibold text-sm text-blue-400 mb-2">🔑 Konfigurasi Kunci API Gemini</h3>
-            <p class="text-xs opacity-80 mb-4">Masukkan Gemini API Key Anda agar sistem AI eksekutif dapat berfungsi penuh.</p>
-            <input type="password" x-model="tempApiKey" placeholder="Tempel API Key di sini..." class="w-full macos-glass-subtle-dark rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500 mb-4 text-center text-slate-100">
-            <button @click="saveApiKey()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-lg">Simpan & Aktifkan</button>
-        </div>
-    </div>
-
     <input type="file" id="profilePicInput" accept="image/*" class="hidden" @change="handleProfilePicChange">
 
     <!-- CUSTOM NAVBAR -->
@@ -199,12 +151,6 @@
                     <button @click="activeModal = 'dataPribadi'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">
                         <span>👤</span> Profil & Data Diri
                     </button>
-                    <button @click="activeModal = 'wawasanAI'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">
-                        <span>🧠</span> Konfigurasi Sistem
-                    </button>
-                    <button @click="openChatHistoryModal(); profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">
-                        <span>📜</span> Riwayat Percakapan
-                    </button>
                     <div class="border-t border-white/10 pt-1">
                         <button @click="logout()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-400 transition flex items-center gap-2.5 cursor-pointer hover:bg-red-500/20">
                             <span>🚪</span> Kunci Kembali
@@ -218,7 +164,7 @@
     <!-- MAIN WORKSPACE CONTAINER -->
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
-        <!-- 1. COUNTDOWN & CHECKLIST HAFALAN QURAN (DI BAGIAN ATAS) -->
+        <!-- COUNTDOWN & CHECKLIST HAFALAN QURAN (2 TAHUN 20 JUZ) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
             
             <!-- Widget Countdown -->
@@ -280,47 +226,6 @@
                 </div>
             </div>
 
-        </div>
-
-        <!-- 2. PANEL AI UTAMA (DIPINDAHKAN KE BAGIAN BAWAH) -->
-        <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
-            
-            <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
-                <!-- Output AI Dirender secara Stabil Menggunakan Marked.js -->
-                <div class="ai-markdown-output text-sm sm:text-base text-slate-100 overflow-x-auto leading-relaxed" x-html="renderedAIResponse"></div>
-                <span class="animate-pulse font-bold text-blue-400 text-lg absolute bottom-4 right-6" x-show="isTyping">|</span>
-            </div>
-
-            <!-- Input Pencarian / Perintah -->
-            <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
-                <label class="macos-glass-dark p-3.5 rounded-2xl cursor-pointer transition flex items-center justify-center shadow-md hover:scale-105 active:scale-95" 
-                       title="Unggah Berkas Visual">
-                    <input type="file" accept="image/*" @change="handleImageUpload" class="hidden">
-                    <svg class="w-5 h-5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span x-show="attachedImage" class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
-                </label>
-
-                <div class="flex-1 relative flex items-center">
-                    <span class="absolute left-4 text-lg opacity-50">🔍</span>
-                    <input 
-                        type="text" 
-                        x-ref="searchInput"
-                        x-model="userQuery" 
-                        :disabled="loadingAI"
-                        placeholder="Ketik perintah atau tanyakan sesuatu pada Spotlight AI..." 
-                        class="w-full macos-glass-dark focus:border-blue-500 focus:outline-none pl-12 pr-5 py-3.5 rounded-2xl text-sm shadow-inner disabled:opacity-50 transition-all backdrop-blur-2xl font-medium text-slate-100 placeholder-slate-400"
-                    >
-                </div>
-
-                <button 
-                    type="submit" 
-                    :disabled="loadingAI"
-                    class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-xs font-semibold transition shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer backdrop-blur-xl border border-blue-400/30 hover:scale-105 active:scale-95"
-                >
-                    <span>Kirim</span>
-                </button>
-            </form>
-            <p class="text-[10px] px-2 opacity-75 font-medium text-slate-300" x-show="attachedImage">📎 Berkas gambar terlampir untuk analisis sistem.</p>
         </div>
 
     </main>
@@ -403,42 +308,6 @@
         </div>
     </div>
 
-    <!-- MODAL RIWAYAT CHAT -->
-    <div x-show="activeModal === 'chatHistory'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
-            <div class="flex justify-between items-center mb-3 pb-3 border-b border-white/10">
-                <div class="flex items-center gap-2">
-                    <span class="text-base">📜</span>
-                    <h3 class="font-semibold text-sm text-blue-400">Riwayat Percakapan Sistem</h3>
-                </div>
-                <button @click="activeModal = null" class="cursor-pointer font-bold text-sm px-2.5 py-1 rounded-xl macos-glass-subtle-dark text-slate-200">✕</button>
-            </div>
-            <div class="flex-1 overflow-y-auto space-y-3 pr-1 my-2">
-                <template x-if="allChatHistory.length === 0">
-                    <p class="text-xs text-center py-8 opacity-60">Belum ada riwayat percakapan tersimpan.</p>
-                </template>
-                <template x-for="chat in allChatHistory" :key="chat.id">
-                    <div class="p-3.5 rounded-2xl macos-glass-subtle-dark flex flex-col gap-1.5">
-                        <div class="flex justify-between items-center">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wide"
-                                  :class="chat.sender === 'user' ? 'bg-blue-600/30 text-blue-400' : 'bg-emerald-600/30 text-emerald-400'"
-                                  x-text="chat.sender === 'user' ? '👤 Tuan' : '🤖 Sistem AI'"></span>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] opacity-60" x-text="new Date(chat.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
-                                <button @click="deleteSingleChat(chat.id)" class="text-red-400 hover:text-red-500 transition text-xs px-2 py-0.5 rounded-lg macos-glass-subtle-dark">🗑️</button>
-                            </div>
-                        </div>
-                        <p class="text-xs leading-relaxed font-medium text-slate-200" x-text="chat.text_content"></p>
-                    </div>
-                </template>
-            </div>
-            <div class="pt-3 border-t border-white/10 flex justify-between items-center">
-                <button @click="clearChatHistory()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 px-4 py-2 rounded-2xl text-xs font-semibold transition cursor-pointer backdrop-blur-md">🗑️ Bersihkan Riwayat</button>
-                <button @click="activeModal = null" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Tutup</button>
-            </div>
-        </div>
-    </div>
-
     <!-- MODAL PENGATURAN PROFIL -->
     <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -460,51 +329,25 @@
         </div>
     </div>
 
-    <!-- MODAL KONFIGURASI AI -->
-    <div x-show="activeModal === 'wawasanAI'" style="display: none;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="macos-glass-dark rounded-[28px] p-6 w-full max-w-md shadow-2xl">
-            <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
-                <h3 class="font-semibold text-sm text-blue-400">🧠 Konfigurasi Persona Formal</h3>
-                <button @click="activeModal = null" class="cursor-pointer px-2.5 py-1 rounded-xl macos-glass-subtle-dark text-slate-200">✕</button>
-            </div>
-            <div class="mb-5">
-                <label class="block text-xs mb-1.5 font-semibold opacity-80">Instruksi Sistem Eksekutif</label>
-                <textarea x-model="profile.customInstructions" rows="6" class="w-full macos-glass-subtle-dark rounded-2xl p-3.5 text-xs focus:outline-none focus:border-blue-500 resize-none font-medium text-slate-100"></textarea>
-            </div>
-            <button @click="saveProfile(); activeModal = null;" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl text-xs font-semibold transition cursor-pointer shadow-lg">Simpan Konfigurasi</button>
-        </div>
-    </div>
-
     <!-- SCRIPT UTAMA -->
     <script>
         const SUPABASE_URL = 'https://bcgxbzksdawtxkxjyzia.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Y1snRnFpheepSQLngSCntg_9fHuA7AN';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let cachedApiKey = '';
-        let activeTypingInterval = null;
         let lockoutInterval = null;
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('macosApp', () => ({
-                userQuery: '',
-                loadingAI: false,
                 activeModal: null,
-                attachedImage: null,
                 userProfilePic: '',
-                rawAIResponse: '',
-                typedText: '',
-                isTyping: false,
                 currentDateTime: '',
                 currentDayNum: '',
                 currentDayName: '',
                 currentMonthName: '',
                 currentWeather: '28°C ⛅',
-                allChatHistory: [],
 
                 isUnlocked: false,          
-                showApiKeyModal: false,
-                tempApiKey: '',
                 passcode: '',
                 passcodeError: '',
                 correctPasscodeHash: '123456',
@@ -549,8 +392,7 @@
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
-                    panggilan: 'Mipra',
-                    customInstructions: 'Anda adalah asisten eksekutif cerdas untuk Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA: 1) Jika pengguna menyapa (seperti "Halo", "Hai", "Pagi"), balas dengan sangat ramah, singkat, dan natural (misal: "Halo Tuan Mipra, ada yang bisa saya bantu?"). 2) Jika pengguna menanyakan target, progres, atau hal operasional, berikan jawaban yang SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown (tabel ringkas, bullet points, teks tebal).'
+                    panggilan: 'Mipra'
                 },
 
                 get totalCompletedPages() {
@@ -563,10 +405,6 @@
 
                 get totalProgressPercent() {
                     return Math.min(Math.round((this.totalCompletedPages / 400) * 100), 100);
-                },
-
-                get renderedAIResponse() {
-                    return marked.parse(this.typedText || `Selamat datang kembali, Tuan ${this.profile.panggilan}. Sistem siap melayani.`);
                 },
 
                 get filteredStructuredTasks() {
@@ -594,7 +432,6 @@
                     await this.loadConfigAndData();
                     await this.loadTahfizProgressFromDB();
                     await this.loadChecklistProgressFromDB();
-                    await this.loadAllChatHistory();
                 },
 
                 async loadPasscodeFromSupabase() {
@@ -638,15 +475,6 @@
                     if (this.passcode === this.correctPasscodeHash) {
                         this.isUnlocked = true;
                         this.failedAttempts = 0;
-                        
-                        // Menjalankan efek sapaan otomatis setelah terbuka
-                        setTimeout(() => {
-                            this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, sistem siap melayani. Ada yang bisa saya bantu?`);
-                        }, 300);
-
-                        if (!cachedApiKey) {
-                            this.showApiKeyModal = true;
-                        }
                     } else {
                         this.failedAttempts++;
                         if (this.failedAttempts >= 4) {
@@ -753,32 +581,6 @@
                     }, { onConflict: 'juz_number' });
                 },
 
-                startTypingEffect(text) {
-                    if (activeTypingInterval) clearInterval(activeTypingInterval);
-                    let i = 0;
-                    this.typedText = '';
-                    this.isTyping = true;
-                    activeTypingInterval = setInterval(() => {
-                        if (i < text.length) {
-                            this.typedText += text.charAt(i);
-                            i++;
-                        } else {
-                            clearInterval(activeTypingInterval);
-                            this.isTyping = false;
-                        }
-                    }, 15);
-                },
-
-                handleImageUpload(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.attachedImage = { inlineData: { data: e.target.result.split(',')[1], mimeType: file.type } };
-                    };
-                    reader.readAsDataURL(file);
-                },
-
                 handleProfilePicChange(event) {
                     const file = event.target.files[0];
                     if (!file) return;
@@ -789,42 +591,6 @@
                     reader.readAsDataURL(file);
                 },
 
-                async loadAllChatHistory() {
-                    const { data } = await _supabase.from('chat_history').select('*').order('created_at', { ascending: false });
-                    if (data) this.allChatHistory = data;
-                },
-
-                async openChatHistoryModal() {
-                    await this.loadAllChatHistory();
-                    this.activeModal = 'chatHistory';
-                },
-
-                async saveChatToSupabase(sender, text) {
-                    const { data } = await _supabase.from('chat_history').insert([{ sender, text_content: text }]).select();
-                    if (data?.[0]) this.allChatHistory.unshift(data[0]);
-                },
-
-                async deleteSingleChat(id) {
-                    await _supabase.from('chat_history').delete().eq('id', id);
-                    this.allChatHistory = this.allChatHistory.filter(item => item.id !== id);
-                },
-
-                async clearChatHistory() {
-                    if (confirm('Bersihkan seluruh riwayat percakapan sistem?')) {
-                        await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-                        this.allChatHistory = [];
-                        this.startTypingEffect("Riwayat sistem telah dibersihkan.");
-                    }
-                },
-
-                async saveApiKey() {
-                    if (!this.tempApiKey.trim()) return;
-                    await _supabase.from('user_config').upsert({ key_name: 'gemini_api_key', key_value: this.tempApiKey.trim() }, { onConflict: 'key_name' });
-                    cachedApiKey = this.tempApiKey.trim();
-                    this.showApiKeyModal = false;
-                    this.startTypingEffect(`Kunci API berhasil disimpan. Selamat pagi Tuan ${this.profile.panggilan}, sistem siap melayani.`);
-                },
-
                 logout() {
                     this.isUnlocked = false;
                     this.passcode = '';
@@ -833,16 +599,12 @@
                 },
 
                 async loadConfigAndData() {
-                    const { data: configData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'gemini_api_key').single();
-                    if (configData?.key_value) cachedApiKey = configData.key_value;
-
                     const { data: profileData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'user_profile_wawasan').single();
                     if (profileData?.key_value) {
                         try {
                             const parsed = JSON.parse(profileData.key_value);
                             if (parsed.namaLengkap) this.profile.namaLengkap = parsed.namaLengkap;
                             if (parsed.panggilan) this.profile.panggilan = parsed.panggilan;
-                            if (parsed.customInstructions) this.profile.customInstructions = parsed.customInstructions;
                         } catch(e) {}
                     }
                 },
@@ -853,60 +615,6 @@
                         key_value: JSON.stringify(this.profile)
                     }, { onConflict: 'key_name' });
                     alert('Konfigurasi sistem berhasil diperbarui.');
-                },
-
-                async callGeminiAPI(modelName, payload) {
-                    return await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cachedApiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                },
-
-                async submitToAI() {
-                    if ((!this.userQuery.trim() && !this.attachedImage) || this.loadingAI) return;
-                    if (!cachedApiKey) {
-                        this.showApiKeyModal = true;
-                        return;
-                    }
-
-                    const prompt = this.userQuery.trim();
-                    this.userQuery = '';
-                    await this.saveChatToSupabase('user', prompt);
-                    this.loadingAI = true;
-
-                    let currentDayTasks = JSON.stringify(this.filteredStructuredTasks);
-                    let fullSystemInstruction = `${this.profile.customInstructions}
-[PROFIL PENGGUNA] Nama: ${this.profile.namaLengkap} (${this.profile.panggilan})
-[HARI INI] ${this.currentDayName}, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-[TARGET HAFALAN HARI INI] ${currentDayTasks}
-[PROGRES KESELURUHAN TAHFIZ 20 JUZ] Halaman Selesai: ${this.totalCompletedPages}/400 (${this.totalProgressPercent}%)
-
-PERTANYAAN/PESAN DARI TUAN ${this.profile.panggilan}: ${prompt}`;
-
-                    let partsArray = [{ text: fullSystemInstruction }];
-                    if (this.attachedImage) {
-                        partsArray.push(this.attachedImage);
-                        this.attachedImage = null;
-                    }
-
-                    try {
-                        let res = await this.callGeminiAPI('gemini-3.7-flash', { contents: [{ role: "user", parts: partsArray }] });
-                        if (!res.ok) res = await this.callGeminiAPI('gemini-3.5-flash-lite', { contents: [{ role: "user", parts: partsArray }] });
-                        
-                        if (res.ok) {
-                            const data = await res.json();
-                            let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah sedang diproses, Tuan.";
-                            this.startTypingEffect(reply);
-                            await this.saveChatToSupabase('ai', reply);
-                        } else {
-                            this.startTypingEffect("Gagal terhubung ke server API Gemini. Periksa kembali kunci API Anda.");
-                        }
-                    } catch (e) {
-                        this.startTypingEffect("Gangguan koneksi terdeteksi pada server pusat.");
-                    } finally {
-                        this.loadingAI = false;
-                    }
                 }
             }));
         });
