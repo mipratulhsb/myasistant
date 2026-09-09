@@ -97,14 +97,15 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 relative overflow-x-hidden select-none" 
-      x-data="macosApp()">
+      x-data="macosApp()"
+      @keydown.window="handleGlobalKeydown($event)">
 
     <!-- BACKGROUND DINAMIS & ANIMASI MALAM -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-slate-950">
         <div class="absolute inset-0 bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 opacity-90"></div>
         <div class="absolute top-12 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-star" style="animation-delay: 0.5s;"></div>
         <div class="absolute top-20 left-1/3 w-1 h-1 bg-blue-200 rounded-full animate-star" style="animation-delay: 1.2s;"></div>
-        <div class="absolute top-10 right-1/4 w-2 h-2 bg-yellow-100 rounded-full animate-star" style="animation-delay: 2s;"></div>
+        <div class="absolute top-10 right-1/4 w-2 h-2 bg-yellow-100 rounded-full animate-star" style="animation-delay: 2s;">Num</div>
         <div class="absolute top-28 right-1/5 w-1 h-1 bg-white rounded-full animate-star" style="animation-delay: 0.8s;"></div>
         <div class="absolute top-8 right-16 text-4xl animate-crescent select-none filter drop-shadow-[0_0_12px_rgba(253,224,71,0.6)]">🌙</div>
         <div class="absolute bottom-0 inset-x-0 h-48 opacity-25 bg-repeat-x bg-bottom pointer-events-none"
@@ -112,14 +113,15 @@
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
     </div>
 
-    <!-- LOCKSCREEN PASSCODE ALA iOS -->
+    <!-- LOCKSCREEN PASSCODE ALA iOS (Dukung Input Keyboard Laptop) -->
     <div x-show="!isUnlocked" class="fixed inset-0 bg-slate-950/92 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm macos-glass-dark rounded-[36px] p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center border border-white/10 relative">
             <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl mb-4 shadow-inner">
                 🔒
             </div>
-            <h2 class="text-base sm:text-lg font-semibold mb-2 tracking-tight text-slate-100">Enter Passcode</h2>
-            <p class="text-xs text-red-400 mb-4 h-4 font-medium" x-text="passcodeError"></p>
+            <h2 class="text-base sm:text-lg font-semibold mb-1 tracking-tight text-slate-100">Enter Passcode</h2>
+            <p class="text-[10px] text-slate-400 mb-2">Gunakan klik layar atau ketik langsung via keyboard laptop</p>
+            <p class="text-xs text-red-400 mb-3 h-4 font-medium" x-text="passcodeError"></p>
 
             <div class="flex gap-3 mb-8">
                 <template x-for="i in 6" :key="i">
@@ -244,7 +246,7 @@
                 </div>
             </div>
 
-            <!-- Panel Countdown: HANYA HARI SAJA (Single Big Card) -->
+            <!-- Panel Countdown: HANYA HARI SAJA -->
             <div class="lg:col-span-8 macos-glass-dark rounded-[24px] p-6 shadow-xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-slate-950">
                 <div class="flex justify-between items-center mb-3">
                     <div>
@@ -256,7 +258,6 @@
                     </button>
                 </div>
 
-                <!-- Tampilan Card Hari Besar Tunggal -->
                 <div class="macos-glass-subtle-dark rounded-2xl p-5 text-center my-2 border border-white/10 flex flex-col items-center justify-center">
                     <span class="text-5xl sm:text-6xl font-black text-emerald-400 tabular-nums tracking-tight" x-text="countdown.days">00</span>
                     <p class="text-xs uppercase tracking-widest opacity-75 mt-1 font-semibold">HARI MENUJU TARGET 2 TAHUN</p>
@@ -339,16 +340,14 @@
             </div>
         </div>
 
-        <!-- SPOTLIGHT AI UTAMA (Dengan Rendering Markdown Terstruktur) -->
+        <!-- SPOTLIGHT AI UTAMA -->
         <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
             <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
-                <!-- Jika sedang mengetik, tampilkan teks biasa -->
                 <template x-if="isTyping">
                     <p class="text-base sm:text-xl font-bold text-center leading-relaxed tracking-wide text-slate-100">
                         <span x-text="typedText"></span><span class="animate-pulse font-bold text-blue-400">|</span>
                     </p>
                 </template>
-                <!-- Jika selesai mengetik, render Markdown HTML yang rapi (Tabel, Daftar, Grafik/Teks Berformat) -->
                 <template x-if="!isTyping">
                     <div class="ai-markdown-output text-xs sm:text-sm text-slate-100 overflow-x-auto" x-html="renderedAIResponse"></div>
                 </template>
@@ -595,7 +594,7 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA RESPON AI: Berikan jawaban yang SANGAT RINGKAS, RAPI, TERSTRUKTUR, dan profesional. Gunakan format Markdown (seperti heading, bullet points, tabel, teks tebal, atau penomoran) agar mudah dibaca sekilas. Jangan pernah menulis jawaban panjang yang berantakan atau narasi bertele-tele.'
+                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA RESPON AI: Berikan jawaban yang SANGAT RINGKAS, RAPI, TERSTRUKTUR, dan profesional dalam format Markdown (gunakan tabel, bullet points, penomoran, teks tebal). Jangan pernah memberikan penjelasan yang terlalu panjang atau bertele-tele.'
                 },
 
                 get totalCompletedPages() {
@@ -645,6 +644,22 @@
                     const { data } = await _supabase.from('user_config').select('key_value').eq('key_name', 'app_passcode').single();
                     if (data?.key_value) {
                         this.correctPasscodeHash = data.key_value;
+                    }
+                },
+
+                // Fungsi Tangkap Keyboard Global untuk Passcode Lockscreen
+                handleGlobalKeydown(event) {
+                    if (this.isUnlocked) return; // Jika sudah terbuka, abaikan
+
+                    // Jika menekan angka 0-9 (baik dari baris angka atas maupun Numpad)
+                    if (/^[0-9]$/.test(event.key)) {
+                        event.preventDefault();
+                        this.pressPasscode(event.key);
+                    } 
+                    // Jika menekan tombol Backspace atau Delete untuk menghapus
+                    else if (event.key === 'Backspace' || event.key === 'Delete') {
+                        event.preventDefault();
+                        this.deletePasscode();
                     }
                 },
 
@@ -880,9 +895,8 @@
 [DETAIL PROGRES JUZ] ${tahfizProgressSummary}
 
 INSTRUKSI FORMAT JAWABAN:
-- Jawab dengan SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown.
-- Gunakan tabel, bullet points, atau penomoran.
-- Hindari kalimat pembuka yang terlalu panjang atau bertele-tele. Langsung berikan poin utama yang ditanyakan.
+- Berikan jawaban yang SANGAT RINGKAS, RAPI, TERSTRUKTUR, dan profesional dalam format Markdown (gunakan tabel, bullet points, atau penomoran).
+- Langsung ke poin utama tanpa pembukaan atau penutupan yang bertele-tele.
 - Pertanyaan Tuan ${this.profile.panggilan}: ${prompt}`;
 
                     let partsArray = [{ text: fullSystemInstruction }];
@@ -895,7 +909,6 @@ INSTRUKSI FORMAT JAWABAN:
                             let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah diproses.";
                             this.startTypingEffect(reply);
                             
-                            // Simpan ke database riwayat chat
                             await _supabase.from('chat_history').insert([
                                 { sender: 'user', text_content: prompt },
                                 { sender: 'ai', text_content: reply }
