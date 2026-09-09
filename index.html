@@ -566,7 +566,7 @@
                 },
 
                 get renderedAIResponse() {
-                    return marked.parse(this.typedText || 'Sistem siap melayani, Tuan Mipra.');
+                    return marked.parse(this.typedText || `Selamat datang kembali, Tuan ${this.profile.panggilan}. Sistem siap melayani.`);
                 },
 
                 get filteredStructuredTasks() {
@@ -638,10 +638,14 @@
                     if (this.passcode === this.correctPasscodeHash) {
                         this.isUnlocked = true;
                         this.failedAttempts = 0;
+                        
+                        // Menjalankan efek sapaan otomatis setelah terbuka
+                        setTimeout(() => {
+                            this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, sistem siap melayani. Ada yang bisa saya bantu?`);
+                        }, 300);
+
                         if (!cachedApiKey) {
                             this.showApiKeyModal = true;
-                        } else {
-                            this.startTypingEffect(`Halo Tuan ${this.profile.panggilan}, sistem siap melayani. Ada yang bisa saya bantu?`);
                         }
                     } else {
                         this.failedAttempts++;
