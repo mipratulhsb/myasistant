@@ -13,6 +13,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Marked.js untuk Rendering Markdown yang Rapi -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.js"></script>
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -41,6 +43,42 @@
         .passcode-btn:active, .passcode-btn:hover {
             background: rgba(255, 255, 255, 0.22);
             transform: scale(0.96);
+        }
+        /* Styling untuk Output AI yang Terstruktur & Rapi */
+        .ai-markdown-output table {
+            width: 100%;
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .ai-markdown-output th, .ai-markdown-output td {
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+        .ai-markdown-output th {
+            background: rgba(59, 130, 246, 0.2);
+            font-weight: 600;
+            color: #60a5fa;
+        }
+        .ai-markdown-output ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            margin: 0.5rem 0;
+        }
+        .ai-markdown-output ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+            margin: 0.5rem 0;
+        }
+        .ai-markdown-output p {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+        .ai-markdown-output strong {
+            color: #34d399;
+            font-weight: 600;
         }
         @keyframes floatCrescent {
             0%, 100% { transform: translateY(0px) rotate(-5deg); }
@@ -176,7 +214,7 @@
     <!-- MAIN WORKSPACE CONTAINER -->
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
-        <!-- JAM ANALOG & COUNTDOWN TARGET 2 TAHUN (HANYA HARI & JAM) -->
+        <!-- JAM ANALOG & COUNTDOWN TARGET 2 TAHUN (HANYA HARI) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
             
             <div class="lg:col-span-4 macos-glass-dark rounded-[24px] p-5 shadow-xl flex flex-col items-center justify-between text-center relative overflow-hidden">
@@ -206,7 +244,7 @@
                 </div>
             </div>
 
-            <!-- Panel Countdown: Hanya Menampilkan HARI dan JAM -->
+            <!-- Panel Countdown: HANYA HARI SAJA (Single Big Card) -->
             <div class="lg:col-span-8 macos-glass-dark rounded-[24px] p-6 shadow-xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-slate-950">
                 <div class="flex justify-between items-center mb-3">
                     <div>
@@ -218,16 +256,10 @@
                     </button>
                 </div>
 
-                <!-- Font Angka Countdown Besar (Hanya 2 Kolom: Hari & Jam) -->
-                <div class="grid grid-cols-2 gap-4 text-center my-3">
-                    <div class="macos-glass-subtle-dark rounded-2xl p-4 border border-white/10">
-                        <span class="text-4xl sm:text-5xl font-black text-emerald-400 tabular-nums" x-text="countdown.days">00</span>
-                        <p class="text-xs uppercase tracking-wider opacity-75 mt-1 font-semibold">HARI</p>
-                    </div>
-                    <div class="macos-glass-subtle-dark rounded-2xl p-4 border border-white/10">
-                        <span class="text-4xl sm:text-5xl font-black text-slate-100 tabular-nums" x-text="countdown.hours">00</span>
-                        <p class="text-xs uppercase tracking-wider opacity-75 mt-1 font-semibold">JAM</p>
-                    </div>
+                <!-- Tampilan Card Hari Besar Tunggal -->
+                <div class="macos-glass-subtle-dark rounded-2xl p-5 text-center my-2 border border-white/10 flex flex-col items-center justify-center">
+                    <span class="text-5xl sm:text-6xl font-black text-emerald-400 tabular-nums tracking-tight" x-text="countdown.days">00</span>
+                    <p class="text-xs uppercase tracking-widest opacity-75 mt-1 font-semibold">HARI MENUJU TARGET 2 TAHUN</p>
                 </div>
 
                 <div class="pt-3 border-t border-white/10 flex flex-col gap-1.5">
@@ -307,12 +339,19 @@
             </div>
         </div>
 
-        <!-- SPOTLIGHT AI UTAMA -->
+        <!-- SPOTLIGHT AI UTAMA (Dengan Rendering Markdown Terstruktur) -->
         <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
             <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
-                <p class="text-lg sm:text-2xl font-bold text-center leading-relaxed tracking-wide text-slate-100">
-                    <span x-text="typedText"></span><span class="animate-pulse font-bold text-blue-400" x-show="isTyping">|</span>
-                </p>
+                <!-- Jika sedang mengetik, tampilkan teks biasa -->
+                <template x-if="isTyping">
+                    <p class="text-base sm:text-xl font-bold text-center leading-relaxed tracking-wide text-slate-100">
+                        <span x-text="typedText"></span><span class="animate-pulse font-bold text-blue-400">|</span>
+                    </p>
+                </template>
+                <!-- Jika selesai mengetik, render Markdown HTML yang rapi (Tabel, Daftar, Grafik/Teks Berformat) -->
+                <template x-if="!isTyping">
+                    <div class="ai-markdown-output text-xs sm:text-sm text-slate-100 overflow-x-auto" x-html="renderedAIResponse"></div>
+                </template>
             </div>
 
             <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
@@ -495,6 +534,7 @@
                 activeModal: null,
                 userProfilePic: '',
                 typedText: '',
+                rawAIResponse: 'Selamat malam Tuan Mipra, sistem siap melayani.',
                 isTyping: false,
                 currentDateTime: '',
                 currentDayNum: '',
@@ -514,7 +554,7 @@
                 passcodeError: '',
                 correctPasscodeHash: '123456',
 
-                countdown: { days: '00', hours: '00' },
+                countdown: { days: '00' },
 
                 showTahfizModal: false,
                 tahfizTab: 'strategy',
@@ -555,7 +595,7 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Administrator Mipratul Muslim (dipanggil Tuan Mipra). Anda memiliki akses serba tahu terhadap seluruh data operasional, target tahfiz 20 juz, checklist hafalan quran harian, dan riwayat di database sistem.'
+                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA RESPON AI: Berikan jawaban yang SANGAT RINGKAS, RAPI, TERSTRUKTUR, dan profesional. Gunakan format Markdown (seperti heading, bullet points, tabel, teks tebal, atau penomoran) agar mudah dibaca sekilas. Jangan pernah menulis jawaban panjang yang berantakan atau narasi bertele-tele.'
                 },
 
                 get totalCompletedPages() {
@@ -568,6 +608,10 @@
 
                 get totalProgressPercent() {
                     return Math.min(Math.round((this.totalCompletedPages / 400) * 100), 100);
+                },
+
+                get renderedAIResponse() {
+                    return marked.parse(this.rawAIResponse);
                 },
 
                 get filteredStructuredTasks() {
@@ -638,18 +682,15 @@
                 },
 
                 startCountdownTimer() {
-                    const deadline = new Date('2028-09-10T00:00:00').getTime();
+                    const deadline = new Date(2028, 8, 10, 0, 0, 0).getTime();
                     const now = new Date().getTime();
                     const distance = deadline - now;
 
                     if (distance > 0) {
                         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-                        this.countdown.days = String(days).padStart(2, '0');
-                        this.countdown.hours = String(hours).padStart(2, '0');
+                        this.countdown.days = String(days);
                     } else {
-                        this.countdown = { days: '00', hours: '00' };
+                        this.countdown.days = '0';
                     }
                 },
 
@@ -770,6 +811,7 @@
 
                 startTypingEffect(text) {
                     if (activeTypingInterval) clearInterval(activeTypingInterval);
+                    this.rawAIResponse = text;
                     let i = 0;
                     this.typedText = '';
                     this.isTyping = true;
@@ -781,7 +823,7 @@
                             clearInterval(activeTypingInterval);
                             this.isTyping = false;
                         }
-                    }, 22);
+                    }, 15);
                 },
 
                 async loadConfigAndData() {
@@ -828,11 +870,20 @@
                     this.userQuery = '';
                     this.loadingAI = true;
 
+                    let currentDayTasks = JSON.stringify(this.filteredStructuredTasks);
                     let tahfizProgressSummary = JSON.stringify(this.tahfizData);
                     let fullSystemInstruction = `${this.profile.customInstructions}
 [PROFIL PENGGUNA] Nama: ${this.profile.namaLengkap} (${this.profile.panggilan})
-[PROGRES TAHFIZ 20 JUZ] ${tahfizProgressSummary}
-Instruksi Tuan ${this.profile.panggilan}: ${prompt}`;
+[HARI INI] ${this.currentDayName}, ${this.currentFullMasehiDate}
+[TARGET HAFALAN HARI INI] ${currentDayTasks}
+[PROGRES KESELURUHAN TAHFIZ 20 JUZ] Halaman Selesai: ${this.totalCompletedPages}/400 (${this.totalProgressPercent}%)
+[DETAIL PROGRES JUZ] ${tahfizProgressSummary}
+
+INSTRUKSI FORMAT JAWABAN:
+- Jawab dengan SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown.
+- Gunakan tabel, bullet points, atau penomoran.
+- Hindari kalimat pembuka yang terlalu panjang atau bertele-tele. Langsung berikan poin utama yang ditanyakan.
+- Pertanyaan Tuan ${this.profile.panggilan}: ${prompt}`;
 
                     let partsArray = [{ text: fullSystemInstruction }];
 
@@ -843,9 +894,16 @@ Instruksi Tuan ${this.profile.panggilan}: ${prompt}`;
                             const data = await res.json();
                             let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah diproses.";
                             this.startTypingEffect(reply);
+                            
+                            // Simpan ke database riwayat chat
+                            await _supabase.from('chat_history').insert([
+                                { sender: 'user', text_content: prompt },
+                                { sender: 'ai', text_content: reply }
+                            ]);
+                            await this.loadAllChatHistory();
                         }
                     } catch (e) {
-                        this.startTypingEffect("Gangguan koneksi.");
+                        this.startTypingEffect("Gangguan koneksi sistem.");
                     } finally {
                         this.loadingAI = false;
                     }
