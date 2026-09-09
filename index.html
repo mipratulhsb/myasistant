@@ -105,7 +105,7 @@
         <div class="absolute inset-0 bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 opacity-90"></div>
         <div class="absolute top-12 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-star" style="animation-delay: 0.5s;"></div>
         <div class="absolute top-20 left-1/3 w-1 h-1 bg-blue-200 rounded-full animate-star" style="animation-delay: 1.2s;"></div>
-        <div class="absolute top-10 right-1/4 w-2 h-2 bg-yellow-100 rounded-full animate-star" style="animation-delay: 2s;">Num</div>
+        <div class="absolute top-10 right-1/4 w-2 h-2 bg-yellow-100 rounded-full animate-star" style="animation-delay: 2s;"></div>
         <div class="absolute top-28 right-1/5 w-1 h-1 bg-white rounded-full animate-star" style="animation-delay: 0.8s;"></div>
         <div class="absolute top-8 right-16 text-4xl animate-crescent select-none filter drop-shadow-[0_0_12px_rgba(253,224,71,0.6)]">🌙</div>
         <div class="absolute bottom-0 inset-x-0 h-48 opacity-25 bg-repeat-x bg-bottom pointer-events-none"
@@ -113,7 +113,7 @@
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
     </div>
 
-    <!-- LOCKSCREEN PASSCODE ALA iOS (Dukung Input Keyboard Laptop) -->
+    <!-- LOCKSCREEN PASSCODE ALA iOS (Dukung Keyboard) -->
     <div x-show="!isUnlocked" class="fixed inset-0 bg-slate-950/92 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm macos-glass-dark rounded-[36px] p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center border border-white/10 relative">
             <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl mb-4 shadow-inner">
@@ -163,12 +163,16 @@
         </div>
     </div>
 
-    <!-- CUSTOM NAVBAR -->
+    <!-- CUSTOM NAVBAR DENGAN LOGO MANAJEMEN EKSEKUTIF -->
     <header class="macos-glass-dark px-6 py-3 flex justify-between items-center sticky top-0 z-40 text-xs font-medium shadow-sm">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-inner"></div>
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-tr from-emerald-600 via-teal-600 to-blue-600 text-white shadow-lg shadow-emerald-600/30 border border-white/20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </div>
             <div>
-                <h1 class="font-bold text-xs uppercase tracking-wider text-slate-100">Personal Assistant</h1>
+                <h1 class="font-bold text-xs uppercase tracking-wider text-slate-100">Executive Hub</h1>
                 <p class="text-[9px] opacity-60">Command Center v3.0</p>
             </div>
         </div>
@@ -340,17 +344,11 @@
             </div>
         </div>
 
-        <!-- SPOTLIGHT AI UTAMA -->
+        <!-- SPOTLIGHT AI UTAMA (Stabil & Render Markdown Sempurna) -->
         <div class="macos-glass-dark rounded-[28px] p-6 shadow-2xl flex flex-col gap-4">
             <div class="macos-glass-subtle-dark rounded-[20px] p-6 shadow-inner min-h-[140px] flex flex-col justify-center relative backdrop-blur-2xl">
-                <template x-if="isTyping">
-                    <p class="text-base sm:text-xl font-bold text-center leading-relaxed tracking-wide text-slate-100">
-                        <span x-text="typedText"></span><span class="animate-pulse font-bold text-blue-400">|</span>
-                    </p>
-                </template>
-                <template x-if="!isTyping">
-                    <div class="ai-markdown-output text-xs sm:text-sm text-slate-100 overflow-x-auto" x-html="renderedAIResponse"></div>
-                </template>
+                <!-- Selalu render Markdown hasil AI secara stabil tanpa teks hilang -->
+                <div class="ai-markdown-output text-xs sm:text-sm text-slate-100 overflow-x-auto" x-html="renderedAIResponse"></div>
             </div>
 
             <form @submit.prevent="submitToAI" class="flex gap-3 items-center relative">
@@ -369,7 +367,7 @@
 
     <!-- FOOTER TIPIS -->
     <footer class="w-full py-4 text-center text-[11px] font-medium z-10 macos-glass-dark backdrop-blur-2xl mt-8 border-t border-white/10 text-slate-300">
-        Personal Assistant &bull; Mipratul Muslim &copy; 2026
+        Executive Management Center &bull; Mipratul Muslim &copy; 2026
     </footer>
 
     <!-- MODAL 2: PANEL TAHFIZ & HAFALAN QURAN -->
@@ -524,7 +522,6 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let cachedApiKey = '';
-        let activeTypingInterval = null;
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('macosApp', () => ({
@@ -532,9 +529,7 @@
                 loadingAI: false,
                 activeModal: null,
                 userProfilePic: '',
-                typedText: '',
-                rawAIResponse: 'Selamat malam Tuan Mipra, sistem siap melayani.',
-                isTyping: false,
+                rawAIResponse: 'Halo Tuan Mipra, ada yang bisa saya bantu hari ini?',
                 currentDateTime: '',
                 currentDayNum: '',
                 currentDayName: '',
@@ -594,7 +589,7 @@
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
                     panggilan: 'Mipra',
-                    customInstructions: 'Anda adalah sistem asisten eksekutif digital tingkat tinggi yang melayani Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA RESPON AI: Berikan jawaban yang SANGAT RINGKAS, RAPI, TERSTRUKTUR, dan profesional dalam format Markdown (gunakan tabel, bullet points, penomoran, teks tebal). Jangan pernah memberikan penjelasan yang terlalu panjang atau bertele-tele.'
+                    customInstructions: 'Anda adalah sistem asisten eksekutif digital cerdas untuk Administrator Mipratul Muslim (dipanggil Tuan Mipra). ATURAN UTAMA: 1) Jika pengguna menyapa (seperti "Halo", "Hai", "Pagi"), balas dengan sangat ramah, singkat, dan natural (misal: "Halo Tuan Mipra, ada yang bisa saya bantu?"). 2) Jika pengguna menanyakan target, progres, atau hal operasional, berikan jawaban yang SANGAT RINGKAS, RAPI, dan TERSTRUKTUR menggunakan Markdown (tabel ringkas, bullet points, teks tebal). Jangan pernah bertele-tele.'
                 },
 
                 get totalCompletedPages() {
@@ -610,7 +605,7 @@
                 },
 
                 get renderedAIResponse() {
-                    return marked.parse(this.rawAIResponse);
+                    return marked.parse(this.rawAIResponse || '');
                 },
 
                 get filteredStructuredTasks() {
@@ -647,16 +642,13 @@
                     }
                 },
 
-                // Fungsi Tangkap Keyboard Global untuk Passcode Lockscreen
                 handleGlobalKeydown(event) {
-                    if (this.isUnlocked) return; // Jika sudah terbuka, abaikan
+                    if (this.isUnlocked) return;
 
-                    // Jika menekan angka 0-9 (baik dari baris angka atas maupun Numpad)
                     if (/^[0-9]$/.test(event.key)) {
                         event.preventDefault();
                         this.pressPasscode(event.key);
                     } 
-                    // Jika menekan tombol Backspace atau Delete untuk menghapus
                     else if (event.key === 'Backspace' || event.key === 'Delete') {
                         event.preventDefault();
                         this.deletePasscode();
@@ -686,7 +678,7 @@
                         if (!cachedApiKey) {
                             this.showApiKeyModal = true;
                         } else {
-                            this.startTypingEffect(`Selamat malam Tuan ${this.profile.panggilan}, sistem siap melayani.`);
+                            this.rawAIResponse = `Halo Tuan ${this.profile.panggilan}, sistem siap melayani. Ada yang bisa saya bantu?`;
                         }
                     } else {
                         this.passcodeError = 'Passcode salah. Silakan coba lagi.';
@@ -807,7 +799,7 @@
                     if (confirm('Bersihkan seluruh riwayat percakapan sistem?')) {
                         await _supabase.from('chat_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
                         this.allChatHistory = [];
-                        this.startTypingEffect("Riwayat sistem telah dibersihkan.");
+                        this.rawAIResponse = "Riwayat sistem telah dibersihkan.";
                     }
                 },
 
@@ -816,29 +808,12 @@
                     await _supabase.from('user_config').upsert({ key_name: 'gemini_api_key', key_value: this.tempApiKey.trim() }, { onConflict: 'key_name' });
                     cachedApiKey = this.tempApiKey.trim();
                     this.showApiKeyModal = false;
-                    this.startTypingEffect(`Kunci API berhasil disimpan.`);
+                    this.rawAIResponse = `Kunci API berhasil disimpan. Sistem siap digunakan.`;
                 },
 
                 logout() {
                     this.isUnlocked = false;
                     this.passcode = '';
-                },
-
-                startTypingEffect(text) {
-                    if (activeTypingInterval) clearInterval(activeTypingInterval);
-                    this.rawAIResponse = text;
-                    let i = 0;
-                    this.typedText = '';
-                    this.isTyping = true;
-                    activeTypingInterval = setInterval(() => {
-                        if (i < text.length) {
-                            this.typedText += text.charAt(i);
-                            i++;
-                        } else {
-                            clearInterval(activeTypingInterval);
-                            this.isTyping = false;
-                        }
-                    }, 15);
                 },
 
                 async loadConfigAndData() {
@@ -894,10 +869,7 @@
 [PROGRES KESELURUHAN TAHFIZ 20 JUZ] Halaman Selesai: ${this.totalCompletedPages}/400 (${this.totalProgressPercent}%)
 [DETAIL PROGRES JUZ] ${tahfizProgressSummary}
 
-INSTRUKSI FORMAT JAWABAN:
-- Berikan jawaban yang SANGAT RINGKAS, RAPI, TERSTRUKTUR, dan profesional dalam format Markdown (gunakan tabel, bullet points, atau penomoran).
-- Langsung ke poin utama tanpa pembukaan atau penutupan yang bertele-tele.
-- Pertanyaan Tuan ${this.profile.panggilan}: ${prompt}`;
+PERTANYAAN/PESAN DARI TUAN ${this.profile.panggilan}: ${prompt}`;
 
                     let partsArray = [{ text: fullSystemInstruction }];
 
@@ -907,7 +879,9 @@ INSTRUKSI FORMAT JAWABAN:
                         if (res.ok) {
                             const data = await res.json();
                             let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Perintah diproses.";
-                            this.startTypingEffect(reply);
+                            
+                            // Langsung assign ke rawAIResponse secara stabil tanpa efek ketik yang berisiko hilang
+                            this.rawAIResponse = reply;
                             
                             await _supabase.from('chat_history').insert([
                                 { sender: 'user', text_content: prompt },
@@ -916,7 +890,7 @@ INSTRUKSI FORMAT JAWABAN:
                             await this.loadAllChatHistory();
                         }
                     } catch (e) {
-                        this.startTypingEffect("Gangguan koneksi sistem.");
+                        this.rawAIResponse = "Gangguan koneksi sistem. Silakan coba kembali.";
                     } finally {
                         this.loadingAI = false;
                     }
