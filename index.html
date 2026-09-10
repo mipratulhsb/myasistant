@@ -2,7 +2,7 @@
 <html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Executive Command Center - Tahfiz Hub</title>
     
     <!-- Favicon & PWA Icons (Assets/Img/) -->
@@ -188,22 +188,22 @@
     <!-- MAIN DASHBOARD TERINTEGRASI -->
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
-        <!-- GRID UTAMA: COUNTDOWN & TARGET HARIAN -->
+        <!-- GRID UTAMA: COUNTDOWN BERJENJANG & TARGET HARIAN -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
             
-            <!-- Widget Countdown 2 Tahun 20 Juz -->
+            <!-- Widget Countdown Berjenjang per Juz (Otomatis Berpindah Target) -->
             <div class="lg:col-span-5 glass-3d rounded-[28px] p-6 shadow-2xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-slate-950">
                 <div class="flex justify-between items-center mb-3">
                     <div>
-                        <h3 class="text-xs font-extrabold uppercase tracking-widest text-emerald-400">⏳ TARGET TAHFIZ 20 JUZ</h3>
-                        <p class="text-[10px] opacity-70">Deadline: 10 September 2028</p>
+                        <h3 class="text-xs font-extrabold uppercase tracking-widest text-emerald-400" x-text="countdown.targetTitle">⏳ TARGET TAHFIZ</h3>
+                        <p class="text-[10px] opacity-75 text-slate-300">Sistem Tenggat Waktu Otomatis Berjenjang</p>
                     </div>
-                    <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">Aktif</span>
+                    <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30" x-text="'Juz ' + countdown.currentJuzTarget"></span>
                 </div>
 
                 <div class="glass-subtle rounded-2xl p-5 text-center my-2 border border-white/10 flex flex-col items-center justify-center shadow-inner">
                     <span class="text-5xl sm:text-6xl font-black text-emerald-400 tabular-nums tracking-tighter drop-shadow-[0_0_15px_rgba(52,211,153,0.4)]" x-text="countdown.days">00</span>
-                    <p class="text-[10px] uppercase tracking-widest opacity-80 mt-1 font-bold">HARI MENUJU TARGET 2 TAHUN</p>
+                    <p class="text-[10px] uppercase tracking-widest opacity-80 mt-1 font-bold text-slate-200">HARI MENUJU TARGET JUZ INI</p>
                 </div>
 
                 <div class="pt-2 border-t border-white/10 flex flex-col gap-1.5">
@@ -284,7 +284,7 @@
                                 <span class="text-[10px] px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">Restorasi</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'restoration')" class="w-24 glass-3d rounded-xl px-3 py-2 text-sm text-center font-extrabold text-emerald-400 focus:outline-none focus:border-emerald-500 shadow-inner">
+                                <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'restoration')" class="w-24 glass-3d rounded-xl px-3 py-2 text-base text-center font-extrabold text-emerald-400 focus:outline-none focus:border-emerald-500 shadow-inner">
                                 <span class="text-xs opacity-70 font-medium">/ 20 Halaman</span>
                             </div>
                         </div>
@@ -306,7 +306,7 @@
                                 <p class="text-[9px] opacity-60 text-blue-300">Ziyadah Baru</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'new')" class="w-20 glass-3d rounded-xl px-2 py-1.5 text-xs text-center font-extrabold text-blue-400 focus:outline-none focus:border-blue-500 shadow-inner">
+                                <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'new')" class="w-20 glass-3d rounded-xl px-2 py-1.5 text-base text-center font-extrabold text-blue-400 focus:outline-none focus:border-blue-500 shadow-inner">
                                 <span class="text-[10px] opacity-70">Hal</span>
                             </div>
                         </div>
@@ -368,7 +368,12 @@
                 failedAttempts: 0,
                 lockoutTime: 0,
 
-                countdown: { days: '00' },
+                countdown: { 
+                    currentJuzTarget: 1,
+                    targetTitle: 'TARGET PENCAPAIAN JUZ 1',
+                    days: '00',
+                    isFinished: false 
+                },
                 tahfizMainTab: 'restoration',
                 tahfizData: {},
 
@@ -517,13 +522,56 @@
                 },
 
                 startCountdownTimer() {
-                    const deadline = new Date(2028, 8, 10, 0, 0, 0).getTime();
+                    // Daftar tenggat waktu (deadline) berjenjang per Juz
+                    const juzDeadlines = {
+                        1: new Date(2026, 9, 10, 0, 0, 0).getTime(),   // 10 Oktober 2026
+                        2: new Date(2026, 10, 10, 0, 0, 0).getTime(),  // 10 November 2026
+                        3: new Date(2026, 11, 10, 0, 0, 0).getTime(),  // 10 Desember 2026
+                        4: new Date(2027, 0, 10, 0, 0, 0).getTime(),   // 10 Januari 2027
+                        5: new Date(2027, 1, 10, 0, 0, 0).getTime(),   // 10 Februari 2027
+                        6: new Date(2027, 2, 10, 0, 0, 0).getTime(),
+                        7: new Date(2027, 3, 10, 0, 0, 0).getTime(),
+                        8: new Date(2027, 4, 10, 0, 0, 0).getTime(),
+                        9: new Date(2027, 5, 10, 0, 0, 0).getTime(),
+                        10: new Date(2027, 6, 10, 0, 0, 0).getTime(),
+                        11: new Date(2027, 7, 10, 0, 0, 0).getTime(),
+                        12: new Date(2027, 8, 10, 0, 0, 0).getTime(),
+                        13: new Date(2027, 9, 10, 0, 0, 0).getTime(),
+                        14: new Date(2027, 10, 10, 0, 0, 0).getTime(),
+                        15: new Date(2027, 11, 10, 0, 0, 0).getTime(),
+                        16: new Date(2028, 0, 10, 0, 0, 0).getTime(),
+                        17: new Date(2028, 1, 10, 0, 0, 0).getTime(),
+                        18: new Date(2028, 2, 10, 0, 0, 0).getTime(),
+                        19: new Date(2028, 3, 10, 0, 0, 0).getTime(),
+                        20: new Date(2028, 8, 10, 0, 0, 0).getTime()    // Deadline akhir 20 Juz (10 September 2028)
+                    };
+
                     const now = new Date().getTime();
-                    const distance = deadline - now;
+                    let activeJuz = 1;
+                    let targetTime = juzDeadlines[1];
+
+                    for (let juz = 1; juz <= 20; juz++) {
+                        if (juzDeadlines[juz] && now < juzDeadlines[juz]) {
+                            activeJuz = juz;
+                            targetTime = juzDeadlines[juz];
+                            break;
+                        } else if (juz === 20) {
+                            activeJuz = 20;
+                            targetTime = juzDeadlines[20];
+                        }
+                    }
+
+                    this.countdown.currentJuzTarget = activeJuz;
+                    this.countdown.targetTitle = `TARGET PENCAPAIAN JUZ ${activeJuz}`;
+
+                    const distance = targetTime - now;
                     if (distance > 0) {
                         this.countdown.days = String(Math.floor(distance / (1000 * 60 * 60 * 24)));
+                        this.countdown.isFinished = false;
                     } else {
                         this.countdown.days = '0';
+                        this.countdown.isFinished = true;
+                        this.countdown.targetTitle = `TENGGAT JUZ ${activeJuz} TERLEWATI`;
                     }
                 },
 
@@ -586,12 +634,16 @@
 
                 async saveTahfizProgress(juzNum, categoryType) {
                     const pages = Number(this.tahfizData['juz_' + juzNum] || 0);
-                    await _supabase.from('tahfiz_progress').upsert({
+                    const { error } = await _supabase.from('tahfiz_progress').upsert({
                         juz_number: juzNum,
                         category: categoryType,
                         pages_completed: pages,
                         status: pages >= 20 ? 'completed' : (pages > 0 ? 'in_progress' : 'pending')
                     }, { onConflict: 'juz_number' });
+
+                    if (error) {
+                        console.error("Gagal menyimpan ke Supabase:", error.message);
+                    }
                 },
 
                 logout() {
