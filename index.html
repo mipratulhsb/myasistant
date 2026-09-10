@@ -191,33 +191,33 @@
         <!-- GRID UTAMA: COUNTDOWN BERJENJANG & TARGET HARIAN -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
             
-            <!-- Widget Countdown Terstruktur (Dapat Ditekan untuk Buka Peta Perjalanan) -->
+            <!-- Widget Countdown Terstruktur dengan Target Akhir Bulan -->
             <div @click="activeModal = 'roadmap'" class="lg:col-span-5 glass-3d rounded-[28px] p-6 shadow-2xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-slate-950 cursor-pointer group hover:border-emerald-400/50 transition-all">
                 <div class="flex justify-between items-center mb-3">
                     <div>
-                        <h3 class="text-xs font-extrabold uppercase tracking-widest text-emerald-400" x-text="countdown.targetTitle">⏳ TARGET TAHFIZ</h3>
+                        <h3 class="text-xs font-extrabold uppercase tracking-widest text-emerald-400" x-text="countdown.targetTitle">⏳ TARGET BULAN INI</h3>
                         <p class="text-[10px] opacity-75 text-slate-300">Klik untuk buka Peta Perjalanan 2 Tahun ➔</p>
                     </div>
                     <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30" x-text="'Juz ' + countdown.currentJuzTarget"></span>
                 </div>
 
-                <!-- Tampilan Terstruktur: Hari, Ziyadah, & Murojaah -->
+                <!-- Tampilan Terstruktur: Hitung Mundur Akhir Bulan, Ziyadah & Murojaah -->
                 <div class="glass-subtle rounded-2xl p-4 my-2 border border-white/10 flex flex-col gap-3 shadow-inner">
                     <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
                         <div class="text-left">
-                            <span class="text-3xl sm:text-4xl font-black text-emerald-400 tabular-nums tracking-tighter drop-shadow-[0_0_12px_rgba(52,211,153,0.4)]" x-text="countdown.days">00</span>
-                            <span class="text-[10px] uppercase tracking-widest opacity-80 font-bold block text-slate-300">Hari Menuju Target</span>
+                            <span class="text-3xl sm:text-4xl font-black text-emerald-400 tabular-nums tracking-tighter drop-shadow-[0_0_12px_rgba(52,211,153,0.4)]" x-text="countdown.daysLeftMonth">00</span>
+                            <span class="text-[10px] uppercase tracking-widest opacity-80 font-bold block text-slate-300">Hari Menuju Akhir Bulan</span>
                         </div>
                         <div class="text-right">
-                            <span class="text-xs font-extrabold text-teal-300 block" x-text="'Juz ' + countdown.currentJuzTarget"></span>
-                            <span class="text-[9px] opacity-60">Status Aktif</span>
+                            <span class="text-xs font-extrabold text-teal-300 block" x-text="countdown.monthlyTargetPages + ' Halaman'"></span>
+                            <span class="text-[9px] opacity-60">Target Bulanan (~1 Juz)</span>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 text-left">
                         <div class="glass-3d p-2.5 rounded-xl border border-white/5">
-                            <p class="text-[9px] uppercase tracking-wider opacity-60 text-emerald-400 font-semibold">Target Ziyadah</p>
-                            <p class="text-xs font-bold text-slate-100 mt-0.5">20 Halaman / Juz</p>
+                            <p class="text-[9px] uppercase tracking-wider opacity-60 text-emerald-400 font-semibold">Cicilan Harian</p>
+                            <p class="text-xs font-bold text-slate-100 mt-0.5">~0.55 Hal / Hari</p>
                         </div>
                         <div class="glass-3d p-2.5 rounded-xl border border-white/5">
                             <p class="text-[9px] uppercase tracking-wider opacity-60 text-teal-400 font-semibold">Target Murojaah</p>
@@ -451,9 +451,9 @@
 
                 countdown: { 
                     currentJuzTarget: 1,
-                    targetTitle: 'TARGET PENCAPAIAN JUZ 1',
-                    days: '00',
-                    isFinished: false 
+                    targetTitle: 'TARGET AKHIR BULAN INI',
+                    daysLeftMonth: '00',
+                    monthlyTargetPages: '16-17'
                 },
                 tahfizMainTab: 'restoration',
                 tahfizData: {
@@ -610,56 +610,25 @@
                 },
 
                 startCountdownTimer() {
-                    const juzDeadlines = {
-                        1: new Date(2026, 9, 10, 0, 0, 0).getTime(),
-                        2: new Date(2026, 10, 10, 0, 0, 0).getTime(),
-                        3: new Date(2026, 11, 10, 0, 0, 0).getTime(),
-                        4: new Date(2027, 0, 10, 0, 0, 0).getTime(),
-                        5: new Date(2027, 1, 10, 0, 0, 0).getTime(),
-                        6: new Date(2027, 2, 10, 0, 0, 0).getTime(),
-                        7: new Date(2027, 3, 10, 0, 0, 0).getTime(),
-                        8: new Date(2027, 4, 10, 0, 0, 0).getTime(),
-                        9: new Date(2027, 5, 10, 0, 0, 0).getTime(),
-                        10: new Date(2027, 6, 10, 0, 0, 0).getTime(),
-                        11: new Date(2027, 7, 10, 0, 0, 0).getTime(),
-                        12: new Date(2027, 8, 10, 0, 0, 0).getTime(),
-                        13: new Date(2027, 9, 10, 0, 0, 0).getTime(),
-                        14: new Date(2027, 10, 10, 0, 0, 0).getTime(),
-                        15: new Date(2027, 11, 10, 0, 0, 0).getTime(),
-                        16: new Date(2028, 0, 10, 0, 0, 0).getTime(),
-                        17: new Date(2028, 1, 10, 0, 0, 0).getTime(),
-                        18: new Date(2028, 2, 10, 0, 0, 0).getTime(),
-                        19: new Date(2028, 3, 10, 0, 0, 0).getTime(),
-                        20: new Date(2028, 8, 10, 0, 0, 0).getTime()
-                    };
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = now.getMonth();
+                    
+                    // Hitung akhir bulan berjalan
+                    const lastDayOfMonth = new Date(year, month + 1, 0, 23, 59, 59).getTime();
+                    const currentTime = now.getTime();
+                    const distanceMonth = lastDayOfMonth - currentTime;
 
-                    const now = new Date().getTime();
-                    let activeJuz = 1;
-                    let targetTime = juzDeadlines[1];
-
-                    for (let juz = 1; juz <= 20; juz++) {
-                        if (juzDeadlines[juz] && now < juzDeadlines[juz]) {
-                            activeJuz = juz;
-                            targetTime = juzDeadlines[juz];
-                            break;
-                        } else if (juz === 20) {
-                            activeJuz = 20;
-                            targetTime = juzDeadlines[20];
-                        }
-                    }
-
-                    this.countdown.currentJuzTarget = activeJuz;
-                    this.countdown.targetTitle = `TARGET PENCAPAIAN JUZ ${activeJuz}`;
-
-                    const distance = targetTime - now;
-                    if (distance > 0) {
-                        this.countdown.days = String(Math.floor(distance / (1000 * 60 * 60 * 24)));
-                        this.countdown.isFinished = false;
+                    if (distanceMonth > 0) {
+                        this.countdown.daysLeftMonth = String(Math.floor(distanceMonth / (1000 * 60 * 60 * 24)));
                     } else {
-                        this.countdown.days = '0';
-                        this.countdown.isFinished = true;
-                        this.countdown.targetTitle = `TENGGAT JUZ ${activeJuz} TERLEWATI`;
+                        this.countdown.daysLeftMonth = '0';
                     }
+
+                    // Tentukan Juz aktif berdasarkan total progres (tiap 20 halaman naik 1 Juz)
+                    let activeJuz = Math.min(Math.floor(this.totalCompletedPages / 20) + 1, 20);
+                    this.countdown.currentJuzTarget = activeJuz;
+                    this.countdown.targetTitle = `TARGET AKHIR BULAN INI (${now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })})`;
                 },
 
                 generateDynamicTabs() {
