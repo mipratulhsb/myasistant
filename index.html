@@ -263,12 +263,12 @@
                     <span class="text-[10px] opacity-60">Geser menu ke samping untuk hari lain ➔</span>
                 </div>
 
-                <!-- Menu Tab Dapat Digeser (Horizontal Scroll / Swipe) -->
-                <div class="flex gap-2 mb-3 overflow-x-auto no-scrollbar py-1">
+                <!-- Menu Tab Dapat Digeser (Horizontal Scroll / Swipe dengan Tinggi Seragam) -->
+                <div class="flex gap-2 mb-3 overflow-x-auto no-scrollbar py-2 items-center">
                     <template x-for="tab in dynamicTaskTabs" :key="tab.key">
                         <button @click="activeTaskTab = tab.key"
-                                :class="activeTaskTab === tab.key ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/40 font-bold border-emerald-400/50 scale-105' : 'glass-subtle text-slate-300 hover:bg-white/10 border-white/10'"
-                                class="px-4 py-2 rounded-2xl text-[11px] transition-all cursor-pointer whitespace-nowrap border shrink-0"
+                                :class="activeTaskTab === tab.key ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/40 font-bold border-emerald-400/50' : 'glass-subtle text-slate-300 hover:bg-white/10 border-white/10'"
+                                class="px-4 py-2 rounded-2xl text-[11px] transition-all cursor-pointer whitespace-nowrap border shrink-0 h-9 flex items-center justify-center"
                                 x-text="tab.label">
                         </button>
                     </template>
@@ -707,7 +707,15 @@
                             month: 'long',
                             year: 'numeric'
                         });
-                        this.formattedHijriDate = hijriFormatter.format(now) + ' H';
+                        let hijriStr = hijriFormatter.format(now);
+                        if (!hijriStr.endsWith('H') && !hijriStr.endsWith('H ')) {
+                            this.formattedHijriDate = hijriStr + ' H';
+                        } else {
+                            this.formattedHijriDate = hijriStr.replace(/H\s*H/g, 'H').trim();
+                            if (!this.formattedHijriDate.endsWith('H')) {
+                                this.formattedHijriDate += ' H';
+                            }
+                        }
                     } catch (e) {
                         this.formattedHijriDate = 'Kalender Hijriah Memuat...';
                     }
