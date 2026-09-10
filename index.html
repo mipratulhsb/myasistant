@@ -178,18 +178,15 @@
                         <p class="text-xs font-bold truncate text-emerald-400">Terverifikasi Aktif</p>
                     </div>
                     
-                    <!-- Tombol 1: Pengaturan Profil -->
                     <button @click="activeModal = 'editProfile'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">
                         <span>👤</span> Pengaturan Profil
                     </button>
 
-                    <!-- Tombol 2: Wallpaper -->
                     <button @click="activeModal = 'editWallpaper'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">
                         <span>🎨</span> Wallpaper
                     </button>
 
                     <div class="border-t border-white/10 pt-1">
-                        <!-- Tombol 3: Kunci Sesi -->
                         <button @click="logout(); profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-400 transition flex items-center gap-2.5 cursor-pointer hover:bg-red-500/20">
                             <span>🚪</span> Kunci Sesi
                         </button>
@@ -205,18 +202,26 @@
         <!-- GRID UTAMA: COUNTDOWN AKHIR BULAN & TARGET HARIAN -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
             
-            <!-- Widget Countdown Terstruktur dengan Target Akhir Bulan -->
+            <!-- Widget Countdown Terstruktur dengan Penambahan Info Tanggal di Atas -->
             <div @click="activeModal = 'roadmap'" class="lg:col-span-5 glass-3d rounded-[28px] p-6 shadow-2xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-slate-950 cursor-pointer group hover:border-emerald-400/50 transition-all">
-                <div class="flex justify-between items-center mb-3">
+                <div class="flex justify-between items-start mb-3 border-b border-white/10 pb-2.5">
                     <div>
-                        <h3 class="text-xs font-extrabold uppercase tracking-widest text-emerald-400" x-text="countdown.targetTitle">⏳ TARGET AKHIR BULAN INI</h3>
+                        <h3 class="text-xs font-extrabold uppercase tracking-widest text-emerald-400" x-text="countdown.targetTitle">TARGET AKHIR BULAN INI</h3>
                         <p class="text-[10px] opacity-75 text-slate-300">Klik untuk buka Peta Perjalanan 2 Tahun ➔</p>
                     </div>
-                    <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30" x-text="'Juz ' + countdown.currentJuzTarget"></span>
+                    <div class="text-right">
+                        <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30 inline-block mb-1" x-text="'Juz ' + countdown.currentJuzTarget"></span>
+                    </div>
+                </div>
+
+                <!-- Informasi Tanggal Masehi & Hijriah di Bagian Atas Panel -->
+                <div class="flex justify-between items-center text-[10px] text-slate-300 bg-white/5 px-3 py-1.5 rounded-xl mb-2 border border-white/5">
+                    <span class="font-semibold text-emerald-300" x-text="formattedGregorianDate"></span>
+                    <span class="opacity-80" x-text="formattedHijriDate"></span>
                 </div>
 
                 <!-- Tampilan Terstruktur: Hitung Mundur Akhir Bulan, Ziyadah & Murojaah -->
-                <div class="glass-subtle rounded-2xl p-4 my-2 border border-white/10 flex flex-col gap-3 shadow-inner">
+                <div class="glass-subtle rounded-2xl p-4 my-1 border border-white/10 flex flex-col gap-3 shadow-inner">
                     <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
                         <div class="text-left">
                             <span class="text-3xl sm:text-4xl font-black text-emerald-400 tabular-nums tracking-tighter drop-shadow-[0_0_12px_rgba(52,211,153,0.4)]" x-text="countdown.daysLeftMonth">00</span>
@@ -318,7 +323,7 @@
                                 <span class="text-[10px] px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">Restorasi</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'restoration')" class="w-24 glass-3d rounded-xl px-3 py-2 text-base text-center font-extrabold text-emerald-400 focus:outline-none focus:border-emerald-500 shadow-inner">
+                                <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'restoration')" class="w-24 glass-3d rounded-xl px-3 py-1.5 text-sm sm:text-base text-center font-extrabold text-emerald-400 focus:outline-none focus:border-emerald-500 shadow-inner flex items-center justify-center">
                                 <span class="text-xs opacity-70 font-medium">/ 20 Halaman</span>
                             </div>
                         </div>
@@ -340,7 +345,7 @@
                                 <p class="text-[9px] opacity-60 text-blue-300">Ziyadah Baru</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'new')" class="w-20 glass-3d rounded-xl px-2 py-1.5 text-base text-center font-extrabold text-blue-400 focus:outline-none focus:border-blue-500 shadow-inner">
+                                <input type="number" min="0" max="20" x-model.number="tahfizData['juz_' + juz]" @change="saveTahfizProgress(juz, 'new')" class="w-20 glass-3d rounded-xl px-2 py-1.5 text-sm sm:text-base text-center font-extrabold text-blue-400 focus:outline-none focus:border-blue-500 shadow-inner flex items-center justify-center">
                                 <span class="text-[10px] opacity-70">Hal</span>
                             </div>
                         </div>
@@ -725,7 +730,7 @@
 
                     let activeZiyadahJuz = Math.min(Math.max(Math.floor(this.totalCompletedPages / 20) + 4, 4), 28);
                     this.countdown.currentJuzTarget = activeZiyadahJuz;
-                    this.countdown.targetTitle = `TARGET AKHIR BULAN INI (${now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })})`;
+                    this.countdown.targetTitle = 'TARGET AKHIR BULAN INI';
                 },
 
                 generateDynamicTabs() {
