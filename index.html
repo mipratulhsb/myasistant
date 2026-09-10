@@ -188,14 +188,14 @@
     <!-- MAIN DASHBOARD TERINTEGRASI -->
     <main class="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-6 my-auto flex-1 z-10">
 
-        <!-- GRID UTAMA: COUNTDOWN BERJENJANG & TARGET HARIAN -->
+        <!-- GRID UTAMA: COUNTDOWN AKHIR BULAN & TARGET HARIAN -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
             
             <!-- Widget Countdown Terstruktur dengan Target Akhir Bulan -->
             <div @click="activeModal = 'roadmap'" class="lg:col-span-5 glass-3d rounded-[28px] p-6 shadow-2xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-slate-950 cursor-pointer group hover:border-emerald-400/50 transition-all">
                 <div class="flex justify-between items-center mb-3">
                     <div>
-                        <h3 class="text-xs font-extrabold uppercase tracking-widest text-emerald-400" x-text="countdown.targetTitle">⏳ TARGET BULAN INI</h3>
+                        <h3 class="text-xs font-extrabold uppercase tracking-widest text-emerald-400" x-text="countdown.targetTitle">⏳ TARGET AKHIR BULAN INI</h3>
                         <p class="text-[10px] opacity-75 text-slate-300">Klik untuk buka Peta Perjalanan 2 Tahun ➔</p>
                     </div>
                     <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30" x-text="'Juz ' + countdown.currentJuzTarget"></span>
@@ -237,7 +237,7 @@
                 </div>
             </div>
 
-            <!-- Widget Checklist Hafalan Harian dengan Menu Geser (Swipeable Tabs) -->
+            <!-- Widget Checklist Hafalan Harian yang Sinkron dengan Juz Aktif -->
             <div class="lg:col-span-7 glass-3d rounded-[28px] p-6 shadow-2xl flex flex-col justify-between relative overflow-hidden">
                 <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
                     <h3 class="text-xs font-extrabold uppercase tracking-widest text-emerald-400">📖 Checklist Target Harian</h3>
@@ -255,7 +255,7 @@
                     </template>
                 </div>
 
-                <!-- Daftar Tugas Harian -->
+                <!-- Daftar Tugas Harian yang Otomatis Menyesuaikan Juz Aktif -->
                 <div class="space-y-2 max-h-[160px] overflow-y-auto pr-1">
                     <template x-for="task in filteredStructuredTasks" :key="task.id">
                         <div class="flex justify-between items-center p-3 rounded-2xl glass-subtle hover:bg-white/10 transition-all border border-white/5 shadow-md">
@@ -467,33 +467,29 @@
 
                 activeTaskTab: 'hari_ini',
                 dynamicTaskTabs: [],
-                structuredTasks: {
-                    'senin': [
-                        { id: 's1', title: 'Ziyadah Baru: 4 Baris Juz Aktif', categoryName: 'Ziyadah Senin', is_completed: false },
-                        { id: 's2', title: 'Murojaah Restorasi Juz 1 (1 Halaman)', categoryName: 'Pemulihan Juz 1', is_completed: false }
-                    ],
-                    'selasa': [
-                        { id: 'se1', title: 'Ziyadah Baru: 4 Baris Juz Aktif', categoryName: 'Ziyadah Selasa', is_completed: false },
-                        { id: 'se2', title: 'Murojaah Restorasi Juz 2 (1 Halaman)', categoryName: 'Pemulihan Juz 2', is_completed: false }
-                    ],
-                    'rabu': [
-                        { id: 'r1', title: 'Ziyadah Baru: 4 Baris Juz Aktif', categoryName: 'Ziyadah Rabu', is_completed: false },
-                        { id: 'r2', title: 'Murojaah Restorasi Juz 3 (1 Halaman)', categoryName: 'Pemulihan Juz 3', is_completed: false }
-                    ],
-                    'kamis': [
-                        { id: 'k1', title: 'Ziyadah Baru: 4 Baris Juz Aktif', categoryName: 'Ziyadah Kamis', is_completed: false },
-                        { id: 'k2', title: 'Murojaah Restorasi Juz 29 (1 Halaman)', categoryName: 'Pemulihan Juz 29', is_completed: false }
-                    ],
-                    'jumat': [
-                        { id: 'j1', title: 'Ziyadah Baru: 4 Baris Juz Aktif (Genap 1 Pekan)', categoryName: 'Ziyadah Jumat', is_completed: false },
-                        { id: 'j2', title: 'Murojaah Restorasi Juz 30 (1 Halaman)', categoryName: 'Pemulihan Juz 30', is_completed: false }
-                    ],
-                    'sabtu': [
-                        { id: 'sa1', title: 'Murojaah Kubro: Pengulangan Total Hafalan Sepekan', categoryName: 'Murojaah Akhir Pekan', is_completed: false }
-                    ],
-                    'minggu': [
-                        { id: 'm1', title: 'Murojaah Kubro: Penguatan Sambung Ayat & Evaluasi', categoryName: 'Murojaah Akhir Pekan', is_completed: false }
-                    ]
+                
+                // Struktur Tugas Harian Dinamis yang otomatis mengikuti Juz Aktif
+                get structuredTasks() {
+                    const activeJuz = this.countdown.currentJuzTarget;
+                    const taskList = [
+                        { id: 't1', title: `Ziyadah Juz ${activeJuz}: ~4 Baris Ayat (0.55 Hal)`, categoryName: `Ziyadah Juz ${activeJuz}`, is_completed: false },
+                        { id: 't2', title: `Murojaah Rutin: 1 Halaman / Pengulangan Juz ${activeJuz}`, categoryName: 'Murojaah Harian', is_completed: false }
+                    ];
+
+                    // Menggunakan set tugas yang sama secara fleksibel untuk setiap hari dalam sepekan
+                    return {
+                        'senin': taskList,
+                        'selasa': taskList,
+                        'rabu': taskList,
+                        'kamis': taskList,
+                        'jumat': taskList,
+                        'sabtu': [
+                            { id: 'ts1', title: 'Murojaah Kubro: Evaluasi Total Hafalan Sepekan', categoryName: 'Akhir Pekan', is_completed: false }
+                        ],
+                        'minggu': [
+                            { id: 'tm1', title: 'Murojaah Kubro: Penguatan Sambung Ayat & Setoran', categoryName: 'Akhir Pekan', is_completed: false }
+                        ]
+                    };
                 },
                 
                 profile: {
@@ -614,7 +610,6 @@
                     const year = now.getFullYear();
                     const month = now.getMonth();
                     
-                    // Hitung akhir bulan berjalan
                     const lastDayOfMonth = new Date(year, month + 1, 0, 23, 59, 59).getTime();
                     const currentTime = now.getTime();
                     const distanceMonth = lastDayOfMonth - currentTime;
@@ -625,7 +620,7 @@
                         this.countdown.daysLeftMonth = '0';
                     }
 
-                    // Tentukan Juz aktif berdasarkan total progres (tiap 20 halaman naik 1 Juz)
+                    // Menentukan juz aktif secara otomatis dari progres halaman (tiap 20 halaman naik 1 juz)
                     let activeJuz = Math.min(Math.floor(this.totalCompletedPages / 20) + 1, 20);
                     this.countdown.currentJuzTarget = activeJuz;
                     this.countdown.targetTitle = `TARGET AKHIR BULAN INI (${now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })})`;
