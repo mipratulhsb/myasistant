@@ -60,7 +60,6 @@
             border-color: rgba(52, 211, 153, 0.4);
             transform: scale(0.95);
         }
-        /* Sembunyikan scrollbar namun tetap bisa digeser */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -74,10 +73,10 @@
       x-data="macosApp()"
       @keydown.window="handleGlobalKeydown($event)">
 
-    <!-- WALLPAPER FUTURISTIK & DINAMIS -->
+    <!-- WALLPAPER DINAMIS (Mendukung 10 Pilihan & Upload Galeri) -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div class="absolute inset-0 bg-cover bg-center filter brightness-40 opacity-50 scale-105 transition-transform duration-1000"
-             style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2000&q=80');"></div>
+             :style="'background-image: url(\'' + currentBackground + '\');'"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
     </div>
 
@@ -132,8 +131,9 @@
     <!-- CUSTOM NAVBAR -->
     <header class="glass-3d px-6 py-3.5 flex justify-between items-center sticky top-0 z-40 text-xs font-medium shadow-2xl">
         <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-2xl flex items-center justify-center font-extrabold text-sm bg-gradient-to-tr from-emerald-600 to-teal-400 text-white shadow-lg shadow-emerald-600/30">
-                
+            <!-- Logo Ikon disamakan dengan Favicon/Apple Touch Icon -->
+            <div class="w-9 h-9 rounded-2xl overflow-hidden flex items-center justify-center bg-emerald-950 border border-emerald-500/30 shadow-lg">
+                <img src="assets/img/apple-touch-icon.png" alt="Logo" class="w-full h-full object-cover">
             </div>
             <div>
                 <h1 class="font-extrabold text-xs uppercase tracking-wider text-slate-100">Executive Tahfiz Hub</h1>
@@ -157,10 +157,10 @@
             <div class="relative" x-data="{ profileOpen: false }">
                 <button @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" class="flex items-center gap-3 focus:outline-none cursor-pointer p-1.5 pr-3 rounded-2xl transition hover:bg-white/10 glass-subtle">
                     <div class="w-8 h-8 rounded-full overflow-hidden shadow-md relative flex items-center justify-center font-bold text-white bg-gradient-to-tr from-emerald-600 to-teal-600 border border-white/20">
-                        <template x-if="userProfilePic">
-                            <img :src="userProfilePic" alt="Profil" class="w-full h-full object-cover">
+                        <template x-if="profile.avatar">
+                            <img :src="profile.avatar" alt="Profil" class="w-full h-full object-cover">
                         </template>
-                        <template x-if="!userProfilePic">
+                        <template x-if="!profile.avatar">
                             <span class="text-xs" x-text="profile.panggilan ? profile.panggilan.charAt(0).toUpperCase() : 'M'"></span>
                         </template>
                     </div>
@@ -179,7 +179,7 @@
                         <p class="text-xs font-bold truncate text-emerald-400">Terverifikasi Aktif</p>
                     </div>
                     <button @click="activeModal = 'dataPribadi'; profileOpen = false;" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2.5 cursor-pointer hover:bg-white/15">
-                        <span>👤</span> Pengaturan Profil
+                        <span>👤</span> Pengaturan Profil & Wallpaper
                     </button>
                     <div class="border-t border-white/10 pt-1">
                         <button @click="logout()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-400 transition flex items-center gap-2.5 cursor-pointer hover:bg-red-500/20">
@@ -348,14 +348,15 @@
         Executive Command Center &bull; Mipratul Muslim &copy; 2026
     </footer>
 
-    <!-- MODAL PENGATURAN PROFIL -->
+    <!-- MODAL PENGATURAN PROFIL & WALLPAPER -->
     <div x-show="activeModal === 'dataPribadi'" style="display: none;" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="glass-3d rounded-[32px] p-6 w-full max-w-md shadow-2xl">
+        <div class="glass-3d rounded-[32px] p-6 w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
-                <h3 class="font-bold text-sm text-emerald-400">👤 Pengaturan Profil Administrator</h3>
+                <h3 class="font-bold text-sm text-emerald-400">👤 Pengaturan Profil & Wallpaper</h3>
                 <button @click="activeModal = null" class="cursor-pointer px-3 py-1 rounded-xl glass-subtle text-slate-200 font-bold">✕</button>
             </div>
-            <div class="space-y-3 mb-5">
+            
+            <div class="space-y-4 overflow-y-auto pr-1 no-scrollbar my-1 flex-1">
                 <div>
                     <label class="block text-xs mb-1 font-semibold opacity-80">Nama Lengkap</label>
                     <input type="text" x-model="profile.namaLengkap" class="w-full glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-emerald-500 font-medium text-slate-100">
@@ -364,8 +365,33 @@
                     <label class="block text-xs mb-1 font-semibold opacity-80">Nama Panggilan</label>
                     <input type="text" x-model="profile.panggilan" class="w-full glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-emerald-500 font-medium text-slate-100">
                 </div>
+                <div>
+                    <label class="block text-xs mb-1 font-semibold opacity-80">URL Foto Profil (Avatar)</label>
+                    <input type="text" x-model="profile.avatar" placeholder="https://..." class="w-full glass-subtle rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-emerald-500 font-medium text-slate-100">
+                </div>
+
+                <!-- Pilihan 10 Background Bawaan & Galeri -->
+                <div class="pt-2 border-t border-white/10">
+                    <label class="block text-xs mb-2 font-bold text-emerald-400">🎨 Pilih Latar Belakang (Wallpaper)</label>
+                    <div class="grid grid-cols-5 gap-2 mb-3">
+                        <template x-for="(bg, index) in backgroundPresets" :key="index">
+                            <div @click="currentBackground = bg" 
+                                 class="h-14 rounded-xl bg-cover bg-center cursor-pointer border-2 transition-all hover:scale-105"
+                                 :class="currentBackground === bg ? 'border-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.6)] scale-105' : 'border-white/10 opacity-70 hover:opacity-100'"
+                                 :style="'background-image: url(\'' + bg + '\');'"></div>
+                        </template>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs mb-1 font-semibold opacity-80">Atau Pilih dari Galeri Perangkat</label>
+                        <input type="file" @change="handleGalleryUpload($event)" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-500/20 file:text-emerald-300 hover:file:bg-emerald-500/30 cursor-pointer">
+                    </div>
+                </div>
             </div>
-            <button @click="saveProfile(); activeModal = null;" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white py-3 rounded-2xl text-xs font-bold transition cursor-pointer shadow-lg shadow-emerald-600/30">Simpan Perubahan</button>
+
+            <div class="pt-4 border-t border-white/10 mt-2">
+                <button @click="saveProfile(); activeModal = null;" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white py-3 rounded-2xl text-xs font-bold transition cursor-pointer shadow-lg shadow-emerald-600/30">Simpan Perubahan</button>
+            </div>
         </div>
     </div>
 
@@ -380,9 +406,7 @@
                 <button @click="activeModal = null" class="cursor-pointer px-3 py-1.5 rounded-xl glass-subtle text-slate-200 font-bold hover:bg-red-500/20 transition">✕</button>
             </div>
 
-            <!-- Daftar Roadmap per Fase -->
             <div class="overflow-y-auto space-y-3 pr-2 my-2 no-scrollbar">
-                <!-- Fase 1 -->
                 <div class="glass-subtle p-4 rounded-2xl border border-emerald-500/30 flex justify-between items-center">
                     <div>
                         <span class="text-[10px] px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">Fase 1 (Pemulihan)</span>
@@ -392,7 +416,6 @@
                     <span class="text-xs font-extrabold text-emerald-400">100 Hal</span>
                 </div>
 
-                <!-- Fase 2 -->
                 <div class="glass-subtle p-4 rounded-2xl border border-blue-500/30 flex justify-between items-center">
                     <div>
                         <span class="text-[10px] px-2.5 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 font-bold border border-blue-500/30">Fase 2 (Ziyadah Awal)</span>
@@ -402,7 +425,6 @@
                     <span class="text-xs font-extrabold text-blue-400">140 Hal</span>
                 </div>
 
-                <!-- Fase 3 -->
                 <div class="glass-subtle p-4 rounded-2xl border border-teal-500/30 flex justify-between items-center">
                     <div>
                         <span class="text-[10px] px-2.5 py-0.5 rounded-lg bg-teal-500/20 text-teal-300 font-bold border border-teal-500/30">Fase 3 (Ziyadah Lanjutan)</span>
@@ -412,7 +434,6 @@
                     <span class="text-xs font-extrabold text-teal-400">200 Hal</span>
                 </div>
 
-                <!-- Fase 4 -->
                 <div class="glass-subtle p-4 rounded-2xl border border-purple-500/30 flex justify-between items-center">
                     <div>
                         <span class="text-[10px] px-2.5 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">Fase 4 (Penyelesaian)</span>
@@ -441,7 +462,6 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('macosApp', () => ({
                 activeModal: null,
-                userProfilePic: '',
                 currentDateTime: '',
                 formattedGregorianDate: '',
                 formattedHijriDate: '',
@@ -453,6 +473,20 @@
                 correctPasscodeHash: '123456',
                 failedAttempts: 0,
                 lockoutTime: 0,
+
+                currentBackground: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2000&q=80',
+                backgroundPresets: [
+                    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2000&q=80',
+                    'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=2000&q=80',
+                    'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=2000&q=80',
+                    'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2000&q=80',
+                    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+                    'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=2000&q=80',
+                    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=2000&q=80',
+                    'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2000&q=80',
+                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=2000&q=80',
+                    'https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&w=2000&q=80'
+                ],
 
                 countdown: { 
                     currentJuzTarget: 4,
@@ -473,12 +507,11 @@
                 activeTaskTab: 'hari_ini',
                 dynamicTaskTabs: [],
                 
-                // Struktur Tugas Harian: Ziyadah (Juz 4-28) & Murojaah Pemulihan (Juz 1, 2, 3, 29, 30)
                 get structuredTasks() {
                     let activeZiyadahJuz = Math.min(Math.max(Math.floor(this.totalCompletedPages / 20) + 4, 4), 28);
                     
                     const restorationJuzList = [1, 2, 3, 29, 30];
-                    const dayIndex = new Date().getDay(); // 0: Minggu, 1: Senin, dst.
+                    const dayIndex = new Date().getDay();
                     const activeMurojaahJuz = restorationJuzList[dayIndex % restorationJuzList.length];
 
                     const standardTaskList = [
@@ -513,7 +546,8 @@
                 
                 profile: {
                     namaLengkap: 'Mipratul Muslim',
-                    panggilan: 'Mipra'
+                    panggilan: 'Mipra',
+                    avatar: ''
                 },
 
                 get totalCompletedPages() {
@@ -620,7 +654,6 @@
                     const now = new Date();
                     this.currentDateTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                     
-                    // Format Masehi: Hari, Tanggal Bulan Tahun
                     this.formattedGregorianDate = now.toLocaleDateString('id-ID', { 
                         weekday: 'long', 
                         day: 'numeric', 
@@ -628,7 +661,6 @@
                         year: 'numeric' 
                     });
 
-                    // Format Hijriah: Hari, Tanggal Bulan Tahun Hijriah
                     try {
                         const hijriFormatter = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {
                             weekday: 'long',
@@ -747,7 +779,23 @@
                             const parsed = JSON.parse(profileData.key_value);
                             if (parsed.namaLengkap) this.profile.namaLengkap = parsed.namaLengkap;
                             if (parsed.panggilan) this.profile.panggilan = parsed.panggilan;
+                            if (parsed.avatar) this.profile.avatar = parsed.avatar;
                         } catch(e) {}
+                    }
+                    const { data: bgData } = await _supabase.from('user_config').select('key_value').eq('key_name', 'app_background').single();
+                    if (bgData?.key_value) {
+                        this.currentBackground = bgData.key_value;
+                    }
+                },
+
+                handleGalleryUpload(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.currentBackground = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
                     }
                 },
 
@@ -756,7 +804,13 @@
                         key_name: 'user_profile_wawasan',
                         key_value: JSON.stringify(this.profile)
                     }, { onConflict: 'key_name' });
-                    alert('Pengaturan profil berhasil diperbarui.');
+
+                    await _supabase.from('user_config').upsert({
+                        key_name: 'app_background',
+                        key_value: this.currentBackground
+                    }, { onConflict: 'key_name' });
+
+                    alert('Pengaturan profil dan background berhasil diperbarui.');
                 }
             }));
         });
